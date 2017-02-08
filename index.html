@@ -24,7 +24,7 @@
 	<button class="btn btn-link"><i class="fa fa-refresh"></i></button>
 	<i class="pipe">|</i>
 	<button class="btn btn-link"><i class="fa fa-list"></i></button>
-	<button class="btn btn-link active"><i class="fa fa-table"></i></button>
+	<button class="btn btn-secondary active"><i class="fa fa-table"></i></button>
 	<button class="btn btn-link"><i class="fa fa-image"></i></button>
 	<button class="btn btn-link"><i class="fa fa-tree"></i></button>
 	<i class="pipe">|</i>
@@ -57,7 +57,7 @@
 		<div class="col">
 			<button class="btn btn-sm btn-link"><i class="fa fa-hdd-o"></i> c</button>
 			<button class="btn btn-sm btn-link"><i class="fa fa-hdd-o"></i> d</button>
-			<button class="btn btn-sm btn-link active"><i class="fa fa-hdd-o"></i> e</button>
+			<button class="btn btn-sm btn-secondary active"><i class="fa fa-hdd-o"></i> e</button>
 			<button class="btn btn-sm btn-link"><i class="fa fa-globe"></i> net</button>
 		</div>
 	</div>
@@ -111,7 +111,7 @@
 					<thead>
 						<tr>
 							<th><button class="btn btn-block btn-sm btn-link">Name</button></th>
-							<th><button class="btn btn-block btn-sm btn-link active"><i class="fa fa-long-arrow-up"></i> Ext</button></th>
+							<th><button class="btn btn-block btn-sm btn-secondary active"><i class="fa fa-long-arrow-up"></i> Ext</button></th>
 							<th><button class="btn btn-block btn-sm btn-link">Size</button></th>
 							<th><button class="btn btn-block btn-sm btn-link">Date</button></th>
 							<th><button class="btn btn-block btn-sm btn-link">Attr</button></th>
@@ -188,6 +188,12 @@ $('.directory th .btn').addClass('text-left');
 $('.directory td').addClass('py-0');
 
 $('.tabs .nav-link').addClass('px-2 py-0');
+
+$('.btn-link').hover(function () {
+	$(this).addClass('btn-secondary').removeClass('btn-link');
+}, function () {
+	$(this).removeClass('btn-secondary').addClass('btn-link');
+});
 </script>
 
 <style>
