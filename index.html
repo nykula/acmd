@@ -189,6 +189,18 @@ $('.directory td').addClass('py-0');
 
 $('.directory tbody td').addClass('border-top-0');
 
+$('.directory tbody').each(function () {
+	var rows = 10 - $(this).children().length;
+
+    if (rows < 1) {
+		return;
+    }
+
+	var height = 'calc((2 * 1px + 2 * 0.3rem + 1.5rem) * ' + rows + ')';
+
+    $('<tr />').css({ height: height }).appendTo(this);
+});
+
 $('.tabs .nav-link').addClass('px-2 py-0');
 
 $('.btn-link').hover(function () {
