@@ -101,14 +101,14 @@
 					</div>
 				</div>
 				
-				<table class="table table-sm directory">
+				<table class="table table-sm mb-0 directory">
 					<thead>
 						<tr>
-							<th><button class="btn btn-block btn-link">Name</button></th>
-							<th><button class="btn btn-block btn-link active"><i class="fa fa-long-arrow-up"></i> Ext</button></th>
-							<th><button class="btn btn-block btn-link">Size</button></th>
-							<th><button class="btn btn-block btn-link">Date</button></th>
-							<th><button class="btn btn-block btn-link">Attr</button></th>
+							<th><button class="btn btn-block btn-sm btn-link">Name</button></th>
+							<th><button class="btn btn-block btn-sm btn-link active"><i class="fa fa-long-arrow-up"></i> Ext</button></th>
+							<th><button class="btn btn-block btn-sm btn-link">Size</button></th>
+							<th><button class="btn btn-block btn-sm btn-link">Date</button></th>
+							<th><button class="btn btn-block btn-sm btn-link">Attr</button></th>
 						</tr>
 					</thead>
 					<tfoot>
@@ -157,7 +157,7 @@
 </section>
 
 <section class="actions">
-	<div class="row">
+	<div class="row no-gutters">
 		<div class="col">
 			<button class="btn btn-sm btn-block">F3 View</button>
 		</div>
@@ -188,4 +188,9 @@
 $('.drives > .row > .col, .panes > .row > .col').each(function () {
 	$(this).clone().insertAfter(this);
 });
+
+$('hr').addClass('my-0');
+
+$('.directory th').addClass('p-0');
+$('.directory td').addClass('py-0');
 </script>
