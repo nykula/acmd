@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Electron from 'vue-electron';
+import 'bootstrap/dist/css/bootstrap.css';
 
 Vue.use(Electron);
 Vue.config.debug = true;
