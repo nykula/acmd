@@ -1,0 +1,12 @@
+{
+  "name": "acme-commander",
+  "version": "0.0.0",
+  "description": "Twin-panel file manager",
+  "main": "./dist/main.js",
+  "dependencies": {
+    "vue": "^2.1.10",
+    "vue-electron": "^1.0.6"
+  },
+  "devDependencies": {},
+  "author": ""
+}
