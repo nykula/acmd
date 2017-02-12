@@ -7,9 +7,20 @@ import './index.css';
 
 const StoreInstance = Store();
 
-ReactDOM.render(
-  <Provider store={StoreInstance}>
-    <App />
-  </Provider>,
-  document.getElementById('root')
-);
+function render(Component) {
+  ReactDOM.render(
+    <Provider store={StoreInstance}>
+      <Component />
+    </Provider>,
+    document.getElementById('root')
+  );
+}
+
+render(App);
+
+if (module.hot) {
+  module.hot.accept('./App', () => {
+    const NextApp = require('./App').default;
+    render(NextApp);
+  });
+}
