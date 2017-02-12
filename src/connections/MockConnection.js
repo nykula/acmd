@@ -23,6 +23,20 @@ export default class MockConnection {
   }
 
   constructor (window) {
+    this.view = this.view.bind(this)
+    this.editor = this.editor.bind(this)
+    this.cp = this.cp.bind(this)
+    this.mv = this.mv.bind(this)
+    this.mkdir = this.mkdir.bind(this)
+    this.touch = this.touch.bind(this)
+    this.rm = this.rm.bind(this)
+    this.ls = this.ls.bind(this)
+    this.cdDirname = this.cdDirname.bind(this)
+    this.cancel = this.cancel.bind(this)
+    this.defer = this.defer.bind(this)
+
+    this.root = { children: {} }
+    this.ready = false
     this.window = window
   }
 
@@ -32,6 +46,7 @@ export default class MockConnection {
     await this.mkdir('/c/Users/D')
     await this.mkdir('/c/Users/D/Music')
     await this.touch('/c/Users/D/Music/clan in da front.txt')
+    this.ready = true
   }
 
   canHandle (path) {
@@ -231,7 +246,7 @@ export default class MockConnection {
   cdDirname (path) {
     const parts = path.split('/')
     const dirs = parts.slice(1, -1)
-    let current = this.data
+    let current = this.root
 
     dirs.forEach((part, i) => {
       current = current.children[part]
@@ -254,6 +269,7 @@ export default class MockConnection {
   defer (msg) {
     return new Promise(resolve => {
       setTimeout(() => {
+        resolve()
         this.window.alert(msg)
       }, 500)
     })

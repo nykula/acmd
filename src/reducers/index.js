@@ -1,11 +1,13 @@
 import activeFile from './activeFile'
 import activePanel from './activePanel'
+import connection from './connection'
 import files from './files'
 import { combineReducers } from 'redux'
 
 const rootReducer = combineReducers({
   activeFile,
   activePanel,
+  connection,
   files
 })
 

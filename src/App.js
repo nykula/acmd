@@ -17,18 +17,21 @@ const UP = 38
 const DOWN = 40
 
 class App extends React.Component {
-  componentDidMount () {
+  constructor(props) {
+    super(props)
+
     this.handleKeyDown = this.handleKeyDown.bind(this)
+    this.handleReady = this.handleReady.bind(this)
+  }
 
-    $('hr').addClass('my-0')
-
-    $('.btn-link').hover(function handleMouseenter () {
-      $(this).addClass('btn-secondary').removeClass('btn-link')
-    }, function handleMouseleave () {
-      $(this).removeClass('btn-secondary').addClass('btn-link')
-    })
-
-    $('body').on('keydown', this.handleKeyDown)
+  componentDidMount () {
+    if (this.props.connection.ready) {
+      this.handleReady()
+    } else {
+      this.props.connection.init().then(this.handleReady).catch(err => {
+        console.error(err)
+      });
+    }
   }
 
   handleKeyDown (ev) {
@@ -51,8 +54,22 @@ class App extends React.Component {
     }
   }
 
+  handleReady () {
+    this.forceUpdate()
+
+    $('hr').addClass('my-0')
+
+    $('.btn-link').hover(function handleMouseenter () {
+      $(this).addClass('btn-secondary').removeClass('btn-link')
+    }, function handleMouseleave () {
+      $(this).removeClass('btn-secondary').addClass('btn-link')
+    })
+
+    $('body').on('keydown', this.handleKeyDown)
+  }
+
   render () {
-    return (
+    return this.props.connection.ready ? (
       <div className='container-fluid px-0'>
         <MenuBar /><hr />
         <Toolbar /><hr />
@@ -65,6 +82,8 @@ class App extends React.Component {
         <Prompt />
         <Actions />
       </div>
+    ) : (
+      <div className="alert">Loading...</div>
     )
   }
 }
@@ -73,6 +92,7 @@ function mapStateToProps (state, props) {
   return {
     activePanel: state.activePanel,
     activeFile: state.activeFile,
+    connection: state.connection,
     files: state.files
   }
 }
