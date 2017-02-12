@@ -5,6 +5,7 @@
   "main": "./dist/main.js",
   "dependencies": {
     "bootstrap": "v4.0.0-alpha.6",
+    "font-awesome": "^4.7.0",
     "vue": "^2.1.10",
     "vue-electron": "^1.0.6"
   },
