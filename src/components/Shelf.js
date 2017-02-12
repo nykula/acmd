@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 
 class Shelf extends Component {
-  constructor(props) {
-    super(props);
+  constructor (props) {
+    super(props)
 
-    this.onAddItemToCart = this.onAddItemToCart.bind(this);
+    this.onAddItemToCart = this.onAddItemToCart.bind(this)
 
     this.state = {
       shelfItems: [
@@ -15,14 +15,14 @@ class Shelf extends Component {
     }
   }
 
-  onAddItemToCart(item) {
-    this.props.addItem(item);
+  onAddItemToCart (item) {
+    this.props.addItem(item)
   }
 
-  render() {
+  render () {
     const shelfItems = this.state.shelfItems.map((item, idx) => {
       return <button key={idx} onClick={() => this.onAddItemToCart(item)}>[+] {item}</button>
-    });
+    })
 
     return (
       <div>
@@ -31,8 +31,8 @@ class Shelf extends Component {
           {shelfItems}
         </ul>
       </div>
-    );
+    )
   }
 }
 
-export default Shelf;
+export default Shelf
