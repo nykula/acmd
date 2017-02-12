@@ -1,12 +1,12 @@
 import $ from 'jquery'
 import React from 'react'
+import './App.css'
 import MenuBar from './components/MenuBar'
 import Toolbar from './components/Toolbar'
 import Drives from './components/Drives'
 import Panes from './components/Panes'
 import Prompt from './components/Prompt'
 import Actions from './components/Actions'
-import './App.css'
 
 export default class App extends React.Component {
   componentDidMount () {
