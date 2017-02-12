@@ -3,6 +3,9 @@ import './PanesCol.css'
 
 export default class PanesCol extends React.Component {
   render () {
+    const activeLoc = this.props.isActive ? ' bg-primary text-white' : ''
+    const activeLocBtn = this.props.isActive ? ' text-white' : ''
+
     return (
       <div className='col'>
         <div className='medium'>
@@ -32,14 +35,14 @@ export default class PanesCol extends React.Component {
         </div>
 
         <div className='card border-top-0 rounded-0'>
-          <div className='location'>
+          <div className={'location' + activeLoc}>
             <div className='row no-gutters'>
               <div className='col-10 active text-truncate'>
                 <i className='fa fa-caret-down' /> {'c:\\Users\\D\\Music\\*.*'}
               </div>
               <div className='col text-nowrap text-right'>
-                <button className='btn btn-sm btn-link'><i className='fa fa-asterisk' /></button>
-                <button className='btn btn-sm btn-link'><i className='fa fa-caret-down' /></button>
+                <button className={'btn btn-sm btn-link' + activeLocBtn}><i className='fa fa-asterisk' /></button>
+                <button className={'btn btn-sm btn-link' + activeLocBtn}><i className='fa fa-caret-down' /></button>
               </div>
             </div>
           </div>

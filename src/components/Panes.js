@@ -29,8 +29,8 @@ export default class Panes extends React.Component {
     return (
       <section className='panes'>
         <div className='row no-gutters'>
-          <PanesCol />
-          <PanesCol />
+          <PanesCol isActive={this.props.active === 0} />
+          <PanesCol isActive={this.props.active === 1} />
         </div>
       </section>
     )
