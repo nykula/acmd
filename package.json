@@ -1,12 +1,16 @@
 {
   "name": "acme-commander",
   "version": "0.1.0",
+  "description": "Twin-panel file manager",
   "private": true,
   "devDependencies": {
     "react-scripts": "0.9.0",
     "standard": "^8.6.0"
   },
   "dependencies": {
+    "bootstrap": "v4.0.0-alpha.6",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.1.1",
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-redux": "^5.0.2",

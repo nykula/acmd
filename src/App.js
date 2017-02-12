@@ -1,20 +1,34 @@
-import React, { Component } from 'react'
-import Cart from './components/Cart'
-import logo from './logo.svg'
+import $ from 'jquery'
+import React from 'react'
+import MenuBar from './components/MenuBar'
+import Toolbar from './components/Toolbar'
+import Drives from './components/Drives'
+import Panes from './components/Panes'
+import Prompt from './components/Prompt'
+import Actions from './components/Actions'
 import './App.css'
 
-class App extends Component {
+export default class App extends React.Component {
+  componentDidMount () {
+    $('hr').addClass('my-0')
+
+    $('.btn-link').hover(function handleMouseenter () {
+      $(this).addClass('btn-secondary').removeClass('btn-link')
+    }, function handleMouseleave () {
+      $(this).removeClass('btn-secondary').addClass('btn-link')
+    })
+  }
+
   render () {
     return (
-      <div className='App'>
-        <div className='App-header'>
-          <img src={logo} className='App-logo' alt='logo' />
-          <h2>Welcome to React</h2>
-        </div>
-        <Cart />
+      <div className='container-fluid px-0'>
+        <MenuBar /><hr />
+        <Toolbar /><hr />
+        <Drives /><hr />
+        <Panes />
+        <Prompt />
+        <Actions />
       </div>
     )
   }
 }
-
-export default App
