@@ -19,7 +19,7 @@ yarn run lint-fix
 
 - [x] Two-panel user interface as close to Total Commander as possible
 
-- [ ] Toggle active panel on tab press and navigate files using arrow keys
+- [x] Toggle active panel on tab press and navigate files using arrow keys
 
 - [ ] Mock back-end: List, view, edit, copy, move, mkdir, touch and delete
 

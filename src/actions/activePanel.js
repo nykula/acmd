@@ -1,5 +1,5 @@
 export const toggleActivePanel = () => {
   return {
-    type: 'toggleActivePanel',
+    type: 'toggleActivePanel'
   }
 }

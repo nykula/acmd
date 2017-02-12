@@ -4,6 +4,7 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import './App.css'
 import * as activePanelActions from './actions/activePanel'
+import * as actions from './actions'
 import MenuBar from './components/MenuBar'
 import Toolbar from './components/Toolbar'
 import Drives from './components/Drives'
@@ -12,6 +13,8 @@ import Prompt from './components/Prompt'
 import Actions from './components/Actions'
 
 const TAB = 9
+const UP = 38
+const DOWN = 40
 
 class App extends React.Component {
   componentDidMount () {
@@ -25,13 +28,26 @@ class App extends React.Component {
       $(this).removeClass('btn-secondary').addClass('btn-link')
     })
 
-    $('body').on('keydown', this.handleKeyDown);
+    $('body').on('keydown', this.handleKeyDown)
   }
 
   handleKeyDown (ev) {
     if (ev.which === TAB) {
       ev.preventDefault()
       this.props.actions.toggleActivePanel()
+      return
+    }
+
+    if (ev.which === UP) {
+      ev.preventDefault()
+      this.props.actions.prevFile()
+      return
+    }
+
+    if (ev.which === DOWN) {
+      ev.preventDefault()
+      this.props.actions.nextFile()
+      return
     }
   }
 
@@ -41,7 +57,11 @@ class App extends React.Component {
         <MenuBar /><hr />
         <Toolbar /><hr />
         <Drives /><hr />
-        <Panes active={this.props.activePanel} />
+        <Panes
+          activeFile={this.props.activeFile}
+          activePanel={this.props.activePanel}
+          files={this.props.files}
+        />
         <Prompt />
         <Actions />
       </div>
@@ -51,13 +71,18 @@ class App extends React.Component {
 
 function mapStateToProps (state, props) {
   return {
-    activePanel: state.activePanel
+    activePanel: state.activePanel,
+    activeFile: state.activeFile,
+    files: state.files
   }
 }
 
 function mapDispatchToProps (dispatch) {
   return {
-    actions: bindActionCreators(activePanelActions, dispatch)
+    actions: {
+      ...bindActionCreators(activePanelActions, dispatch),
+      ...bindActionCreators(actions, dispatch)
+    }
   }
 }
 

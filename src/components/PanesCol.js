@@ -63,20 +63,15 @@ export default class PanesCol extends React.Component {
               </tr>
             </tfoot>
             <tbody>
-              <tr>
-                <td><i className='fa fa-level-up' /> [..]</td>
-                <td />
-                <td>&lt;DIR&gt;</td>
-                <td>02/08/2017 00:10</td>
-                <td>0755</td>
-              </tr>
-              <tr>
-                <td><i className='fa fa-file-text' /> clan in da front</td>
-                <td>txt</td>
-                <td>4,110</td>
-                <td>02/01/2017 00:07</td>
-                <td>0644</td>
-              </tr>
+              {this.props.files.map((file, i) => (
+                <tr className={i === this.props.activeFile && 'table-active'} key={i}>
+                  <td><i className={'fa fa-' + file.icon} /> {file.name}</td>
+                  <td>{file.ext}</td>
+                  <td>{file.size}</td>
+                  <td>{file.date}</td>
+                  <td>{file.mode}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
