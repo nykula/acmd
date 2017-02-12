@@ -2,13 +2,15 @@ import activeFile from './activeFile'
 import activePanel from './activePanel'
 import connection from './connection'
 import files from './files'
+import locations from './locations'
 import { combineReducers } from 'redux'
 
 const rootReducer = combineReducers({
   activeFile,
   activePanel,
   connection,
-  files
+  files,
+  locations
 })
 
 export default (_state, payload) => {
@@ -52,6 +54,11 @@ export default (_state, payload) => {
     }
 
     default:
-      return state
+      return { ...state,
+        activeFile: [
+          Math.max(0, Math.min(state.activeFile[0], state.files[0].length - 1)),
+          Math.max(0, Math.min(state.activeFile[1], state.files[1].length - 1))
+        ]
+      }
   }
 }

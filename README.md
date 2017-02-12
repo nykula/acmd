@@ -21,7 +21,7 @@ yarn run lint-fix
 
 - [x] Toggle active panel on tab press and navigate files using arrow keys
 
-- [ ] Mock back-end: List, view, edit, copy, move, mkdir, touch and delete
+- [x] Mock back-end: List, view, edit, copy, move, mkdir, touch and delete
 
 - [ ] Retry on remote error, remounting if necessary
 

@@ -4,7 +4,7 @@ export default class Toolbar extends React.Component {
   render () {
     return (
       <section className='toolbar'>
-        <button className='btn btn-sm btn-link'><i className='fa fa-refresh' /></button>
+        <button className='btn btn-sm btn-link' onClick={this.props.onRefresh}><i className='fa fa-refresh' /></button>
         <i className='pipe'>|</i>
         <button className='btn btn-sm btn-link'><i className='fa fa-list' /></button>
         <button className='btn btn-sm btn-secondary active'><i className='fa fa-table' /></button>

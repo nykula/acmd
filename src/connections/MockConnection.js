@@ -1,16 +1,14 @@
 const sampleFiles = [
   {
     icon: 'level-up',
-    name: '[..]',
-    ext: '',
+    name: '..',
     size: '<DIR>',
     date: '02/08/2017 00:10',
     mode: '0755'
   },
   {
     icon: 'file-text',
-    name: 'clan in da front',
-    ext: 'txt',
+    name: 'clan in da front.txt',
     size: '4,110',
     date: '02/01/2017 00:07',
     mode: '0644'
@@ -31,6 +29,7 @@ export default class MockConnection {
     this.touch = this.touch.bind(this)
     this.rm = this.rm.bind(this)
     this.ls = this.ls.bind(this)
+    this.cd = this.cd.bind(this)
     this.cdDirname = this.cdDirname.bind(this)
     this.cancel = this.cancel.bind(this)
     this.defer = this.defer.bind(this)
@@ -55,10 +54,7 @@ export default class MockConnection {
 
   view (path) {
     const desc = 'Viewing ' + path
-
-    const promise = this.defer(() => {
-      this.window.alert(desc)
-    })
+    const promise = this.defer(desc)
 
     return {
       type: 'view',
@@ -73,10 +69,7 @@ export default class MockConnection {
 
   editor (path) {
     const desc = 'Editing ' + path
-
-    const promise = this.defer(() => {
-      this.window.alert(desc)
-    })
+    const promise = this.defer(desc)
 
     return {
       type: 'editor',
@@ -100,7 +93,9 @@ export default class MockConnection {
     const nextParent = y.parent
     const nextName = y.name
 
-    nextParent.children[nextName] = parent.children[name]
+    nextParent.children[nextName] = { ...parent.children[name],
+      name: y.name
+    }
 
     const promise = Promise.resolve()
 
@@ -139,13 +134,12 @@ export default class MockConnection {
     const { parent, name } = this.cdDirname(path)
 
     const dir = { ...sampleFiles[0],
+      icon: 'folder',
       name: name,
       children: {}
     }
 
-    dir.children['..'] = { ...sampleFiles[0],
-      path: path + '/..'
-    }
+    dir.children['..'] = { ...sampleFiles[0] }
 
     parent.children[name] = dir
 
@@ -167,19 +161,8 @@ export default class MockConnection {
 
     const { parent, name } = this.cdDirname(path)
 
-    let filename = name
-    let ext = ''
-
-    const matches = /^(.*)\.(.*?)$/.exec(name)
-
-    if (matches[0] && matches[1]) {
-      filename = matches[0]
-      ext = matches[1]
-    }
-
     const file = { ...sampleFiles[1],
-      name: filename,
-      ext: ext
+      name: name
     }
 
     parent.children[name] = file
@@ -219,18 +202,15 @@ export default class MockConnection {
   ls (path) {
     const desc = 'Listing ' + path
 
-    const { parent, name } = this.cdDirname(path)
-    const current = parent.children[name]
+    const current = this.cd(path)
 
-    const result = {
-      children: Object.keys(current.children).map(x => {
-        return { ...current.children[x],
-          children: undefined
-        }
-      })
-    }
+    const children = Object.keys(current.children).map(x => {
+      return { ...current.children[x],
+        children: undefined
+      }
+    })
 
-    const promise = Promise.resolve(result)
+    const promise = Promise.resolve(children)
 
     return {
       type: 'ls',
@@ -241,6 +221,18 @@ export default class MockConnection {
       catch: promise.catch.bind(promise),
       then: promise.then.bind(promise)
     }
+  }
+
+  cd (path) {
+    const parts = path.split('/')
+    const dirs = parts.slice(1)
+    let current = this.root
+
+    dirs.forEach((part, i) => {
+      current = current.children[part]
+    })
+
+    return current
   }
 
   cdDirname (path) {
@@ -279,7 +271,7 @@ export default class MockConnection {
   uuid () {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = Math.random() * 16 | 0
-      const v = c === 'x' ? r : (r & 0x3 | 0x8)
+      const v = c === 'x' ? r : (r & 0x3 | 0x8) // eslint-disable-line no-mixed-operators
       return v.toString(16)
     })
   }

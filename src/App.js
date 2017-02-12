@@ -5,6 +5,8 @@ import { connect } from 'react-redux'
 import './App.css'
 import * as activePanelActions from './actions/activePanel'
 import * as actions from './actions'
+import * as filesActions from './actions/files'
+import * as locationsActions from './actions/locations'
 import MenuBar from './components/MenuBar'
 import Toolbar from './components/Toolbar'
 import Drives from './components/Drives'
@@ -12,78 +14,237 @@ import Panes from './components/Panes'
 import Prompt from './components/Prompt'
 import Actions from './components/Actions'
 
+const BACKSPACE = 8
 const TAB = 9
+const ENTER = 13
 const UP = 38
 const DOWN = 40
+const F2 = 113
+const F3 = 114
+const F4 = 115
+const F5 = 116
+const F6 = 117
+const F7 = 118
+const F8 = 119
 
 class App extends React.Component {
-  constructor(props) {
+  constructor (props) {
     super(props)
 
+    this.getActiveFile = this.getActiveFile.bind(this)
+    this.handleCopy = this.handleCopy.bind(this)
+    this.handleDelete = this.handleDelete.bind(this)
+    this.handleEdit = this.handleEdit.bind(this)
+    this.handleLevelDown = this.handleLevelDown.bind(this)
+    this.handleLevelUp = this.handleLevelUp.bind(this)
     this.handleKeyDown = this.handleKeyDown.bind(this)
-    this.handleReady = this.handleReady.bind(this)
+    this.handleMkdir = this.handleMkdir.bind(this)
+    this.handleMove = this.handleMove.bind(this)
+    this.handleRefresh = this.handleRefresh.bind(this)
+    this.handleView = this.handleView.bind(this)
   }
 
-  componentDidMount () {
-    if (this.props.connection.ready) {
-      this.handleReady()
-    } else {
-      this.props.connection.init().then(this.handleReady).catch(err => {
-        console.error(err)
-      });
+  async componentDidMount () {
+    $('body')
+      .on('keydown', this.handleKeyDown)
+      .on('mouseenter', '.btn-link', function (ev) {
+        $(this)
+          .addClass('btn-secondary')
+          .removeClass('btn-link')
+          .one('mouseleave', function () {
+            $(this).removeClass('btn-secondary').addClass('btn-link')
+          })
+      })
+    try {
+      await this.props.connection.init()
+      await this.handleRefresh()
+    } catch (err) {
+      console.error(err)
     }
+  }
+
+  componentWillUnmount () {
+    $('body').off('keydown mouseenter')
   }
 
   handleKeyDown (ev) {
-    if (ev.which === TAB) {
-      ev.preventDefault()
-      this.props.actions.toggleActivePanel()
+    const known = [ BACKSPACE, TAB, ENTER, UP, DOWN, F2, F3, F4, F5, F6, F7, F8 ]
+
+    if (known.indexOf(ev.which) === -1) {
       return
     }
 
-    if (ev.which === UP) {
-      ev.preventDefault()
-      this.props.actions.prevFile()
-      return
-    }
+    switch (ev.which) {
+      case BACKSPACE:
+        return this.handleLevelUp()
 
-    if (ev.which === DOWN) {
-      ev.preventDefault()
-      this.props.actions.nextFile()
-      return
+      case TAB:
+        return this.props.actions.toggleActivePanel()
+
+      case ENTER:
+        return this.handleLevelDown()
+
+      case UP:
+        return this.props.actions.prevFile()
+
+      case DOWN:
+        return this.props.actions.nextFile()
+
+      case F2:
+        return this.handleRefresh()
+
+      case F3:
+        return this.handleView()
+
+      case F4:
+        return this.handleEdit()
+
+      case F5:
+        return this.handleCopy()
+
+      case F6:
+        return this.handleMove()
+
+      case F7:
+        return this.handleMkdir()
+
+      case F8:
+        return this.handleDelete()
+
+      default:
+        return
     }
   }
 
-  handleReady () {
-    this.forceUpdate()
+  getActiveFile () {
+    const activePanel = this.props.activePanel
+    const location = this.props.locations[activePanel]
+    const activeFile = this.props.activeFile[activePanel]
+    const files = this.props.files[activePanel]
+    const file = files[activeFile]
+    const path = location + '/' + file.name
 
-    $('hr').addClass('my-0')
+    return { ...file, path }
+  }
 
-    $('.btn-link').hover(function handleMouseenter () {
-      $(this).addClass('btn-secondary').removeClass('btn-link')
-    }, function handleMouseleave () {
-      $(this).removeClass('btn-secondary').addClass('btn-link')
-    })
+  handleLevelDown () {
+    const file = this.getActiveFile()
 
-    $('body').on('keydown', this.handleKeyDown)
+    if (file.size !== '<DIR>') {
+      return this.handleView()
+    }
+
+    if (file.name === '..') {
+      return this.handleLevelUp()
+    }
+
+    const activePanel = this.props.activePanel
+    this.props.actions.setLocation(activePanel, file.path)
+    window.setTimeout(this.handleRefresh, 0)
+  }
+
+  handleLevelUp () {
+    const activePanel = this.props.activePanel
+    const location = this.props.locations[activePanel]
+    this.props.actions.setLocation(activePanel, location.replace(/\/[^/]+$/, ''))
+    window.setTimeout(this.handleRefresh, 0)
+  }
+
+  handleView () {
+    const path = this.getActiveFile().path
+    this.props.connection.view(path)
+  }
+
+  handleEdit () {
+    const path = this.getActiveFile().path
+    this.props.connection.editor(path)
+  }
+
+  async handleCopy () {
+    const file = this.getActiveFile()
+    const target = this.props.locations[this.props.activePanel === 0 ? 1 : 0]
+
+    const path = file.path
+    let targetPath = target + '/' + file.name
+
+    targetPath = window.prompt('Copy ' + path + ' to:', targetPath)
+
+    if (targetPath) {
+      await this.props.connection.cp(path, targetPath)
+      this.handleRefresh()
+    }
+  }
+
+  async handleMove () {
+    const file = this.getActiveFile()
+    const target = this.props.locations[this.props.activePanel === 0 ? 1 : 0]
+
+    const path = file.path
+    let targetPath = target + '/' + file.name
+
+    targetPath = window.prompt('Move ' + path + ' to:', targetPath)
+
+    if (targetPath) {
+      await this.props.connection.mv(path, targetPath)
+      this.handleRefresh()
+    }
+  }
+
+  async handleMkdir () {
+    const activePanel = this.props.activePanel
+    const location = this.props.locations[activePanel]
+    const name = window.prompt('Name of the new dir:').replace(/\//g, '_')
+    await this.props.connection.mkdir(location + '/' + name)
+    this.handleRefresh()
+  }
+
+  async handleDelete () {
+    const path = this.getActiveFile().path
+
+    if (window.confirm('Are you sure you want to remove ' + path + '?')) {
+      await this.props.connection.rm(path)
+      this.handleRefresh()
+    }
+  }
+
+  async handleRefresh () {
+    const conn = this.props.connection
+
+    const files0 = await conn.ls(this.props.locations[0])
+    const files1 = await conn.ls(this.props.locations[1])
+
+    this.props.actions.setFiles([ files0, files1 ])
   }
 
   render () {
     return this.props.connection.ready ? (
       <div className='container-fluid px-0'>
         <MenuBar /><hr />
-        <Toolbar /><hr />
+        <Toolbar
+          onRefresh={this.handleRefresh}
+        /><hr />
         <Drives /><hr />
         <Panes
           activeFile={this.props.activeFile}
           activePanel={this.props.activePanel}
           files={this.props.files}
+          locations={this.props.locations}
+          onLevelUp={this.handleLevelUp}
         />
-        <Prompt />
-        <Actions />
+        <Prompt
+          location={this.props.locations[this.props.activePanel]}
+        />
+        <Actions
+          onView={this.handleView}
+          onEdit={this.handleEdit}
+          onCopy={this.handleCopy}
+          onMove={this.handleMove}
+          onMkdir={this.handleMkdir}
+          onDelete={this.handleDelete}
+        />
       </div>
     ) : (
-      <div className="alert">Loading...</div>
+      <div className='alert'>Loading...</div>
     )
   }
 }
@@ -93,7 +254,8 @@ function mapStateToProps (state, props) {
     activePanel: state.activePanel,
     activeFile: state.activeFile,
     connection: state.connection,
-    files: state.files
+    files: state.files,
+    locations: state.locations
   }
 }
 
@@ -101,7 +263,9 @@ function mapDispatchToProps (dispatch) {
   return {
     actions: {
       ...bindActionCreators(activePanelActions, dispatch),
-      ...bindActionCreators(actions, dispatch)
+      ...bindActionCreators(actions, dispatch),
+      ...bindActionCreators(filesActions, dispatch),
+      ...bindActionCreators(locationsActions, dispatch)
     }
   }
 }
