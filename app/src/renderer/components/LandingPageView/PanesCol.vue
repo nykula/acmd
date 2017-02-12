@@ -1,13 +1,13 @@
 <template>
   <div class="col">
     <div class="medium">
-      <div class="row">
-        <div class="col-10">
+      <div class="row no-gutters">
+        <div class="col-10 text-truncate">
           <button class="btn btn-sm btn-secondary"><i class="fa fa-hdd-o"></i> e <i class="fa fa-caret-down"></i></button>
           [files] 65,623,892 k of 628,600,828 k free
         </div>
 
-        <div class="col">
+        <div class="col text-nowrap text-right">
           <i class="pipe">|</i>
           <button class="btn btn-sm btn-link">\</button>
           <button class="btn btn-sm btn-link">..</button>
@@ -28,11 +28,11 @@
 
     <div class="card border-top-0 rounded-0">
       <div class="location">
-        <div class="row">
-          <div class="col-10 active">
+        <div class="row no-gutters">
+          <div class="col-10 active text-truncate">
             <i class="fa fa-caret-down"></i> c:\Users\D\Music\*.*
           </div>
-          <div class="col">
+          <div class="col text-nowrap text-right">
             <button class="btn btn-sm btn-link"><i class="fa fa-asterisk"></i></button>
             <button class="btn btn-sm btn-link"><i class="fa fa-caret-down"></i></button>
           </div>
@@ -76,3 +76,37 @@
     </div>
   </div>
 </template>
+
+<style>
+/* Unbreak flex with truncate */
+.panes .row,
+.panes .col {
+  min-width: 0;
+}
+
+.directory {
+  table-layout: fixed;
+}
+
+.directory th:nth-of-type(2) {
+  width: 9%;
+}
+
+.directory th:nth-of-type(3) {
+  width: 14%;
+}
+
+.directory th:nth-of-type(4) {
+  width: 26%;
+}
+
+.directory th:nth-of-type(5) {
+  width: 9%;
+}
+
+.directory tbody tr:not(:last-child) td {
+  height: 1.5rem;
+  overflow: hidden;
+  white-space: pre;
+}
+</style>

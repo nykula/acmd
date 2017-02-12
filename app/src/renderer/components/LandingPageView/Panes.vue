@@ -1,6 +1,6 @@
 <template>
   <section class="panes">
-    <div class="row">
+    <div class="row no-gutters">
       <panes-col></panes-col>
       <panes-col></panes-col>
     </div>
@@ -24,7 +24,7 @@ export default {
     $('.directory tbody td').addClass('border-top-0');
 
     $('.directory tbody').each(function enhanceTbody() {
-      const rows = 10 - $(this).children().length;
+      const rows = 12 - $(this).children().length;
 
       if (rows < 1) {
         return;

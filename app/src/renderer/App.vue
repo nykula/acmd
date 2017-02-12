@@ -15,8 +15,6 @@
 </script>
 
 <style>
-  @import url(https://fonts.googleapis.com/css?family=Lato:300);
-
   html,
   body { height: 100%; }
 
@@ -28,5 +26,19 @@
         rgba(229, 229, 229, .85) 100%
       );
     background-position: center;
+  }
+
+  /* Consistent compactness */
+
+  html {
+    font-size: 0.875rem;
+  }
+
+  .btn-sm,
+  .btn-group-sm .btn {
+    font-size: 1rem;
+    overflow: hidden;
+    padding-bottom: 0.1875rem;
+    padding-top: 0.1875rem;
   }
 </style>

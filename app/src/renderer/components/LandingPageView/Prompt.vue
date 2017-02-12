@@ -1,7 +1,7 @@
 <template>
   <section class="prompt">
     <div class="row no-gutters">
-      <div class="col-4 pr-1 text-right">
+      <div class="col-4 pr-1 text-right text-truncate">
         c:\Users\D\Music&gt;
       </div>
       <div class="col">

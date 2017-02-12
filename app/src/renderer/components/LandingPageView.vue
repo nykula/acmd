@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container-fluid px-0">
     <menu-bar></menu-bar><hr />
     <toolbar></toolbar><hr />
     <drives></drives><hr />

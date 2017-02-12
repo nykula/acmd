@@ -1,6 +1,6 @@
 <template>
   <section class="drives">
-    <div class="row">
+    <div class="row no-gutters">
       <drives-col></drives-col>
       <drives-col></drives-col>
     </div>
