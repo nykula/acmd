@@ -2,6 +2,7 @@
 
 /* global imports, ARGV */
 
+const Gio = imports.gi.Gio
 const Gtk = imports.gi.Gtk
 const Lang = imports.lang
 const Webkit = imports.gi.WebKit2
@@ -12,6 +13,7 @@ const Browser = new Lang.Class({
   Name: 'Browser',
 
   _init: function () {
+    this._dispatch = Lang.bind(this, this._dispatch)
     this._handleTitle = Lang.bind(this, this._handleTitle)
 
     this.application = new Gtk.Application()
@@ -19,7 +21,7 @@ const Browser = new Lang.Class({
     this.application.connect('activate', Lang.bind(this, this._onActivate))
     this.application.connect('startup', Lang.bind(this, this._onStartup))
 
-    this.gioAdapter = new GioAdapter(imports.gi.Gio)
+    this.gioAdapter = new GioAdapter(this._dispatch)
   },
 
   _onActivate: function () {
@@ -52,43 +54,60 @@ const Browser = new Lang.Class({
   },
 
   /**
-   * Set window title to content of <title /> on page load. Use the value of
-   * document.title set by front-end scripts as a fetch-like notation of a
-   * request. Please make a pull request if you know a better way to let
-   * WebView talk back.
+   * Set window title to content of <title /> on page load. Use title changes as
+   * a means to receive queries. Respond by dispatching Redux actions. Please
+   * make a pull request if you know a better way to let WebView talk back.
    */
   _handleTitle: function () {
     const titleStr = this._webView.get_title()
 
     // Content of <title /> on page load
-    if (titleStr[0] !== '[') {
+    if (titleStr[0] !== '{') {
       this._window.set_title(titleStr)
       return
     }
 
     // Value of document.title set by front-end scripts
-    const req = JSON.parse(titleStr) // Array
-    const url = req[0]
-    const payload = req[1] || {}
-    const method = payload.method || 'GET'
-    const uuid = payload.uuid // To know which response is to which request
+    const action = JSON.parse(titleStr)
 
-    if (url === '/drives' && method === 'GET') {
-      const drives = this.gioAdapter._getDrives()
+    switch (action.type) {
+      case 'DRIVES_REQUESTED':
+        this.gioAdapter._getDrives(action.requestId)
+        return
 
-      // Just log for now
-      const script = 'console.log(' + JSON.stringify({
-        uuid: uuid,
-        drives: drives
-      }) + ');'
+      case 'MOUNT_REQUESTED':
+        this.gioAdapter._mount(action.identifier, action.requestId)
+        return
 
-      this._webView.run_javascript(script, null, null, null)
+      case 'MOUNT_CANCEL_REQUESTED':
+        this.gioAdapter._cancelMount(action.requestId)
+        return
+
+      case 'UNMOUNT_REQUESTED':
+        this.gioAdapter._unmount(action.identifier, action.requestId)
+        return
+
+      case 'UNMOUNT_CANCEL_REQUESTED':
+        this.gioAdapter._cancelUnmount(action.requestId)
+        return
+
+      default:
+        return
     }
+  },
+
+  /**
+   * Dispatch a Redux action on the front-end.
+   */
+  _dispatch: function (action) {
+    // Just log for now
+    const script = 'console.log(' + JSON.stringify(action) + ');'
+    this._webView.run_javascript(script, null, null, null)
   }
 })
 
 /**
- * Let the front-end know about drives.
+ * Let the front-end use drives.
  */
 const GioAdapter = new Lang.Class({
   Name: 'GioAdapter',
@@ -96,26 +115,42 @@ const GioAdapter = new Lang.Class({
   /**
    * Bind methods to the instance and store a volume monitor reference.
    */
-  _init: function (Gio) {
+  _init: function (dispatch) {
     this._getDrives = Lang.bind(this, this._getDrives)
     this._serializeDrive = Lang.bind(this, this._serializeDrive)
+
+    this._mount = Lang.bind(this, this._mount)
+    this._cancelMount = Lang.bind(this, this._cancelMount)
     this._serializeVolume = Lang.bind(this, this._serializeVolume)
+
+    this._unmount = Lang.bind(this, this._unmount)
+    this._cancelUnmount = Lang.bind(this, this._cancelUnmount)
     this._serializeMount = Lang.bind(this, this._serializeMount)
 
     this.gVolMon = Gio.VolumeMonitor.get()
-  },
+    this.mountCancellables = new GioCancellableAdapter()
+    this.unmountCancellables = new GioCancellableAdapter()
 
-  /**
-   * GET /drives would be the endpoint.
-   */
-  _getDrives: function () {
-    const gDrives = this.gVolMon.get_connected_drives()
-    return gDrives.map(this._serializeDrive)
+    this.dispatch = dispatch
   },
 
   /**
    * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Drive.html
    */
+  _getDrives: function (requestId) {
+    const gDrives = this.gVolMon.get_connected_drives()
+    const drives = gDrives.map(this._serializeDrive)
+
+    this.dispatch({
+      type: 'DRIVES_REQUESTED',
+      requestId: requestId,
+      ready: true,
+      result: {
+        drives: drives,
+      }
+    })
+  },
+
   _serializeDrive: function (gDrive) {
     const drive = {
       hasMedia: gDrive.has_media(),
@@ -129,6 +164,39 @@ const GioAdapter = new Lang.Class({
   /**
    * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Volume.html
    */
+  _mount: function (identifier, requestId) {
+    const gVolume = this._find(_gVolume => {
+      return _gVolume.get_identifier(identifier.type) === identifier.value
+    }, this.gVolMon.get_volumes());
+
+    const mountOperation = new Gtk.MountOperation()
+    const cancellable = this.mountCancellables._create(requestId)
+
+    gVolume.mount(Gio.MountMountFlags.NONE, mountOperation, cancellable, () => {
+      this.dispatch({
+        type: 'MOUNT_REQUESTED',
+        requestId: requestId,
+        ready: true
+      })
+    })
+
+    this.dispatch({
+      type: 'MOUNT_REQUESTED',
+      requestId: requestId,
+      cancellable: true
+    })
+  },
+
+  _cancelMount: function (requestId) {
+    this.mountCancellables._cancel(requestId, () => {
+      this.dispatch({
+        type: 'MOUNT_CANCEL_REQUESTED',
+        requestId: requestId,
+        ready: true,
+      })
+    })
+  },
+
   _serializeVolume: function (gVolume) {
     const gMount = gVolume.get_mount()
 
@@ -137,16 +205,44 @@ const GioAdapter = new Lang.Class({
       identifiers: this._serializeIdentifiers(gVolume)
     }
 
-    // const mountOperation = new Gtk.MountOperation()
-    // const cancellable = new Gio.Cancellable()
-    // gVolume.mount(Gio.MountMountFlags.NONE, mountOperation, cancellable, null)
-
     return volume
   },
 
   /**
    * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Mount.html
    */
+  _unmount: function (identifier, requestId) {
+    const gMount = this._find(_gMount => {
+      const gVolume = _gMount.get_volume()
+      return gVolume && gVolume.get_identifier(identifier.type) === identifier.value
+    }, this.gVolMon.get_mounts());
+
+    const cancellable = this.unmountCancellables._create(requestId)
+    gMount.unmount(Gio.MountUnmountFlags.NONE, cancellable, () => {
+      this.dispatch({
+        type: 'UNMOUNT_REQUESTED',
+        requestId: requestId,
+        ready: true
+      })
+    })
+
+    this.dispatch({
+      type: 'UNMOUNT_REQUESTED',
+      requestId: requestId,
+      cancellable: true
+    })
+  },
+
+  _cancelUnmount: function (requestId) {
+    this.unmountCancellables._cancel(requestId, () => {
+      this.dispatch({
+        type: 'UNMOUNT_CANCEL_REQUESTED',
+        requestId: requestId,
+        ready: true,
+      })
+    })
+  },
+
   _serializeMount: function (gMount) {
     const root = gMount.get_root()
 
@@ -168,8 +264,53 @@ const GioAdapter = new Lang.Class({
       identifiers[type] = gX.get_identifier(type)
       return identifiers
     }, {})
+  },
+
+  _find: function (predicate, xs) {
+    for (let i = 0; i < xs.length; i++) {
+      if (predicate(xs[i])) {
+        return xs[i]
+      }
+    }
+
+    return null
   }
 })
 
-let browser = new Browser(imports.gi.Gio)
+/**
+ * Let the user make a request and then another one to cancel it.
+ */
+const GioCancellableAdapter = new Lang.Class({
+  Name: 'GioCancellableAdapter',
+
+  _init: function () {
+    this._cancel = Lang.bind(this, this._cancel)
+    this._create = Lang.bind(this, this._create)
+
+    this.cancellables = {
+      requestIds: [],
+      entities: {},
+    }
+  },
+
+  _create: function (requestId) {
+    const cancellable = new Gio.Cancellable()
+
+    this.cancellables.entities[requestId] = cancellable
+    this.cancellables.requestIds.push(requestId)
+
+    return cancellable
+  },
+
+  _cancel: function (requestId, callback) {
+    const cancellable = this.cancellables.entities[requestId]
+    cancellable.connect(callback)
+    cancellable.cancel()
+
+    this.cancellables.requestIds = this.cancellables.requestIds.filter(x => x !== requestId)
+    delete this.cancellables.entities[requestId]
+  }
+})
+
+let browser = new Browser()
 browser.application.run(ARGV)
