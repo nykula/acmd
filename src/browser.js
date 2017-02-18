@@ -9,7 +9,7 @@ const Webkit = imports.gi.WebKit2
 
 const URI = ARGV[0]
 
-const Browser = new Lang.Class({
+const Browser = (this || exports).Browser = new Lang.Class({
   Name: 'Browser',
 
   _init: function () {
@@ -146,7 +146,7 @@ const GioAdapter = new Lang.Class({
       requestId: requestId,
       ready: true,
       result: {
-        drives: drives,
+        drives: drives
       }
     })
   },
@@ -167,7 +167,7 @@ const GioAdapter = new Lang.Class({
   _mount: function (identifier, requestId) {
     const gVolume = this._find(_gVolume => {
       return _gVolume.get_identifier(identifier.type) === identifier.value
-    }, this.gVolMon.get_volumes());
+    }, this.gVolMon.get_volumes())
 
     const mountOperation = new Gtk.MountOperation()
     const cancellable = this.mountCancellables._create(requestId)
@@ -192,7 +192,7 @@ const GioAdapter = new Lang.Class({
       this.dispatch({
         type: 'MOUNT_CANCEL_REQUESTED',
         requestId: requestId,
-        ready: true,
+        ready: true
       })
     })
   },
@@ -215,7 +215,7 @@ const GioAdapter = new Lang.Class({
     const gMount = this._find(_gMount => {
       const gVolume = _gMount.get_volume()
       return gVolume && gVolume.get_identifier(identifier.type) === identifier.value
-    }, this.gVolMon.get_mounts());
+    }, this.gVolMon.get_mounts())
 
     const cancellable = this.unmountCancellables._create(requestId)
     gMount.unmount(Gio.MountUnmountFlags.NONE, cancellable, () => {
@@ -238,7 +238,7 @@ const GioAdapter = new Lang.Class({
       this.dispatch({
         type: 'UNMOUNT_CANCEL_REQUESTED',
         requestId: requestId,
-        ready: true,
+        ready: true
       })
     })
   },
@@ -289,7 +289,7 @@ const GioCancellableAdapter = new Lang.Class({
 
     this.cancellables = {
       requestIds: [],
-      entities: {},
+      entities: {}
     }
   },
 
