@@ -2,6 +2,7 @@
 
 /* global imports, ARGV */
 
+const GLib = imports.gi.GLib
 const Gio = imports.gi.Gio
 const Gtk = imports.gi.Gtk
 const Lang = imports.lang
@@ -26,6 +27,7 @@ const Browser = (this || exports).Browser = new Lang.Class({
 
   _onActivate: function () {
     this._window.present()
+    this._webView.get_inspector().show()
   },
 
   _onStartup: function () {
@@ -91,6 +93,14 @@ const Browser = (this || exports).Browser = new Lang.Class({
         this.gioAdapter._cancelUnmount(action.requestId)
         return
 
+      case 'LS':
+        this.gioAdapter.ls(action)
+        return
+
+      case 'LS_CANCEL':
+        this.gioAdapter.cancelLs(action)
+        return
+
       default:
         return
     }
@@ -126,6 +136,10 @@ const GioAdapter = new Lang.Class({
     this._unmount = Lang.bind(this, this._unmount)
     this._cancelUnmount = Lang.bind(this, this._cancelUnmount)
     this._serializeMount = Lang.bind(this, this._serializeMount)
+
+    this.ls = this.ls.bind(this)
+    this.cancelLs = this.cancelLs.bind(this)
+    this.lsCancellables = new GioCancellableAdapter()
 
     this.gVolMon = Gio.VolumeMonitor.get()
     this.mountCancellables = new GioCancellableAdapter()
@@ -253,6 +267,103 @@ const GioAdapter = new Lang.Class({
     }
 
     return mount
+  },
+
+  /**
+   * For every file in a given directory, lists its display name, name,
+   * modification time and size. Also lists standard, access and ownership
+   * attributes as strings.
+   */
+  ls: function (action) {
+    const path = action.path
+    const requestId = action.requestId
+
+    const dir = Gio.file_new_for_path(path)
+    const cancellable = this.lsCancellables._create(requestId)
+
+    const handleError = (err) => {
+      this.dispatch({
+        type: 'LS',
+        requestId: requestId,
+        ready: true,
+        error: { message: err.message }
+      })
+    }
+
+    const handleChildren = (enumerator) => {
+      enumerator.next_files_async(
+        GLib.MAXINT32,
+        GLib.PRIORITY_DEFAULT,
+        cancellable,
+        (_, result) => {
+          try {
+            const list = enumerator.next_files_finish(result)
+            handleInfos(list)
+          } catch (err) {
+            handleError(err)
+          }
+        }
+      )
+    }
+
+    const handleInfos = (list) => {
+      const files = list.map(gFileInfo => {
+        const attributes = []
+          .concat(gFileInfo.list_attributes('access'))
+          .concat(gFileInfo.list_attributes('owner'))
+          .reduce((prev, key) => {
+            prev[key] = gFileInfo.get_attribute_as_string(key)
+            return prev
+          }, {})
+
+        const file = {
+          displayName: gFileInfo.get_display_name(),
+          name: gFileInfo.get_name(),
+          modificationTime: gFileInfo.get_modification_time().tv_sec,
+          size: gFileInfo.get_size(),
+          attributes: attributes
+        }
+
+        return file
+      })
+
+      this.dispatch({
+        type: 'LS',
+        requestId: requestId,
+        ready: true,
+        result: { files: files }
+      })
+    }
+
+    dir.enumerate_children_async(
+      'standard::*,access::*,owner::*',
+      Gio.FileQueryInfoFlags.NONE,
+      GLib.PRIORITY_DEFAULT,
+      cancellable,
+      (_, result) => {
+        try {
+          const enumerator = dir.enumerate_children_finish(result)
+          handleChildren(enumerator)
+        } catch (err) {
+          handleError(err)
+        }
+      }
+    )
+  },
+
+  /**
+   * Cancels a list operation in progress.
+   */
+  cancelLs: function (action) {
+    const requestId = action.requestId
+
+    this.lsCancellables._cancel(requestId, () => {
+      this.dispatch({
+        type: 'LS_CANCEL',
+        requestId: requestId,
+        ready: true
+      })
+    })
   },
 
   /**
