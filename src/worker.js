@@ -9,7 +9,7 @@ const Lang = imports.lang
  * Tasks intended to run in a separate process because they are heavy on IO or
  * GObject Introspection doesn't provide respective asynchronous methods.
  */
-const Worker = (this || exports).Worker = new Lang.Class({
+;(this || exports).Worker = new Lang.Class({
   Name: 'Worker',
 
   _init: function () {
@@ -46,8 +46,8 @@ const Worker = (this || exports).Worker = new Lang.Class({
   /**
    * Copies sources to a destination directory. Recurses if a source is a
    * directory. Splices the first path component relative to the source if the
-   * source path ends with a slash, or if there is only one source path and
-   * the destination doesn't exist. Dispatches progress reports.
+   * source path ends with a slash, or if there is only one source path and the
+   * destination isn't an existing directory. Dispatches progress reports.
    */
   cp: function (action, dispatch) {
     const destPath = action.destPath
@@ -230,7 +230,14 @@ const Worker = (this || exports).Worker = new Lang.Class({
    */
   prepare: function (destPath, srcPaths) {
     const dest = Gio.file_new_for_path(destPath)
-    const willCreateDest = srcPaths.length === 1 && !dest.query_exists(null)
+
+    const isDestExistingDir = dest.query_exists(null) && dest.query_info(
+      'standard::*',
+      Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+      null
+    ).get_file_type() === Gio.FileType.DIRECTORY;
+
+    const willCreateDest = srcPaths.length === 1 && !isDestExistingDir
 
     const data = srcPaths.reduce((prev, srcPath) => {
       const src = Gio.file_new_for_path(srcPath)
@@ -352,7 +359,7 @@ const Worker = (this || exports).Worker = new Lang.Class({
   }
 })
 
-const worker = new Worker()
+const worker = new this.Worker()
 worker.run(
   JSON.parse(ARGV[0]),
   (action) => {

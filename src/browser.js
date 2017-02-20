@@ -10,7 +10,7 @@ const Webkit = imports.gi.WebKit2
 
 const URI = ARGV[0]
 
-const Browser = (this || exports).Browser = new Lang.Class({
+;(this || exports).Browser = new Lang.Class({
   Name: 'Browser',
 
   _init: function () {
@@ -63,6 +63,15 @@ const Browser = (this || exports).Browser = new Lang.Class({
   _handleTitle: function () {
     const titleStr = this._webView.get_title()
 
+    /**
+     * The handler is fired three times for some reason. First with the new
+     * title, then with an empty title, in the end with the new title again.
+     */
+    if (!titleStr || titleStr === this.prevTitleStr) {
+      return
+    }
+    this.prevTitleStr = titleStr
+
     // Content of <title /> on page load
     if (titleStr[0] !== '{') {
       this._window.set_title(titleStr)
@@ -99,6 +108,30 @@ const Browser = (this || exports).Browser = new Lang.Class({
 
       case 'LS_CANCEL':
         this.gioAdapter.cancelLs(action)
+        return
+
+      case 'CP':
+      case 'MV':
+      case 'RM':
+        this.gioAdapter.work.run(action, this._dispatch)
+        return
+
+      case 'CP_PAUSE':
+      case 'MV_PAUSE':
+      case 'RM_PAUSE':
+        this.gioAdapter.work.stop(action)
+        return
+
+      case 'CP_RESUME':
+      case 'MV_RESUME':
+      case 'RM_RESUME':
+        this.gioAdapter.work.continue(action)
+        return
+
+      case 'CP_CANCEL':
+      case 'MV_CANCEL':
+      case 'RM_CANCEL':
+        this.gioAdapter.work.interrupt(action)
         return
 
       default:
@@ -144,6 +177,7 @@ const GioAdapter = new Lang.Class({
     this.gVolMon = Gio.VolumeMonitor.get()
     this.mountCancellables = new GioCancellableAdapter()
     this.unmountCancellables = new GioCancellableAdapter()
+    this.work = new WorkerRunner()
 
     this.dispatch = dispatch
   },
@@ -423,5 +457,112 @@ const GioCancellableAdapter = new Lang.Class({
   }
 })
 
-let browser = new Browser()
+/**
+ * Spawns, stops, continues and interrupts Gio subprocesses.
+ */
+const WorkerRunner = new Lang.Class({
+  Name: 'WorkerRunner',
+
+  _init: function () {
+    this.continue = this.continue.bind(this)
+    this.interrupt = this.interrupt.bind(this)
+    this.onJson = this.onJson.bind(this)
+    this.run = this.run.bind(this)
+    this.sendSignal = this.sendSignal.bind(this)
+    this.stop = this.stop.bind(this)
+
+    this.requestIds = []
+    this.entities = {}
+  },
+
+  /**
+   * Spawns a worker process according to a given action and associates it
+   * with the request id supplied in the action. Dispatches its output as
+   * new actions.
+   */
+  run: function (action, dispatch) {
+    const requestId = action.requestId
+
+    const subprocess = new Gio.Subprocess({
+      argv: ['gjs', 'src/worker.js', JSON.stringify(action)],
+      flags: Gio.SubprocessFlags.STDOUT_PIPE
+    })
+
+    this.entities[requestId] = subprocess
+    this.requestIds.push(requestId)
+
+    subprocess.init(null)
+    this.onJson(action, dispatch)
+  },
+
+  /**
+   * Stops the process associated with the request id supplied in the action for
+   * later resumption.
+   */
+  stop: function (action) {
+    this.sendSignal('STOP', action)
+  },
+
+  /**
+   * Resumes the previously stopped process associated with the request id
+   * supplied in the action.
+   */
+  continue: function (action) {
+    this.sendSignal('CONT', action)
+  },
+
+  /**
+   * Interrupts the process associated with the request id supplied in the
+   * action. This is typically initiated by pressing Ctrl+C in a controlling
+   * terminal. By default, this causes the process to terminate.
+   */
+  interrupt: function (action) {
+    const requestId = action.requestId
+    this.sendSignal('INT', action)
+
+    this.requestIds = this.requestIds.filter(x => x !== requestId)
+    delete this.entities[requestId]
+  },
+
+  /**
+   * Calls back with parsed data every time the process associated with the
+   * request id supplied in the action writes a JSON line to stdout.
+   */
+  onJson: function (action, callback) {
+    const subprocess = this.entities[action.requestId]
+    const stream = new Gio.DataInputStream({ base_stream: subprocess.get_stdout_pipe() })
+
+    const read = () => {
+      stream.read_line_async(GLib.PRIORITY_LOW, null, (_, res) => {
+        const [out] = stream.read_line_finish(res)
+
+        if (out === null) {
+          return
+        }
+
+        const data = JSON.parse(out)
+        callback(data)
+        read()
+      })
+    }
+
+    read()
+  },
+
+  /**
+   * Sends a signal to the process associated with the request id supplied in the
+   * action. Numbers vary between systems and the "-l" parameter doesn't work
+   * everywhere, so send_signal() wasn't reliable.
+   */
+  sendSignal: function (name, action) {
+    const subprocess = this.entities[action.requestId]
+    const pid = subprocess.get_identifier()
+
+    new Gio.Subprocess({
+      argv: ['kill', '-' + name, pid]
+    }).init(null)
+  }
+})
+
+const browser = new this.Browser()
 browser.application.run(ARGV)
