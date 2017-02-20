@@ -143,8 +143,8 @@ const URI = ARGV[0]
    * Dispatch a Redux action on the front-end.
    */
   _dispatch: function (action) {
-    // Just log for now
-    const script = 'console.log(' + JSON.stringify(action) + ');'
+    const json = JSON.stringify(action)
+    const script = 'console.log(' + json + '); window.dispatch(' + json + ');'
     this._webView.run_javascript(script, null, null, null)
   }
 })
@@ -311,6 +311,7 @@ const GioAdapter = new Lang.Class({
   ls: function (action) {
     const path = action.path
     const requestId = action.requestId
+    const panel = action.panel
 
     const dir = Gio.file_new_for_path(path)
     const cancellable = this.lsCancellables._create(requestId)
@@ -318,6 +319,8 @@ const GioAdapter = new Lang.Class({
     const handleError = (err) => {
       this.dispatch({
         type: 'LS',
+        panel: panel,
+        path: path,
         requestId: requestId,
         ready: true,
         error: { message: err.message }
@@ -352,6 +355,7 @@ const GioAdapter = new Lang.Class({
 
         const file = {
           displayName: gFileInfo.get_display_name(),
+          fileType: Object.keys(Gio.FileType)[gFileInfo.get_file_type()],
           name: gFileInfo.get_name(),
           modificationTime: gFileInfo.get_modification_time().tv_sec,
           size: gFileInfo.get_size(),
@@ -363,6 +367,8 @@ const GioAdapter = new Lang.Class({
 
       this.dispatch({
         type: 'LS',
+        panel: panel,
+        path: path,
         requestId: requestId,
         ready: true,
         result: { files: files }

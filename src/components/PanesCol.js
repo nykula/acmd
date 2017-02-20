@@ -70,7 +70,7 @@ export default class PanesCol extends React.Component {
                 let filename = file.name
                 let ext = ''
 
-                const matches = /^(.*)\.(.*?)$/.exec(file.name)
+                const matches = /^(.+)\.(.*?)$/.exec(file.name)
 
                 if (name !== '..' && matches) {
                   filename = matches[1]
@@ -81,12 +81,26 @@ export default class PanesCol extends React.Component {
                   filename = '[..]'
                 }
 
+                const icon = file.fileType === 'DIRECTORY' ? 'folder' : 'file-text'
+
+                const mtime = ((time) => {
+                  var date = new Date(time)
+
+                  const month = ('00' + (date.getMonth() + 1)).slice(-2)
+                  const day = ('00' + (date.getDate())).slice(-2)
+                  const year = ('0000' + (date.getFullYear())).slice(-4)
+                  const hours = ('00' + (date.getHours())).slice(-2)
+                  const minutes = ('00' + (date.getMinutes())).slice(-2)
+
+                  return [month, day, year].join('/') + ' ' + [hours, minutes].join(':')
+                })(file.modificationTime)
+
                 return (
                   <tr className={i === this.props.activeFile && 'table-active'} key={i}>
-                    <td className='border-top-0 py-0'><i className={'fa fa-' + file.icon} /> {filename}</td>
+                    <td className='border-top-0 py-0'><i className={'fa fa-' + icon} /> {filename}</td>
                     <td className='border-top-0 py-0'>{ext}</td>
-                    <td className='border-top-0 py-0'>{file.size}</td>
-                    <td className='border-top-0 py-0'>{file.date}</td>
+                    <td className='border-top-0 py-0'>{file.fileType === 'DIRECTORY' ? '<DIR>' : file.size}</td>
+                    <td className='border-top-0 py-0'>{mtime}</td>
                     <td className='border-top-0 py-0'>{file.mode}</td>
                   </tr>
                 )

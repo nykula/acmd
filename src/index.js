@@ -6,7 +6,7 @@ import 'font-awesome/css/font-awesome.css'
 import App from './App'
 import Store from './store'
 
-const StoreInstance = Store()
+const StoreInstance = Store(undefined, window)
 
 function render (Component) {
   ReactDOM.render(

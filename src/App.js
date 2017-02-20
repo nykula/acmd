@@ -57,7 +57,7 @@ class App extends React.Component {
       })
     try {
       await this.props.connection.init()
-      await this.handleRefresh()
+      this.handleRefresh()
     } catch (err) {
       console.error(err)
     }
@@ -122,7 +122,7 @@ class App extends React.Component {
     const activeFile = this.props.activeFile[activePanel]
     const files = this.props.files[activePanel]
     const file = files[activeFile]
-    const path = location + '/' + file.name
+    const path = location.replace(/\/?$/, '') + '/' + file.name
 
     return { ...file, path }
   }
@@ -130,7 +130,7 @@ class App extends React.Component {
   handleLevelDown () {
     const file = this.getActiveFile()
 
-    if (file.size !== '<DIR>') {
+    if (file.fileType !== 'DIRECTORY') {
       return this.handleView()
     }
 
@@ -139,15 +139,14 @@ class App extends React.Component {
     }
 
     const activePanel = this.props.activePanel
-    this.props.actions.setLocation(activePanel, file.path)
-    window.setTimeout(this.handleRefresh, 0)
+    this.props.actions.ls(activePanel, file.path)
   }
 
   handleLevelUp () {
     const activePanel = this.props.activePanel
     const location = this.props.locations[activePanel]
-    this.props.actions.setLocation(activePanel, location.replace(/\/[^/]+$/, ''))
-    window.setTimeout(this.handleRefresh, 0)
+    const nextLocation = location.replace(/\/[^/]+$/, '')
+    this.props.actions.ls(activePanel, nextLocation)
   }
 
   handleView () {
@@ -160,7 +159,7 @@ class App extends React.Component {
     this.props.connection.editor(path)
   }
 
-  async handleCopy () {
+  handleCopy () {
     const file = this.getActiveFile()
     const target = this.props.locations[this.props.activePanel === 0 ? 1 : 0]
 
@@ -169,13 +168,14 @@ class App extends React.Component {
 
     targetPath = window.prompt('Copy ' + path + ' to:', targetPath)
 
-    if (targetPath) {
-      await this.props.connection.cp(path, targetPath)
-      this.handleRefresh()
+    if (!targetPath) {
+      return
     }
+
+    this.props.actions.cp(path, targetPath)
   }
 
-  async handleMove () {
+  handleMove () {
     const file = this.getActiveFile()
     const target = this.props.locations[this.props.activePanel === 0 ? 1 : 0]
 
@@ -184,10 +184,11 @@ class App extends React.Component {
 
     targetPath = window.prompt('Move ' + path + ' to:', targetPath)
 
-    if (targetPath) {
-      await this.props.connection.mv(path, targetPath)
-      this.handleRefresh()
+    if (!targetPath) {
+      return
     }
+
+    this.props.actions.mv(path, targetPath)
   }
 
   async handleMkdir () {
@@ -198,22 +199,17 @@ class App extends React.Component {
     this.handleRefresh()
   }
 
-  async handleDelete () {
+  handleDelete () {
     const path = this.getActiveFile().path
 
     if (window.confirm('Are you sure you want to remove ' + path + '?')) {
-      await this.props.connection.rm(path)
-      this.handleRefresh()
+      this.props.actions.rm(path)
     }
   }
 
-  async handleRefresh () {
-    const conn = this.props.connection
-
-    const files0 = await conn.ls(this.props.locations[0])
-    const files1 = await conn.ls(this.props.locations[1])
-
-    this.props.actions.setFiles([ files0, files1 ])
+  handleRefresh () {
+    this.props.actions.ls(0, this.props.locations[0])
+    this.props.actions.ls(1, this.props.locations[1])
   }
 
   render () {

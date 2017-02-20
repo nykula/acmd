@@ -235,7 +235,7 @@ const Lang = imports.lang
       'standard::*',
       Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
       null
-    ).get_file_type() === Gio.FileType.DIRECTORY;
+    ).get_file_type() === Gio.FileType.DIRECTORY
 
     const willCreateDest = srcPaths.length === 1 && !isDestExistingDir
 
