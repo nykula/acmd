@@ -14,14 +14,15 @@
     "react": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-redux": "^5.0.2",
-    "redux": "^3.6.0"
+    "redux": "^3.6.0",
+    "virtual-dom": "^2.1.1"
   },
   "scripts": {
     "start": "BROWSER=src/browser.js react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "lint": "standard 'src/**/*.js'",
-    "lint-fix": "standard --fix 'src/**/*.js'"
+    "lint": "standard 'src/**/*.js' 'src-gtk/**/*.js'",
+    "lint-fix": "standard --fix 'src/**/*.js' 'src-gtk/**/*.js'"
   }
 }
