@@ -3,15 +3,11 @@
 /* eslint-disable no-new-func */
 // Sets up the environment and runs the smoke tests.
 
-const __file = imports.gi.Gio.file_new_for_path(
-  Error().stack.replace(/.*?@(.+):\d+.*/, '$1')
-)
-
-new Function('imports', '__filename',
-  String(imports.gi.GLib.file_get_contents(
-    __file.get_parent().get_child('require.js').get_path()
-  )[1])
-)(imports, __file.get_path())
+const Gio = imports.gi.Gio
+const path = /^.*?@(.*):/.exec(new Error().stack)[1]
+const dirname = Gio.File.new_for_path(path).get_parent().get_parent().get_parent().get_path()
+imports.searchPath.push(dirname)
+imports['src-gtk'].utils['require'].require()
 
 const Gtk = imports.gi.Gtk
 require('./GtkDom').require()

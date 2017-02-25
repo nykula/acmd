@@ -1,5 +1,5 @@
 /* global imports, ARGV */
-// Runs the application after index.js has initialized the environment.
+// Runs the application.
 
 const Gtk = imports.gi.Gtk
 const { create, diff, patch } = require('virtual-dom')

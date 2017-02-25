@@ -3,44 +3,38 @@
 
 const Gio = imports.gi.Gio
 const GLib = imports.gi.GLib
+const self = this || exports
 
 /**
- * Assigns window.require globally and module.hot.accept in required modules.
- * Does just enough to use some CommonJS from npm not depending on node.js.
- * Make a pull request if you know how to fix error stack traces.
+ * Object where filenames of the modules that have ever been required are keys.
  */
-function Require () {
-  this.accept = this.accept.bind(this)
-  this.flatten = this.flatten.bind(this)
-  this.require = this.require.bind(this)
-  this.resolve = this.resolve.bind(this)
+self.filenames = {}
 
-  /**
-   * Modules, indexed by filename.
-   */
-  this.cache = {}
+/**
+ * Modules, indexed by filename.
+ */
+self.cache = {}
 
-  /**
-   * Arrays of required modules, indexed by parent filename.
-   */
-  this.dependencies = {}
+/**
+ * Arrays of required modules, indexed by parent filename.
+ */
+self.dependencies = {}
 
-  /**
-   * File system polling interval.
-   */
-  this.HMR_INTERVAL = 1000
+/**
+ * File system polling interval.
+ */
+self.HMR_INTERVAL = 1000
 
-  /**
-   * Delay to make sure file has finished being written.
-   */
-  this.HMR_TIMEOUT = 1000
-}
+/**
+ * Delay to make sure file has finished being written.
+ */
+self.HMR_TIMEOUT = 1000
 
 /**
  * Invalidates cache and calls a function when a module file is changed.
  */
-Require.prototype.accept = function (parentFilename, path, callback) {
-  const filename = this.resolve(parentFilename, path)
+self.accept = function (parentFilename, path, callback) {
+  const filename = self.resolve(parentFilename, path)
   let lastContents = {}
   let isVerifyingChange = false
 
@@ -51,8 +45,8 @@ Require.prototype.accept = function (parentFilename, path, callback) {
 
     isVerifyingChange = true
 
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, this.HMR_TIMEOUT, () => {
-      this.flatten(filename).forEach(_filename => {
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, self.HMR_TIMEOUT, () => {
+      self.flatten(filename).forEach(_filename => {
         if (!isVerifyingChange) {
           return
         }
@@ -62,8 +56,8 @@ Require.prototype.accept = function (parentFilename, path, callback) {
         if (lastContents[_filename] !== contents) {
           lastContents[_filename] = contents
 
-          this.flatten(filename).forEach(__filename => {
-            delete this.cache[__filename]
+          self.flatten(filename).forEach(__filename => {
+            delete self.cache[__filename]
           })
 
           isVerifyingChange = false
@@ -75,16 +69,16 @@ Require.prototype.accept = function (parentFilename, path, callback) {
     }, null)
   }
 
-  this.flatten(filename).forEach(_filename => {
+  self.flatten(filename).forEach(_filename => {
     lastContents[_filename] = String(GLib.file_get_contents(_filename)[1])
   })
 
-  GLib.timeout_add(GLib.PRIORITY_DEFAULT, this.HMR_INTERVAL, () => {
+  GLib.timeout_add(GLib.PRIORITY_DEFAULT, self.HMR_INTERVAL, () => {
     if (isVerifyingChange) {
       return true
     }
 
-    this.flatten(filename).forEach(_filename => {
+    self.flatten(filename).forEach(_filename => {
       if (isVerifyingChange) {
         return
       }
@@ -103,14 +97,14 @@ Require.prototype.accept = function (parentFilename, path, callback) {
 /**
  * Gets pathnames of a cached module and all its dependencies.
  */
-Require.prototype.flatten = function (filename) {
+self.flatten = function (filename) {
   let result = [filename]
   let nextResult = null
   let same = false
 
   while (!same) {
     nextResult = result
-      .reduce((prev, x) => prev.concat(this.dependencies[x]), result)
+      .reduce((prev, x) => prev.concat(self.dependencies[x]), result)
       .filter((x, i, a) => a.indexOf(x) === i)
 
     same = result.length === nextResult.length
@@ -121,10 +115,95 @@ Require.prototype.flatten = function (filename) {
 }
 
 /**
+ * Returns a cached module or creates an empty one. Normalizes the path.
+ */
+self.getOrCreate = function (path) {
+  const filename = Gio.File.new_for_path(path).get_path()
+
+  const module = self.cache[filename] || (self.cache[filename] = {
+    hot: { accept: self.accept.bind(null, filename) },
+    filename: filename,
+    exports: {}
+  })
+
+  self.filenames[filename] = true
+
+  if (!self.dependencies[filename]) {
+    self.dependencies[filename] = []
+  }
+
+  return module
+}
+
+/**
+ * Defines __filename, __dirname, exports, module and require. Does just
+ * enough to use some CommonJS from npm that isn't dependent on node.
+ */
+self.require = function () {
+  Object.defineProperty(window, '__filename', {
+    /**
+     * Returns the full path to the module that requested it.
+     */
+    get: () => {
+      const path = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      return Gio.File.new_for_path(path).get_path()
+    }
+  })
+
+  Object.defineProperty(window, '__dirname', {
+    /**
+     * Returns the full path to the parent dir of the module that requested it.
+     */
+    get: () => __filename.replace(/.[^/]+$/, '')
+  })
+
+  Object.defineProperty(window, 'exports', {
+    /**
+     * Returns the exports property of the module that requested it. Note: if
+     * you refer to exports after reassigning module.exports, this won't behave
+     * like CommonJS would.
+     */
+    get: () => {
+      const path = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      const module = self.getOrCreate(path)
+      return module.exports
+    }
+  })
+
+  Object.defineProperty(window, 'module', {
+    /**
+     * Returns the meta object of the module that requested it, so you can
+     * replace the default exported object if you really need to.
+     */
+    get: () => {
+      const path = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      const module = self.getOrCreate(path)
+      return module
+    }
+  })
+
+  Object.defineProperty(window, 'require', {
+    /**
+     * Returns the require function bound to filename of the module that
+     * requested it.
+     */
+    get: () => {
+      const parentPath = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      const parentFilename = Gio.File.new_for_path(parentPath).get_path()
+
+      const require = self.requireModule.bind(null, parentFilename)
+      require.cache = self.cache
+      require.resolve = self.resolve.bind(null, parentFilename)
+      return require
+    }
+  })
+}
+
+/**
  * Gets a normalized local pathname. Understands Dot and Dot Dot, or looks into
  * node_modules up to the root. Adds '.js' suffix if omitted.
  */
-Require.prototype.resolve = function (parentFilename, path) {
+self.resolve = function (parentFilename, path) {
   let gFile
   const dirnames = []
 
@@ -147,15 +226,15 @@ Require.prototype.resolve = function (parentFilename, path) {
     throw new Error('Path cannot be resolved: ' + path)
   }
 
-  const suffixes = [
+  const suffices = [
     '',
     '.js',
     '/index.js'
   ]
 
   for (let i = 0; i < dirnames.length; i++) {
-    for (let j = 0; j < suffixes.length; j++) {
-      const filename = dirnames[i] + '/' + path.replace(/\/$/, '') + suffixes[j]
+    for (let j = 0; j < suffices.length; j++) {
+      const filename = dirnames[i] + '/' + path.replace(/\/$/, '') + suffices[j]
       gFile = Gio.file_new_for_path(filename)
 
       if (!gFile.query_exists(null)) {
@@ -180,52 +259,78 @@ Require.prototype.resolve = function (parentFilename, path) {
 }
 
 /**
- * Loads a module and returns its exports. Caches the module.
+ * Loads a module by evaluating file contents in a closure. For example, this
+ * can be used to require lodash/toString, which Gjs can't import natively. Or
+ * to reload a module that has been deleted from cache.
  */
-Require.prototype.require = function (parentFilename, path) {
-  parentFilename = Gio.file_new_for_path(parentFilename).get_path()
-  const filename = this.resolve(parentFilename, path)
+self.requireClosure = function (parentFilename, path) {
+  const filename = self.resolve(parentFilename, path)
 
-  if (this.cache[filename]) {
-    return this.cache[filename].exports
-  }
-
-  if (!this.dependencies[filename]) {
-    this.dependencies[filename] = []
-  }
-
-  // Restart dependency tracking if the module has been deleted from cache.
-  if (this.dependencies[filename].length) {
-    this.dependencies[filename].splice(0)
+  if (self.cache[filename]) {
+    return self.cache[filename].exports
   }
 
   const contents = String(GLib.file_get_contents(filename)[1])
   const dirname = Gio.file_new_for_path(parentFilename).get_parent().get_path()
+  const module = self.getOrCreate(filename)
 
-  const module = { exports: {}, parent: this.cache[parentFilename] }
-  module.filename = filename
-  module.hot = { accept: this.accept.bind(this, filename) }
-
-  const require = this.require.bind(this, filename)
-  require.cache = this.cache
-  require.resolve = this.resolve.bind(this, filename)
+  const require = self.requireModule.bind(null, filename)
+  require.cache = self.cache
+  require.resolve = self.resolve.bind(null, filename)
 
   new Function('exports', 'require', 'module', '__filename', '__dirname',
     contents
   )(module.exports, require, module, filename, dirname)
 
-  this.cache[filename] = module
-
-  if (!this.dependencies[parentFilename]) {
-    this.dependencies[parentFilename] = [filename]
-  } else {
-    this.dependencies[parentFilename].push(filename)
+  if (!self.dependencies[parentFilename]) {
+    self.dependencies[parentFilename] = [filename]
+  } else if (self.dependencies[parentFilename].indexOf(filename) === -1) {
+    self.dependencies[parentFilename].push(filename)
   }
 
   return module.exports
 }
 
-const _require = new Require()
-window.require = _require.require.bind(_require, __filename)
-window.require.cache = _require.cache
-window.require.resolve = _require.resolve.bind(_require, __filename)
+/**
+ * Loads a module and returns its exports. Caches the module.
+ */
+self.requireModule = function (parentFilename, path) {
+  const filename = self.resolve(parentFilename, path)
+
+  if (self.cache[filename]) {
+    return self.cache[filename].exports
+  }
+
+  if (self.filenames[filename]) {
+    // The module has been deleted from cache.
+
+    if (self.dependencies[filename]) {
+      self.dependencies[filename].splice(0)
+    }
+
+    return self.requireClosure(parentFilename, path)
+  }
+
+  const parts = filename
+    .replace(imports.searchPath[imports.searchPath.length - 1] + '/', '')
+    .replace(/\.js$/, '')
+    .split('/')
+
+  if (parts[parts.length - 1] === 'toString') {
+    return self.requireClosure(parentFilename, path)
+  }
+
+  const module = self.getOrCreate(filename)
+  let current = imports
+  parts.forEach(x => {
+    current = current[x]
+  })
+
+  if (!self.dependencies[parentFilename]) {
+    self.dependencies[parentFilename] = [filename]
+  } else if (self.dependencies[parentFilename].indexOf(filename) === -1) {
+    self.dependencies[parentFilename].push(filename)
+  }
+
+  return module.exports
+}

@@ -1,5 +1,4 @@
 /* global imports */
-// Runs the application.
 
 const Gtk = imports.gi.Gtk
 const h = require('virtual-dom/h')

@@ -1,4 +1,5 @@
 /* global imports */
+/* eslint-disable camelcase */
 const camelCase = require('lodash/camelCase')
 const upperFirst = require('lodash/upperFirst')
 
