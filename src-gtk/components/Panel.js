@@ -188,7 +188,7 @@ exports.renderFile = (file) => {
   }
 
   const mtime = ((time) => {
-    const date = new Date(time)
+    const date = new Date(time * 1000)
 
     const month = ('00' + (date.getMonth() + 1)).slice(-2)
     const day = ('00' + (date.getDate())).slice(-2)

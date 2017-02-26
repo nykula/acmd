@@ -234,7 +234,7 @@ exports.default = new Lang.Class({
     }
 
     dir.enumerate_children_async(
-      'standard::*,access::*,owner::*',
+      'standard::*,access::*,owner::*,time::*',
       this.Gio.FileQueryInfoFlags.NONE,
       this.GLib.PRIORITY_DEFAULT,
       cancellable,
