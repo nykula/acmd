@@ -3,6 +3,7 @@
 
 const Gdk = imports.gi.Gdk
 const Gtk = imports.gi.Gtk
+const Store = require('./Store').default
 const { create, diff, patch } = require('virtual-dom')
 
 const pressedKeys = {}
@@ -13,16 +14,21 @@ require('./utils/GtkDom').app({
   },
 
   on_startup: ({ win }) => {
-    const handleDestroy = () => { win.destroy() }
-
     win.default_width = 800
     win.default_height = 600
     win.window_position = Gtk.WindowPosition.CENTER
 
+    const store = Store(undefined, win)
     let render = require('./App').render
-    let tree = render({ onDestroy: handleDestroy })
+    let tree = render(store)
     let rootNode = create(tree)
     win.add(rootNode)
+
+    store.subscribe(() => {
+      const newTree = render(store)
+      const patches = diff(tree, newTree)
+      rootNode = patch(rootNode, patches)
+    })
 
     win.connect('key-press-event', (_, ev) => {
       const keyval = ev.get_keyval()[1]
@@ -33,9 +39,12 @@ require('./utils/GtkDom').app({
       const keyval = ev.get_keyval()[1]
 
       if (pressedKeys[Gdk.KEY_Control_L] && pressedKeys[Gdk.KEY_Shift_L] && pressedKeys[Gdk.KEY_R]) {
+        Object.keys(require.cache).forEach(x => {
+          delete require.cache[x]
+        })
         rootNode.destroy()
         render = require('./App').render
-        tree = render({ onDestroy: handleDestroy })
+        tree = render(store)
         rootNode = create(tree)
         win.add(rootNode)
         rootNode.show()
@@ -47,7 +56,7 @@ require('./utils/GtkDom').app({
     if (module.hot) {
       module.hot.accept('./App', () => {
         render = require('./App').render
-        const newTree = render({ onDestroy: handleDestroy })
+        const newTree = render(store)
         const patches = diff(tree, newTree)
         rootNode = patch(rootNode, patches)
         tree = newTree

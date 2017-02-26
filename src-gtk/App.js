@@ -10,7 +10,7 @@ const Prompt = require('./components/Prompt')
 const Toolbar = require('./components/Toolbar')
 const VolumeList = require('./components/VolumeList')
 
-exports.render = () => (
+exports.render = ({ dispatch }) => (
   h('box', { orientation: Gtk.Orientation.VERTICAL }, [
     MenuBar.render(),
     Toolbar.render(),
@@ -35,7 +35,7 @@ exports.render = () => (
       }))
     ]),
     Prompt.render({ location: state.locations[state.activePanel] }),
-    ActionBar.render()
+    ActionBar.render({ dispatch: dispatch })
   ])
 )
 

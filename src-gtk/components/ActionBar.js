@@ -9,10 +9,10 @@ const actions = [
   { type: 'MV', text: 'Move', shortcut: 'F6' },
   { type: 'MKDIR', text: 'NewFolder', shortcut: 'F7' },
   { type: 'RM', text: 'Delete', shortcut: 'F8' },
-  { type: 'Exit', text: 'Exit', shortcut: 'Alt+F4' }
+  { type: 'EXIT', text: 'Exit', shortcut: 'Alt+F4' }
 ]
 
-exports.render = () => {
+exports.render = ({ dispatch }) => {
   return (
     h('box', { expand: false }, [
       actions.map(action => [
@@ -20,6 +20,7 @@ exports.render = () => {
           expand: true,
           key: action.type,
           label: action.shortcut + ' ' + action.text,
+          on_pressed: () => dispatch({ type: action.type }),
           relief: Gtk.ReliefStyle.NONE
         }),
         h('v-separator', { key: action.type + '+' })
