@@ -10,34 +10,37 @@ const Prompt = require('./components/Prompt')
 const Toolbar = require('./components/Toolbar')
 const VolumeList = require('./components/VolumeList')
 
-exports.render = ({ dispatch }) => (
-  h('box', { orientation: Gtk.Orientation.VERTICAL }, [
-    MenuBar.render(),
-    Toolbar.render(),
-    h('h-separator'),
-    h('h-box', [
-      VolumeList.render({ panel: 0, volumes: state.volumes }),
-      VolumeList.render({ panel: 1, volumes: state.volumes })
-    ]),
-    h('h-separator'),
-    h('h-box', { spacing: 1 }, [
-      [0, 1].map(panelId => Panel.render({
-        activeFile: state.activeFile[panelId],
-        files: state.files[panelId],
-        id: panelId,
-        isActive: state.activePanel === panelId,
-        key: panelId,
-        location: state.locations[panelId],
-        onLevelUp: noop,
-        onVolumeChanged: noop,
-        tabs: state.tabs[panelId],
-        volumes: state.volumes
-      }))
-    ]),
-    Prompt.render({ location: state.locations[state.activePanel] }),
-    ActionBar.render({ dispatch: dispatch })
-  ])
-)
+exports.render = ({ dispatch, getState }) => {
+  const state = getState()
+  return (
+    h('box', { orientation: Gtk.Orientation.VERTICAL }, [
+      MenuBar.render(),
+      Toolbar.render(),
+      h('h-separator'),
+      h('h-box', [
+        VolumeList.render({ panel: 0, volumes: state.volumes }),
+        VolumeList.render({ panel: 1, volumes: state.volumes })
+      ]),
+      h('h-separator'),
+      h('h-box', { spacing: 1 }, [
+        [0, 1].map(panelId => Panel.render({
+          activeFile: state.files.active[panelId],
+          files: state.files.byPanel[panelId],
+          id: panelId,
+          isActive: state.panels.active === panelId,
+          key: panelId,
+          location: state.locations[panelId],
+          onLevelUp: noop,
+          onVolumeChanged: noop,
+          tabs: state.tabs[panelId],
+          volumes: state.volumes
+        }))
+      ]),
+      Prompt.render({ location: state.locations[state.panels.active] }),
+      ActionBar.render({ dispatch: dispatch })
+    ])
+  )
+}
 
 const sampleFiles = [
   {
@@ -67,39 +70,6 @@ const sampleTabs = {
       id: 34,
       icon: 'folder-music',
       text: 'Music'
-    }
-  }
-}
-
-const state = {
-  activeFile: {
-    0: 0,
-    1: 0
-  },
-  activePanel: 0,
-  files: {
-    0: sampleFiles,
-    1: sampleFiles
-  },
-  locations: {
-    0: '/',
-    1: '/'
-  },
-  tabs: {
-    0: sampleTabs,
-    1: sampleTabs
-  },
-  volumes: {
-    active: {
-      0: 'd',
-      1: 'd'
-    },
-    labels: ['c', 'd', 'e', 'net'],
-    entities: {
-      c: { icon_name: 'drive-harddisk', label: 'c' },
-      d: { icon_name: 'drive-harddisk', label: 'd' },
-      e: { icon_name: 'media-optical', label: 'e' },
-      net: { icon_name: 'network-workgroup', label: 'net' }
     }
   }
 }

@@ -1,3 +1,9 @@
 /* global smoke */
+
 const App = require('./App')
-smoke(App.render({ onDestroy: () => { } }))
+const Store = require('./store').default
+
+const win = { destroy: () => { } }
+const store = Store(undefined, win)
+
+smoke(App.render(store))
