@@ -25,22 +25,23 @@ exports.domify = function (document, node) {
   Object.defineProperty(node, 'childNodes', {
     get: function () {
       try {
-        return this.get_children()
+        this.get_children()
       } catch (err) {
-        // Is not a box
+        // Is not a container.
         return []
       }
+
+      return new Proxy({}, {
+        get: (target, name) => {
+          return this.get_children()[name]
+        }
+      })
     }
   })
 
   Object.defineProperty(node, 'children', {
     get: function () {
-      try {
-        return this.get_children()
-      } catch (err) {
-        // Is not a box
-        return []
-      }
+      return this.childNodes
     }
   })
 
@@ -49,15 +50,22 @@ exports.domify = function (document, node) {
   })
 
   node.insertBefore = function (newChild, existingChild) {
-    var children = this.get_children()
-
     if (existingChild) {
-      var repack = children.slice(children.indexOf(existingChild))
+      const children = this.get_children()
+      const position = children.indexOf(existingChild)
+
+      children.forEach(x => {
+        this.remove(x)
+      })
+
+      for (let i = 0; i < position; i++) {
+        this.add(children[i])
+      }
+
       this.add(newChild)
 
-      for (var i = 0; i < repack.length; i++) {
-        this.remove(repack[i])
-        this.pack_end(repack[i], false, false, 0)
+      for (let i = position; i < children.length; i++) {
+        this.add(children[i])
       }
     } else {
       this.add(newChild)
@@ -67,6 +75,44 @@ exports.domify = function (document, node) {
   node.replaceChild = function (newChild, oldChild) {
     this.insertBefore(newChild, oldChild)
     this.remove(oldChild)
+  }
+
+  /**
+   * Returns a shallow debug representation of the node.
+   */
+  node.toString = function () {
+    let children
+
+    const getValue = (node) => {
+      let value
+
+      const keys = ['icon_name', 'label', 'tooltip_text']
+      keys.forEach(key => {
+        if (value === undefined && node[key]) {
+          value = node[key]
+        }
+      })
+
+      return value
+    }
+
+    const value = getValue(this)
+
+    try {
+      const _children = this.get_children().map(getValue).filter(x => x !== value)
+      if (_children.length) {
+        children = _children
+      }
+    } catch (err) {
+      // Is not a container.
+    }
+
+    const result = [
+      value !== undefined ? value : imports.gi.GObject.type_name(node),
+      children
+    ].filter(x => x !== undefined)
+
+    return JSON.stringify(result)
   }
 
   node.ownerDocument = document
