@@ -2,7 +2,9 @@
 const GLib = imports.gi.GLib
 const Gtk = imports.gi.Gtk
 const Pango = imports.gi.Pango
+const filesActions = require('../actions/files')
 const h = require('virtual-dom/h')
+const Handler = require('../utils/Handler').default
 const Hook = fun => Object.create({ hook: fun })
 const hostSelect = require('../hooks/hostSelect').default
 const hostTreeView = require('../hooks/hostTreeView').default
@@ -90,31 +92,27 @@ exports.renderLocation = ({ isActive, key, location }) => {
 }
 
 exports.syncSelection = isActive => Hook(node => {
-  node.selectionAttempt = 0
-
-  GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+  GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
     const children = node.get_children()
-    const isNotMounted = !node.parent || children.length === 0
-
-    if (isNotMounted && node.selectionAttempt++ > 10) {
-      return false
-    }
-
-    if (isNotMounted) {
-      return true
-    }
 
     if (isActive) {
       node.select_row(children[0])
     } else {
       node.unselect_row(children[0])
     }
-
-    return true
   })
 })
 
-exports.renderDirectory = ({ key, files, selected, isActive }) => {
+exports.renderDirectory = (props) => {
+  const {
+    activeFile,
+    dispatch,
+    key,
+    files,
+    isActive,
+    panelId
+  } = props
+
   return (
     h('scrolled-window', {
       key: key,
@@ -129,34 +127,32 @@ exports.renderDirectory = ({ key, files, selected, isActive }) => {
           { title: 'Date', name: 'mtime', attribute: 'text', min_width: 110 },
           { title: 'Attr', name: 'mode', attribute: 'text', min_width: 40 }
         ],
+        cursor: activeFile,
+        on_cursor: exports.handleCursor(dispatch)(panelId),
+        on_selected: exports.handleSelected(dispatch)(panelId),
         rows: files.map(exports.renderFile),
-        selected: selected
+        selected: [activeFile]
       }),
       hook1: exports.syncFocus(isActive)
     })
   )
 }
 
+exports.handleCursor = Handler(dispatch => panelId => cursor => {
+  dispatch(filesActions.cursor({ panelId: panelId, cursor: cursor }))
+})
+
+exports.handleSelected = Handler(dispatch => panelId => selected => {
+  dispatch(filesActions.selected({ panelId: panelId, selected: selected }))
+})
+
 exports.syncFocus = isActive => Hook(node => {
-  node.focusAttempt = 0
-
-  GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+  GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
     const children = node.get_children()
-    const isNotMounted = !node.parent || children.length === 0
-
-    if (isNotMounted && node.focusAttempt++ > 10) {
-      return false
-    }
-
-    if (isNotMounted) {
-      return true
-    }
 
     if (isActive) {
       children[0].grab_focus()
     }
-
-    return true
   })
 })
 
@@ -234,10 +230,12 @@ exports.render = (props) => {
       }),
       h('h-separator'),
       exports.renderDirectory({
+        activeFile: props.activeFile,
+        dispatch: props.dispatch,
         key: 'DIRECTORY',
         isActive: props.isActive,
         files: props.files,
-        selected: [props.activeFile]
+        panelId: id
       }),
       exports.renderStats({
         key: 'STATS'

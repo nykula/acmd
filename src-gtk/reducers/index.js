@@ -10,7 +10,7 @@ const rootReducer = combineReducers({
   locations: locations,
   panels: panels,
   tabs: tabs,
-  volumes: volumes,
+  volumes: volumes
 })
 
 exports.default = (_state, payload) => {

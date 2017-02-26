@@ -3381,6 +3381,10 @@ makeerror@1.0.x:
   dependencies:
     tmpl "1.0.x"
 
+map-or-similar@^1.5.0:
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/map-or-similar/-/map-or-similar-1.5.0.tgz#6de2653174adfb5d9edc33c69d3e92a1b76faf08"
+
 marked-terminal@^1.6.2:
   version "1.7.0"
   resolved "https://registry.yarnpkg.com/marked-terminal/-/marked-terminal-1.7.0.tgz#c8c460881c772c7604b64367007ee5f77f125904"
@@ -3402,6 +3406,12 @@ math-expression-evaluator@^1.2.14:
 media-typer@0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/media-typer/-/media-typer-0.3.0.tgz#8710d7af0aa626f8fffa1ce00168545263255748"
+
+memoizerific@^1.10.0:
+  version "1.10.0"
+  resolved "https://registry.yarnpkg.com/memoizerific/-/memoizerific-1.10.0.tgz#55b921baa9e1789aef10c1e2f7e92492c8a27da8"
+  dependencies:
+    map-or-similar "^1.5.0"
 
 memory-fs@^0.2.0:
   version "0.2.0"

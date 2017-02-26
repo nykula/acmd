@@ -26,6 +26,7 @@ exports.render = ({ dispatch, getState }) => {
         [0, 1].map(panelId => Panel.render({
           activeFile: state.files.active[panelId],
           files: state.files.byPanel[panelId],
+          dispatch: dispatch,
           id: panelId,
           isActive: state.panels.active === panelId,
           key: panelId,
@@ -40,36 +41,4 @@ exports.render = ({ dispatch, getState }) => {
       ActionBar.render({ dispatch: dispatch })
     ])
   )
-}
-
-const sampleFiles = [
-  {
-    name: '..',
-    fileType: 'DIRECTORY',
-    size: 0,
-    modificationTime: Date.now(),
-    mode: '0755'
-  },
-  {
-    name: 'clan in da front.txt',
-    size: 4110,
-    modificationTime: Date.now(),
-    mode: '0644'
-  }
-]
-
-const sampleTabs = {
-  active: 34,
-  ids: [12, 34],
-  entities: {
-    12: {
-      id: 12,
-      text: '1977 animals'
-    },
-    34: {
-      id: 34,
-      icon: 'folder-music',
-      text: 'Music'
-    }
-  }
 }

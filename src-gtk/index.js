@@ -4,6 +4,7 @@
 const Gdk = imports.gi.Gdk
 const Gtk = imports.gi.Gtk
 const Store = require('./Store').default
+const panelsActions = require('./actions/panels')
 const { create, diff, patch } = require('virtual-dom')
 
 const pressedKeys = {}
@@ -48,6 +49,8 @@ require('./utils/GtkDom').app({
         rootNode = create(tree)
         win.add(rootNode)
         rootNode.show()
+      } else if (pressedKeys[Gdk.KEY_Tab]) {
+        store.dispatch(panelsActions.toggledActive())
       }
 
       pressedKeys[keyval] = false
