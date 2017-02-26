@@ -1,3 +1,4 @@
+const actions = require('../actions/panels')
 const assign = require('lodash/assign')
 
 exports.initialState = {
@@ -8,7 +9,7 @@ exports.default = (_state, action) => {
   const state = _state || exports.initialState
 
   switch (action.type) {
-    case 'TOGGLED_ACTIVE':
+    case actions.TOGGLED_ACTIVE:
       const __state = assign({}, state)
       __state.active = state.active === 0 ? 1 : 0
       return __state

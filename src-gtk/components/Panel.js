@@ -2,6 +2,7 @@
 const GLib = imports.gi.GLib
 const Gtk = imports.gi.Gtk
 const Pango = imports.gi.Pango
+const actions = require('../actions')
 const filesActions = require('../actions/files')
 const h = require('virtual-dom/h')
 const Handler = require('../utils/Handler').default
@@ -9,7 +10,7 @@ const Hook = fun => Object.create({ hook: fun })
 const hostSelect = require('../hooks/hostSelect').default
 const hostTreeView = require('../hooks/hostTreeView').default
 
-exports.renderVolume = ({ key, panelId, volumes, onLevelUp, onVolumeChanged }) => {
+exports.renderVolume = ({ dispatch, key, panelId, volumes, onVolumeChanged }) => {
   return (
     h('box', { key: key, expand: false }, [
       h('box', {
@@ -34,7 +35,7 @@ exports.renderVolume = ({ key, panelId, volumes, onLevelUp, onVolumeChanged }) =
           h('label', { label: '\\' })
         ]),
         h('button', {
-          on_clicked: onLevelUp,
+          on_clicked: exports.handleLevelUp(dispatch)(panelId),
           relief: Gtk.ReliefStyle.NONE
         }, [
           h('label', { label: '..' })
@@ -43,6 +44,10 @@ exports.renderVolume = ({ key, panelId, volumes, onLevelUp, onVolumeChanged }) =
     ])
   )
 }
+
+exports.handleLevelUp = Handler(dispatch => panelId => () => {
+  dispatch(actions.levelUp({ panelId: panelId }))
+})
 
 exports.renderTabList = ({ key, tabs }) => {
   return (
@@ -128,6 +133,7 @@ exports.renderDirectory = (props) => {
           { title: 'Attr', name: 'mode', attribute: 'text', min_width: 40 }
         ],
         cursor: activeFile,
+        on_activated: exports.handleActivated(dispatch)(panelId),
         on_cursor: exports.handleCursor(dispatch)(panelId),
         on_selected: exports.handleSelected(dispatch)(panelId),
         rows: files.map(exports.renderFile),
@@ -137,6 +143,10 @@ exports.renderDirectory = (props) => {
     })
   )
 }
+
+exports.handleActivated = Handler(dispatch => panelId => index => {
+  dispatch(filesActions.activated({ panelId: panelId, index: index }))
+})
 
 exports.handleCursor = Handler(dispatch => panelId => cursor => {
   dispatch(filesActions.cursor({ panelId: panelId, cursor: cursor }))
@@ -195,7 +205,7 @@ exports.renderFile = (file) => {
     ext: ext,
     size: file.fileType === 'DIRECTORY' ? '<DIR>' : file.size,
     mtime: mtime,
-    mode: file.mode
+    mode: file.mode || ''
   }
 }
 
@@ -212,10 +222,10 @@ exports.render = (props) => {
   return (
     h('box', { orientation: Gtk.Orientation.VERTICAL }, [
       exports.renderVolume({
+        dispatch: props.dispatch,
         key: 'VOLUME',
         panelId: id,
         volumes: props.volumes,
-        onLevelUp: props.onLevelUp,
         onVolumeChanged: props.onVolumeChanged
       }),
       exports.renderTabList({

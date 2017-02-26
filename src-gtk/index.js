@@ -2,12 +2,13 @@
 // Runs the application.
 
 const Gdk = imports.gi.Gdk
+const Gio = imports.gi.Gio
+const GLib = imports.gi.GLib
 const Gtk = imports.gi.Gtk
+const actions = require('./actions')
+const Dialog = require('./utils/Dialog').default
 const Store = require('./Store').default
-const panelsActions = require('./actions/panels')
 const { create, diff, patch } = require('virtual-dom')
-
-const pressedKeys = {}
 
 require('./utils/GtkDom').app({
   on_activate: ({win}) => {
@@ -19,42 +20,38 @@ require('./utils/GtkDom').app({
     win.default_height = 600
     win.window_position = Gtk.WindowPosition.CENTER
 
-    const store = Store(undefined, win)
+    const store = Store(undefined, {
+      Dialog: Dialog({ Gtk: Gtk, win: win }),
+      Gdk: Gdk,
+      Gio: Gio,
+      GLib: GLib,
+      Gtk: Gtk,
+      win: win,
+      nextTick: (callback) => {
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
+          callback()
+        })
+      }
+    })
+
     let render = require('./App').render
     let tree = render(store)
     let rootNode = create(tree)
     win.add(rootNode)
 
+    let state
     store.subscribe(() => {
-      const newTree = render(store)
-      const patches = diff(tree, newTree)
-      rootNode = patch(rootNode, patches)
-    })
-
-    win.connect('key-press-event', (_, ev) => {
-      const keyval = ev.get_keyval()[1]
-      pressedKeys[keyval] = true
-    })
-
-    win.connect('key-release-event', (_, ev) => {
-      const keyval = ev.get_keyval()[1]
-
-      if (pressedKeys[Gdk.KEY_Control_L] && pressedKeys[Gdk.KEY_Shift_L] && pressedKeys[Gdk.KEY_R]) {
-        Object.keys(require.cache).forEach(x => {
-          delete require.cache[x]
-        })
-        rootNode.destroy()
-        render = require('./App').render
-        tree = render(store)
-        rootNode = create(tree)
-        win.add(rootNode)
-        rootNode.show()
-      } else if (pressedKeys[Gdk.KEY_Tab]) {
-        store.dispatch(panelsActions.toggledActive())
+      const newState = store.getState()
+      if (newState !== state) {
+        const newTree = render(store)
+        const patches = diff(tree, newTree)
+        rootNode = patch(rootNode, patches)
+        state = newState
+        tree = newTree
       }
-
-      pressedKeys[keyval] = false
     })
+
+    store.dispatch(actions.refresh())
 
     if (module.hot) {
       module.hot.accept('./App', () => {

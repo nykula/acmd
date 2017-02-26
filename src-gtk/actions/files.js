@@ -1,11 +1,20 @@
+exports.ACTIVATED = 'ACTIVATED'
+exports.activated = ({panelId, index}) => ({
+  type: exports.ACTIVATED,
+  panelId: panelId,
+  index: index
+})
+
+exports.CURSOR = 'CURSOR'
 exports.cursor = ({panelId, cursor}) => ({
-  type: 'CURSOR',
+  type: exports.CURSOR,
   panelId: panelId,
   cursor: cursor
 })
 
+exports.SELECTED = 'SELECTED'
 exports.selected = ({panelId, selected}) => ({
-  type: 'SELECTED',
+  type: exports.SELECTED,
   panelId: panelId,
   selected: selected
 })

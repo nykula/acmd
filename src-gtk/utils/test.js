@@ -1,5 +1,5 @@
 #!/usr/bin/gjs
-/* global imports */
+/* global imports, log */
 /* eslint-disable no-new-func */
 // Sets up the environment and runs the smoke tests.
 
@@ -27,6 +27,14 @@ window.smoke = function (tree) {
       win.destroy()
     }
   }).run([])
+}
+
+window.Buffer = require('buffer/').Buffer
+window.expect = require('expect')
+window.it = function (title, callback) {
+  log(title + ' STARTED')
+  callback()
+  log(title + ' SUCCESS')
 }
 
 Gtk.init(null)

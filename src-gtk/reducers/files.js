@@ -1,4 +1,6 @@
+const actions = require('../actions/files')
 const assign = require('lodash/assign')
+const indexActions = require('../actions')
 
 const sampleFiles = [
   {
@@ -31,17 +33,39 @@ exports.default = (_state, payload) => {
   const state = _state || initialState
 
   switch (payload.type) {
-    case 'CURSOR': {
-      let __state = assign({}, state)
-      __state.active[payload.panelId] = payload.cursor
-      return __state
+    case actions.CURSOR: {
+      return assign({}, state, {
+        active: (() => {
+          const active = assign({}, state.active)
+          active[payload.panelId] = payload.cursor
+          return active
+        })()
+      })
     }
 
-    case 'SELECTED': {
+    case actions.SELECTED: {
       if (payload.selected.length === 1) {
-        let __state = assign({}, state)
-        __state.active[payload.panelId] = payload.selected[0]
-        return __state
+        return assign({}, state, {
+          active: (() => {
+            const active = assign({}, state.active)
+            active[payload.panelId] = payload.selected[0]
+            return active
+          })()
+        })
+      } else {
+        return state
+      }
+    }
+
+    case indexActions.LS: {
+      if (payload.result) {
+        return assign({}, state, {
+          byPanel: (() => {
+            const byPanel = assign({}, state.byPanel)
+            byPanel[payload.panel] = payload.result.files
+            return byPanel
+          })()
+        })
       } else {
         return state
       }

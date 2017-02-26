@@ -15,7 +15,7 @@ exports.render = ({ dispatch, getState }) => {
   return (
     h('box', { orientation: Gtk.Orientation.VERTICAL }, [
       MenuBar.render(),
-      Toolbar.render(),
+      Toolbar.render({ dispatch: dispatch }),
       h('h-separator'),
       h('h-box', [
         VolumeList.render({ panel: 0, volumes: state.volumes }),
@@ -31,13 +31,15 @@ exports.render = ({ dispatch, getState }) => {
           isActive: state.panels.active === panelId,
           key: panelId,
           location: state.locations[panelId],
-          onLevelUp: noop,
           onVolumeChanged: noop,
           tabs: state.tabs[panelId],
           volumes: state.volumes
         }))
       ]),
-      Prompt.render({ location: state.locations[state.panels.active] }),
+      Prompt.render({
+        dispatch: dispatch,
+        location: state.locations[state.panels.active]
+      }),
       ActionBar.render({ dispatch: dispatch })
     ])
   )

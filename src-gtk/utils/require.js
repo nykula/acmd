@@ -226,11 +226,31 @@ self.resolve = function (parentFilename, path) {
     throw new Error('Path cannot be resolved: ' + path)
   }
 
-  const suffices = [
+  let suffices = [
     '',
     '.js',
     '/index.js'
   ]
+
+  if (path.indexOf('/') === -1) {
+    suffices = dirnames.reduce((prev, dirname) => {
+      gFile = Gio.file_new_for_path(dirname + '/' + path)
+      gFile = gFile.get_child('package.json')
+
+      if (!gFile.query_exists(null)) {
+        return prev
+      }
+
+      const contents = String(GLib.file_get_contents(gFile.get_path())[1])
+      const data = JSON.parse(contents)
+
+      if (!data.main) {
+        return prev
+      }
+
+      return prev.concat(suffices.map(x => '/' + data.main + x))
+    }, suffices)
+  }
 
   for (let i = 0; i < dirnames.length; i++) {
     for (let j = 0; j < suffices.length; j++) {

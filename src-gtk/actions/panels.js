@@ -1,3 +1,4 @@
+exports.TOGGLED_ACTIVE = 'TOGGLED_ACTIVE'
 exports.toggledActive = () => ({
-  type: 'TOGGLED_ACTIVE'
+  type: exports.TOGGLED_ACTIVE
 })

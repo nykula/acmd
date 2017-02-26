@@ -3,5 +3,5 @@ exports.default = win => store => next => action => {
     win.destroy()
   }
 
-  next(action)
+  return next(action)
 }

@@ -46,6 +46,11 @@ exports.default = props => Hook(hostNode => {
     const sel = node.get_selection()
     sel.mode = Gtk.SelectionMode.MULTIPLE
 
+    node.connect('row-activated', (_, row) => {
+      const index = row.get_indices()[0]
+      props.on_activated(index)
+    })
+
     node.connect('cursor-changed', () => {
       if (node.isUpdatingSelect) {
         return
@@ -73,7 +78,7 @@ exports.default = props => Hook(hostNode => {
         }, prev)
       }, [])
 
-      if (!isEqual(props.selected)) {
+      if (!isEqual(props.selected, selected)) {
         props.on_selected(selected)
       }
     })
