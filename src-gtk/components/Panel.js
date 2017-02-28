@@ -7,14 +7,14 @@ const filesActions = require('../actions/files')
 const h = require('virtual-dom/h')
 const Handler = require('../utils/Handler').default
 const Hook = fun => Object.create({ hook: fun })
-const hostSelect = require('../hooks/hostSelect').default
-const hostTreeView = require('../hooks/hostTreeView').default
+const Select = require('../widgets/Select').default
+const TreeView = require('../widgets/TreeView').default
 
 exports.renderVolume = ({ dispatch, key, panelId, volumes, onVolumeChanged }) => {
   return (
     h('box', { key: key, expand: false }, [
-      h('box', {
-        hook: hostSelect({
+      h('box', [
+        new Select({
           value: volumes.active[panelId],
           options: volumes.labels.map(x => volumes.entities[x]).map(volume => ({
             value: volume.label,
@@ -23,7 +23,7 @@ exports.renderVolume = ({ dispatch, key, panelId, volumes, onVolumeChanged }) =>
           })),
           on_changed: onVolumeChanged
         })
-      }),
+      ]),
       h('box', { border_width: 4, expand: true }, [
         h('label', {
           label: '[files] 65,623,892 k of 628,600,828 k free'
@@ -123,7 +123,9 @@ exports.renderDirectory = (props) => {
       key: key,
       expand: true,
       hscrollbar_policy: Gtk.PolicyType.NEVER,
-      hook: hostTreeView({
+      hook: exports.syncFocus(isActive)
+    }, [
+      new TreeView({
         cols: [
           { title: null, name: 'icon', attribute: 'icon-name' },
           { title: 'Name', name: 'filename', attribute: 'text', expand: true },
@@ -138,9 +140,8 @@ exports.renderDirectory = (props) => {
         on_selected: exports.handleSelected(dispatch)(panelId),
         rows: files.map(exports.renderFile),
         selected: [activeFile]
-      }),
-      hook1: exports.syncFocus(isActive)
-    })
+      })
+    ])
   )
 }
 

@@ -34,6 +34,9 @@ exports.default = (_state, payload) => {
 
   switch (payload.type) {
     case actions.CURSOR: {
+      if (state.active[payload.panelId] === payload.cursor) {
+        return state
+      }
       return assign({}, state, {
         active: (() => {
           const active = assign({}, state.active)
@@ -44,7 +47,10 @@ exports.default = (_state, payload) => {
     }
 
     case actions.SELECTED: {
-      if (payload.selected.length === 1) {
+      if (
+        payload.selected.length === 1 &&
+        state.active[payload.panelId] !== payload.selected[0]
+      ) {
         return assign({}, state, {
           active: (() => {
             const active = assign({}, state.active)
