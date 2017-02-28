@@ -1,7 +1,4 @@
-export const setLocation = (activePanel, location) => {
-  return {
-    type: 'setLocation',
-    activePanel,
-    location
-  }
-}
+exports.LS = 'LS'
+exports.ls = () => ({
+  type: exports.LS
+})

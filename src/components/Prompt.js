@@ -1,21 +1,25 @@
-import React from 'react'
+/* global imports */
+/* eslint-disable no-new-func */
+const Pango = imports.gi.Pango
+const h = require('virtual-dom/h')
+const Handler = require('../utils/Handler').default
 
-export default class Prompt extends React.Component {
-  render () {
-    return (
-      <section className='prompt'>
-        <div className='row no-gutters'>
-          <div className='col-4 pr-1 text-right text-truncate'>{this.props.location + '>'}</div>
-          <div className='col'>
-            <div className='input-group input-group-sm'>
-              <input className='form-control' />
-              <span className='input-group-btn'>
-                <button className='btn btn-link'><i className='fa fa-caret-down' /></button>
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-    )
+exports.handleActivate = Handler(dispatch => () => node => {
+  if (node.text) {
+    dispatch(new Function('return ' + node.text)())
   }
+})
+
+exports.render = ({ dispatch, location }) => {
+  return (
+    h('box', { expand: false }, [
+      h('box', { border_width: 4 }),
+      h('label', {
+        ellipsize: Pango.EllipsizeMode.MIDDLE,
+        label: location + '>'
+      }),
+      h('box', { border_width: 4 }),
+      h('entry', { expand: true, on_activate: exports.handleActivate(dispatch)() })
+    ])
+  )
 }

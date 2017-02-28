@@ -1,17 +1,22 @@
-/* eslint-env jest */
+/* global it, smoke */
 
-import React from 'react'
-import ReactDOM from 'react-dom'
-import { Provider } from 'react-redux'
-import App from './App'
-import Store from './store'
+const noop = require('lodash/noop')
+const App = require('./App')
+const Panel = require('./components/Panel')
+const Store = require('./store').default
+
+Panel.syncFocus = noop
+Panel.syncSelection = noop
 
 it('renders without crashing', () => {
-  const StoreInstance = Store()
-  ReactDOM.render(
-    <Provider store={StoreInstance}>
-      <App />
-    </Provider>,
-    document.createElement('div')
-  )
+  const win = { destroy: noop }
+  const store = Store(undefined, {
+    GLib: {},
+    Gio: {},
+    Gtk: {},
+    win: win,
+    nextTick: noop
+  })
+
+  smoke(App.render(store))
 })

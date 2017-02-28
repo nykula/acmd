@@ -7,7 +7,7 @@ const Gio = imports.gi.Gio
 const path = /^.*?@(.*):/.exec(new Error().stack)[1]
 const dirname = Gio.File.new_for_path(path).get_parent().get_parent().get_parent().get_path()
 imports.searchPath.push(dirname)
-imports['src-gtk'].utils['require'].require()
+imports.src.utils.require.require()
 
 const Gtk = imports.gi.Gtk
 require('./GtkDom').require()

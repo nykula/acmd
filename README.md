@@ -8,7 +8,7 @@
 # install dependencies
 yarn install
 
-# serve with hot reload at localhost:3000 and open gjs webview
+# open gjs with hot reload
 yarn start
 
 # lint all JS files in `src`
@@ -60,7 +60,3 @@ yarn run lint-fix
 - [ ] Open terminal in current directory
 
 - [ ] Run command in current directory
-
----
-
-This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md).

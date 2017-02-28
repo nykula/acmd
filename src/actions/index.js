@@ -1,46 +1,84 @@
-export const prevFile = () => {
-  return {
-    type: 'prevFile'
+exports.CP = 'CP'
+exports.cp = (srcPaths, destPath) => {
+  if (!srcPaths) {
+    return { type: exports.CP }
   }
-}
-
-export const nextFile = () => {
   return {
-    type: 'nextFile'
-  }
-}
-
-export const ls = (panel, path) => {
-  return {
-    type: 'LS',
+    type: exports.CP,
     requestId: Date.now(),
-    panel: panel,
+    srcPaths: srcPaths,
+    destPath: destPath
+  }
+}
+
+exports.EDITOR = 'EDITOR'
+exports.editor = () => ({
+  type: exports.EDITOR
+})
+
+exports.EXIT = 'EXIT'
+exports.exit = () => ({
+  type: exports.EXIT
+})
+
+exports.LEVEL_UP = 'LEVEL_UP'
+exports.levelUp = ({panelId}) => {
+  return {
+    type: exports.LEVEL_UP,
+    panelId: panelId
+  }
+}
+
+exports.LS = 'LS'
+exports.ls = (panelId, path) => {
+  return {
+    type: exports.LS,
+    requestId: Date.now(),
+    panel: panelId,
     path: path
   }
 }
 
-export const cp = (srcPath, destPath) => {
+exports.MKDIR = 'MKDIR'
+exports.mkdir = (path) => {
   return {
-    type: 'CP',
+    type: exports.MKDIR,
     requestId: Date.now(),
-    srcPaths: [ srcPath ],
+    path: path
+  }
+}
+
+exports.MV = 'MV'
+exports.mv = (srcPaths, destPath) => {
+  if (!srcPaths) {
+    return { type: exports.MV }
+  }
+  return {
+    type: exports.MV,
+    requestId: Date.now(),
+    srcPaths: srcPaths,
     destPath: destPath
   }
 }
 
-export const mv = (srcPath, destPath) => {
-  return {
-    type: 'MV',
-    requestId: Date.now(),
-    srcPaths: [ srcPath ],
-    destPath: destPath
-  }
-}
+exports.REFRESH = 'REFRESH'
+exports.refresh = () => ({
+  type: exports.REFRESH
+})
 
-export const rm = (path) => {
+exports.RM = 'RM'
+exports.rm = (paths) => {
+  if (!paths) {
+    return { type: exports.RM }
+  }
   return {
     type: 'RM',
     requestId: Date.now(),
-    paths: [ path ]
+    paths: paths
   }
 }
+
+exports.VIEW = 'VIEW'
+exports.view = () => ({
+  type: exports.VIEW
+})
