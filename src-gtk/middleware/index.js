@@ -131,7 +131,7 @@ exports.handleMkdir = action => (dispatch, getState, { Dialog }) => {
       name = name.replace(/\//g, '_')
 
       if (name) {
-        Dialog.alert('Creating dir: ' + location + '/' + name)
+        dispatch(actions.mkdir(location + '/' + name))
       }
     })
   } else if (isResponse(action)) {

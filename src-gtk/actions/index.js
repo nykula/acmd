@@ -40,6 +40,13 @@ exports.ls = (panelId, path) => {
 }
 
 exports.MKDIR = 'MKDIR'
+exports.mkdir = (path) => {
+  return {
+    type: exports.MKDIR,
+    requestId: Date.now(),
+    path: path
+  }
+}
 
 exports.MV = 'MV'
 exports.mv = (srcPaths, destPath) => {

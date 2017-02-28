@@ -57,6 +57,14 @@ exports.handleRequest = (gioAdapter, action) => {
       gioAdapter.cancelLs(action)
       break
 
+    case 'MKDIR':
+      gioAdapter.mkdir(action)
+      break
+
+    case 'MKDIR_CANCEL':
+      gioAdapter.cancelMkdir(action)
+      break
+
     case 'CP':
     case 'MV':
     case 'RM':

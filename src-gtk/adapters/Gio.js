@@ -32,6 +32,10 @@ exports.default = new Lang.Class({
     this.cancelLs = this.cancelLs.bind(this)
     this.lsCancellables = new GioCancellableAdapter()
 
+    this.mkdir = this.mkdir.bind(this)
+    this.cancelMkdir = this.cancelMkdir.bind(this)
+    this.mkdirCancellables = new GioCancellableAdapter()
+
     this.gVolMon = this.Gio.VolumeMonitor.get()
     this.mountCancellables = new GioCancellableAdapter()
     this.unmountCancellables = new GioCancellableAdapter()
@@ -258,6 +262,64 @@ exports.default = new Lang.Class({
     this.lsCancellables._cancel(requestId, () => {
       this.dispatch({
         type: 'LS_CANCEL',
+        requestId: requestId,
+        ready: true
+      })
+    })
+  },
+
+  /**
+   * Creates a directory.
+   */
+  mkdir: function (action) {
+    const path = action.path
+    const requestId = action.requestId
+
+    const dir = this.Gio.file_new_for_path(path)
+    const cancellable = this.mkdirCancellables._create(requestId)
+
+    const handleError = (err) => {
+      this.dispatch({
+        type: 'MKDIR',
+        path: path,
+        requestId: requestId,
+        ready: true,
+        error: { message: err.message }
+      })
+    }
+
+    const handleSuccess = () => {
+      this.dispatch({
+        type: 'MKDIR',
+        path: path,
+        requestId: requestId,
+        ready: true,
+        result: { ok: true }
+      })
+    }
+
+    dir.make_directory_async(
+      this.GLib.PRIORITY_DEFAULT,
+      cancellable,
+      (_, result) => {
+        try {
+          handleSuccess()
+        } catch (err) {
+          handleError(err)
+        }
+      }
+    )
+  },
+
+  /**
+   * Cancels a directory creation in progress.
+   */
+  cancelMkdir: function (action) {
+    const requestId = action.requestId
+
+    this.mkdirCancellables._cancel(requestId, () => {
+      this.dispatch({
+        type: 'MKDIR_CANCEL',
         requestId: requestId,
         ready: true
       })

@@ -29,7 +29,7 @@ yarn run lint-fix
 
 - [ ] Multiple tabs on each panel
 
-- [ ] Local back-end
+- [x] Local back-end
 
 - [ ] Gvfs back-end
 
