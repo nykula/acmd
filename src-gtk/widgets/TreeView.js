@@ -92,6 +92,13 @@ exports.default.prototype.init = function (prev) {
       tvCol.min_width = col.min_width
     }
 
+    if (this.props.on_clicked) {
+      tvCol.clickable = true
+      tvCol.connect('clicked', () => {
+        node.widget.props.on_clicked(col.name)
+      })
+    }
+
     node.insert_column(tvCol, i)
   })
 

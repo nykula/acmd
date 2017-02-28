@@ -3,6 +3,7 @@ const GLib = imports.gi.GLib
 const Gtk = imports.gi.Gtk
 const Pango = imports.gi.Pango
 const actions = require('../actions')
+const assign = require('lodash/assign')
 const filesActions = require('../actions/files')
 const h = require('virtual-dom/h')
 const Handler = require('../utils/Handler').default
@@ -115,7 +116,8 @@ exports.renderDirectory = (props) => {
     key,
     files,
     isActive,
-    panelId
+    panelId,
+    sortedBy
   } = props
 
   return (
@@ -127,15 +129,16 @@ exports.renderDirectory = (props) => {
     }, [
       new TreeView({
         cols: [
-          { title: null, name: 'icon', attribute: 'icon-name' },
-          { title: 'Name', name: 'filename', attribute: 'text', expand: true },
-          { title: 'Ext', name: 'ext', attribute: 'text', min_width: 40 },
-          { title: 'Size', name: 'size', attribute: 'text', min_width: 45 },
-          { title: 'Date', name: 'mtime', attribute: 'text', min_width: 110 },
-          { title: 'Attr', name: 'mode', attribute: 'text', min_width: 40 }
-        ],
+            { title: null, name: 'icon', attribute: 'icon-name' },
+            { title: 'Name', name: 'filename', attribute: 'text', expand: true },
+            { title: 'Ext', name: 'ext', attribute: 'text', min_width: 50 },
+            { title: 'Size', name: 'size', attribute: 'text', min_width: 55 },
+            { title: 'Date', name: 'mtime', attribute: 'text', min_width: 110 },
+            { title: 'Attr', name: 'mode', attribute: 'text', min_width: 40 }
+        ].map(exports.prefixSort(sortedBy)),
         cursor: activeFile,
         on_activated: exports.handleActivated(dispatch)(panelId),
+        on_clicked: exports.handleClicked(dispatch)(panelId),
         on_cursor: exports.handleCursor(dispatch)(panelId),
         on_selected: exports.handleSelected(dispatch)(panelId),
         rows: files.map(exports.renderFile),
@@ -149,6 +152,10 @@ exports.handleActivated = Handler(dispatch => panelId => index => {
   dispatch(filesActions.activated({ panelId: panelId, index: index }))
 })
 
+exports.handleClicked = Handler(dispatch => panelId => colName => {
+  dispatch(filesActions.sorted({ panelId: panelId, by: colName }))
+})
+
 exports.handleCursor = Handler(dispatch => panelId => cursor => {
   dispatch(filesActions.cursor({ panelId: panelId, cursor: cursor }))
 })
@@ -156,6 +163,16 @@ exports.handleCursor = Handler(dispatch => panelId => cursor => {
 exports.handleSelected = Handler(dispatch => panelId => selected => {
   dispatch(filesActions.selected({ panelId: panelId, selected: selected }))
 })
+
+exports.prefixSort = sortedBy => col => {
+  if (col.name === sortedBy) {
+    return assign({}, col, { title: '↑' + col.title })
+  }
+  if ('-' + col.name === sortedBy) {
+    return assign({}, col, { title: '↓' + col.title })
+  }
+  return col
+}
 
 exports.syncFocus = isActive => Hook(node => {
   GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
@@ -246,7 +263,8 @@ exports.render = (props) => {
         key: 'DIRECTORY',
         isActive: props.isActive,
         files: props.files,
-        panelId: id
+        panelId: id,
+        sortedBy: props.sortedBy
       }),
       exports.renderStats({
         key: 'STATS'

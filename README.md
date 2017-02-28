@@ -35,9 +35,9 @@ yarn run lint-fix
 
 - [ ] Passive FTP connection
 
-- [ ] Sort files by name, ext or date
+- [x] Sort files by name, ext or date
 
-- [ ] Directories always first
+- [x] Directories always first
 
 - [ ] Show file permissions
 

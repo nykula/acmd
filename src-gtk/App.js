@@ -32,6 +32,7 @@ exports.render = ({ dispatch, getState }) => {
           key: panelId,
           location: state.locations[panelId],
           onVolumeChanged: noop,
+          sortedBy: state.files.sortedBy[panelId],
           tabs: state.tabs[panelId],
           volumes: state.volumes
         }))

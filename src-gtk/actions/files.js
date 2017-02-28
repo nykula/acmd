@@ -18,3 +18,10 @@ exports.selected = ({panelId, selected}) => ({
   panelId: panelId,
   selected: selected
 })
+
+exports.SORTED = 'SORTED'
+exports.sorted = ({by, panelId}) => ({
+  type: exports.SORTED,
+  panelId: panelId,
+  by: by
+})
