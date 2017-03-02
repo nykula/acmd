@@ -210,6 +210,7 @@ exports.default = new Lang.Class({
         const attributes = []
           .concat(gFileInfo.list_attributes('access'))
           .concat(gFileInfo.list_attributes('owner'))
+          .concat(gFileInfo.list_attributes('unix'))
           .reduce((prev, key) => {
             prev[key] = gFileInfo.get_attribute_as_string(key)
             return prev
@@ -238,7 +239,7 @@ exports.default = new Lang.Class({
     }
 
     dir.enumerate_children_async(
-      'standard::*,access::*,owner::*,time::*',
+      'standard::*,access::*,owner::*,time::*,unix::*',
       this.Gio.FileQueryInfoFlags.NONE,
       this.GLib.PRIORITY_DEFAULT,
       cancellable,

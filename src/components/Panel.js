@@ -133,8 +133,8 @@ exports.renderDirectory = (props) => {
             { title: 'Name', name: 'filename', attribute: 'text', expand: true },
             { title: 'Ext', name: 'ext', attribute: 'text', min_width: 50 },
             { title: 'Size', name: 'size', attribute: 'text', min_width: 55 },
-            { title: 'Date', name: 'mtime', attribute: 'text', min_width: 110 },
-            { title: 'Attr', name: 'mode', attribute: 'text', min_width: 40 }
+            { title: 'Date', name: 'mtime', attribute: 'text', min_width: 125 },
+            { title: 'Attr', name: 'mode', attribute: 'text', min_width: 45 }
         ].map(exports.prefixSort(sortedBy)),
         cursor: activeFile,
         on_activated: exports.handleActivated(dispatch)(panelId),
@@ -188,6 +188,7 @@ exports.renderFile = (file) => {
   let icon = 'text-x-generic'
   let filename = file.name
   let ext = ''
+  let mode = ''
 
   const matches = /^(.+)\.(.*?)$/.exec(file.name)
 
@@ -217,13 +218,17 @@ exports.renderFile = (file) => {
     return [month, day, year].join('/') + ' ' + [hours, minutes].join(':')
   })(file.modificationTime)
 
+  if (file.attributes && file.attributes['unix::mode']) {
+    mode = Number(file.attributes['unix::mode']).toString(8).slice(-4)
+  }
+
   return {
     icon: icon,
     filename: filename,
     ext: ext,
     size: file.fileType === 'DIRECTORY' ? '<DIR>' : file.size,
     mtime: mtime,
-    mode: file.mode || ''
+    mode: mode
   }
 }
 

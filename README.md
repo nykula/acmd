@@ -39,7 +39,7 @@ yarn run lint-fix
 
 - [x] Directories always first
 
-- [ ] Show file permissions
+- [x] Show file permissions
 
 - [ ] Icons for common file and medium (drive) types
 
