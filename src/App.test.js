@@ -3,7 +3,7 @@
 const noop = require('lodash/noop')
 const App = require('./App')
 const Panel = require('./components/Panel')
-const Store = require('./store').default
+const Store = require('./Store').default
 
 Panel.syncFocus = noop
 Panel.syncSelection = noop
