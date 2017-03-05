@@ -11,8 +11,11 @@ yarn install
 # open gjs with hot reload
 yarn start
 
-# lint all JS files in `src`
+# lint all JS files in `bin` and `src`
 yarn run lint-fix
+
+# run tests and see coverage
+yarn run coverage && xdg-open coverage/index.html
 ```
 
 ## Todo

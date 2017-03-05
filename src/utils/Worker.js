@@ -1,7 +1,4 @@
-#!/usr/bin/gjs
-
-/* global imports, print, ARGV */
-
+/* global imports */
 const Gio = imports.gi.Gio
 const Lang = imports.lang
 
@@ -9,7 +6,7 @@ const Lang = imports.lang
  * Tasks intended to run in a separate process because they are heavy on IO or
  * GObject Introspection doesn't provide respective asynchronous methods.
  */
-;(this || exports).Worker = new Lang.Class({
+exports.default = new Lang.Class({
   Name: 'Worker',
 
   _init: function () {
@@ -30,15 +27,15 @@ const Lang = imports.lang
   run: function (action, dispatch) {
     switch (action.type) {
       case 'CP':
-        worker.cp(action, dispatch)
+        this.cp(action, dispatch)
         break
 
       case 'MV':
-        worker.mv(action, dispatch)
+        this.mv(action, dispatch)
         break
 
       case 'RM':
-        worker.rm(action, dispatch)
+        this.rm(action, dispatch)
         break
     }
   },
@@ -358,11 +355,3 @@ const Lang = imports.lang
     return files
   }
 })
-
-const worker = new this.Worker()
-worker.run(
-  JSON.parse(ARGV[0]),
-  (action) => {
-    print(JSON.stringify(action))
-  }
-)

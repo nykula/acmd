@@ -154,7 +154,10 @@ self.require = function () {
     /**
      * Returns the full path to the parent dir of the module that requested it.
      */
-    get: () => __filename.replace(/.[^/]+$/, '')
+    get: () => {
+      const path = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      return Gio.File.new_for_path(path).get_path().replace(/.[^/]+$/, '')
+    }
   })
 
   Object.defineProperty(window, 'exports', {

@@ -1,4 +1,5 @@
 /* global imports */
+/* eslint-disable no-path-concat */
 const GLib = imports.gi.GLib
 const Gio = imports.gi.Gio
 const Lang = imports.lang
@@ -30,7 +31,7 @@ exports.default = new Lang.Class({
     const requestId = action.requestId
 
     const subprocess = new Gio.Subprocess({
-      argv: ['gjs', 'src/worker.js', JSON.stringify(action)],
+      argv: ['gjs', __dirname + '/../../bin/worker.js', JSON.stringify(action)],
       flags: Gio.SubprocessFlags.STDOUT_PIPE
     })
 

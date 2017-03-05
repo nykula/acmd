@@ -15,9 +15,10 @@
     "virtual-dom": "^2.1.1"
   },
   "scripts": {
-    "start": "gjs src/utils/start.js",
-    "test": "gjs src/utils/test.js",
-    "lint": "standard 'src/**/*.js'",
-    "lint-fix": "standard --fix 'src/**/*.js'"
+    "start": "gjs bin/start.js",
+    "test": "gjs bin/test.js",
+    "coverage": "bash bin/coverage.sh",
+    "lint": "standard 'bin/**/*.js' 'src/**/*.js'",
+    "lint-fix": "standard --fix 'bin/**/*.js' 'src/**/*.js'"
   }
 }
