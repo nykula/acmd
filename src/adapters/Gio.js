@@ -1,6 +1,6 @@
 /* global imports */
+const find = require('lodash/find')
 const Lang = imports.lang
-const GioCancellableAdapter = require('./GioCancellable').default
 const WorkerRunner = require('./WorkerRunner').default
 
 /**
@@ -12,53 +12,35 @@ exports.default = new Lang.Class({
   /**
    * Bind methods to the instance and store a volume monitor reference.
    */
-  _init: function ({GLib, Gio, Gtk, onResponse}) {
+  _init: function ({ GLib, Gio, Gtk }) {
     this.GLib = GLib
     this.Gio = Gio
     this.Gtk = Gtk
 
-    this._getDrives = Lang.bind(this, this._getDrives)
     this._serializeDrive = Lang.bind(this, this._serializeDrive)
-
-    this._mount = Lang.bind(this, this._mount)
-    this._cancelMount = Lang.bind(this, this._cancelMount)
     this._serializeVolume = Lang.bind(this, this._serializeVolume)
-
-    this._unmount = Lang.bind(this, this._unmount)
-    this._cancelUnmount = Lang.bind(this, this._cancelUnmount)
     this._serializeMount = Lang.bind(this, this._serializeMount)
 
+    this.drives = this.drives.bind(this)
     this.ls = this.ls.bind(this)
-    this.cancelLs = this.cancelLs.bind(this)
-    this.lsCancellables = new GioCancellableAdapter()
-
     this.mkdir = this.mkdir.bind(this)
-    this.cancelMkdir = this.cancelMkdir.bind(this)
-    this.mkdirCancellables = new GioCancellableAdapter()
+    this.mount = this.mount.bind(this)
+    this.unmount = this.unmount.bind(this)
 
     this.gVolMon = this.Gio.VolumeMonitor.get()
-    this.mountCancellables = new GioCancellableAdapter()
-    this.unmountCancellables = new GioCancellableAdapter()
     this.work = new WorkerRunner()
-
-    this.dispatch = onResponse
   },
 
   /**
    * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Drive.html
    */
-  _getDrives: function (requestId) {
+  drives: function (props) {
+    const handleSuccess = props.onSuccess
+
     const gDrives = this.gVolMon.get_connected_drives()
     const drives = gDrives.map(this._serializeDrive)
 
-    this.dispatch({
-      type: 'DRIVES_REQUESTED',
-      requestId: requestId,
-      ready: true,
-      result: {
-        drives: drives
-      }
-    })
+    handleSuccess(drives)
   },
 
   _serializeDrive: function (gDrive) {
@@ -74,36 +56,18 @@ exports.default = new Lang.Class({
   /**
    * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Volume.html
    */
-  _mount: function (identifier, requestId) {
-    const gVolume = this._find(_gVolume => {
+  mount: function (props) {
+    const handleSuccess = props.onSuccess
+    const identifier = props.identifier
+
+    const gVolume = find(this.gVolMon.get_volumes(), _gVolume => {
       return _gVolume.get_identifier(identifier.type) === identifier.value
-    }, this.gVolMon.get_volumes())
+    })
 
     const mountOperation = new this.Gtk.MountOperation()
-    const cancellable = this.mountCancellables._create(requestId)
 
-    gVolume.mount(this.Gio.MountMountFlags.NONE, mountOperation, cancellable, () => {
-      this.dispatch({
-        type: 'MOUNT_REQUESTED',
-        requestId: requestId,
-        ready: true
-      })
-    })
-
-    this.dispatch({
-      type: 'MOUNT_REQUESTED',
-      requestId: requestId,
-      cancellable: true
-    })
-  },
-
-  _cancelMount: function (requestId) {
-    this.mountCancellables._cancel(requestId, () => {
-      this.dispatch({
-        type: 'MOUNT_CANCEL_REQUESTED',
-        requestId: requestId,
-        ready: true
-      })
+    gVolume.mount(this.Gio.MountMountFlags.NONE, mountOperation, null, () => {
+      handleSuccess()
     })
   },
 
@@ -121,35 +85,17 @@ exports.default = new Lang.Class({
   /**
    * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Mount.html
    */
-  _unmount: function (identifier, requestId) {
-    const gMount = this._find(_gMount => {
+  unmount: function (props) {
+    const handleSuccess = props.onSuccess
+    const identifier = props.identifier
+
+    const gMount = find(this.gVolMon.get_mounts(), _gMount => {
       const gVolume = _gMount.get_volume()
       return gVolume && gVolume.get_identifier(identifier.type) === identifier.value
-    }, this.gVolMon.get_mounts())
-
-    const cancellable = this.unmountCancellables._create(requestId)
-    gMount.unmount(this.Gio.MountUnmountFlags.NONE, cancellable, () => {
-      this.dispatch({
-        type: 'UNMOUNT_REQUESTED',
-        requestId: requestId,
-        ready: true
-      })
     })
 
-    this.dispatch({
-      type: 'UNMOUNT_REQUESTED',
-      requestId: requestId,
-      cancellable: true
-    })
-  },
-
-  _cancelUnmount: function (requestId) {
-    this.unmountCancellables._cancel(requestId, () => {
-      this.dispatch({
-        type: 'UNMOUNT_CANCEL_REQUESTED',
-        requestId: requestId,
-        ready: true
-      })
+    gMount.unmount(this.Gio.MountUnmountFlags.NONE, null, () => {
+      handleSuccess()
     })
   },
 
@@ -170,30 +116,34 @@ exports.default = new Lang.Class({
    * modification time and size. Also lists standard, access and ownership
    * attributes as strings.
    */
-  ls: function (action) {
-    const path = action.path
-    const requestId = action.requestId
-    const panel = action.panel
+  ls: function (props) {
+    const handleError = props.onError
+    const handleSuccess = props.onSuccess
+    const path = props.path
 
-    const dir = this.Gio.file_new_for_path(path)
-    const cancellable = this.lsCancellables._create(requestId)
-
-    const handleError = (err) => {
-      this.dispatch({
-        type: 'LS',
-        panel: panel,
-        path: path,
-        requestId: requestId,
-        ready: true,
-        error: { message: err.message }
-      })
+    const handleRequest = () => {
+      const dir = this.Gio.file_new_for_path(path)
+      dir.enumerate_children_async(
+        'standard::*,access::*,owner::*,time::*,unix::*',
+        this.Gio.FileQueryInfoFlags.NONE,
+        this.GLib.PRIORITY_DEFAULT,
+        null,
+        (_, result) => {
+          try {
+            const enumerator = dir.enumerate_children_finish(result)
+            handleChildren(enumerator)
+          } catch (err) {
+            handleError(err)
+          }
+        }
+      )
     }
 
     const handleChildren = (enumerator) => {
       enumerator.next_files_async(
         this.GLib.MAXINT32,
         this.GLib.PRIORITY_DEFAULT,
-        cancellable,
+        null,
         (_, result) => {
           try {
             const list = enumerator.next_files_finish(result)
@@ -228,80 +178,25 @@ exports.default = new Lang.Class({
         return file
       })
 
-      this.dispatch({
-        type: 'LS',
-        panel: panel,
-        path: path,
-        requestId: requestId,
-        ready: true,
-        result: { files: files }
-      })
+      handleSuccess(files)
     }
 
-    dir.enumerate_children_async(
-      'standard::*,access::*,owner::*,time::*,unix::*',
-      this.Gio.FileQueryInfoFlags.NONE,
-      this.GLib.PRIORITY_DEFAULT,
-      cancellable,
-      (_, result) => {
-        try {
-          const enumerator = dir.enumerate_children_finish(result)
-          handleChildren(enumerator)
-        } catch (err) {
-          handleError(err)
-        }
-      }
-    )
-  },
-
-  /**
-   * Cancels a list operation in progress.
-   */
-  cancelLs: function (action) {
-    const requestId = action.requestId
-
-    this.lsCancellables._cancel(requestId, () => {
-      this.dispatch({
-        type: 'LS_CANCEL',
-        requestId: requestId,
-        ready: true
-      })
-    })
+    handleRequest()
   },
 
   /**
    * Creates a directory.
    */
-  mkdir: function (action) {
-    const path = action.path
-    const requestId = action.requestId
+  mkdir: function (props) {
+    const handleError = props.onError
+    const handleSuccess = props.onSuccess
+    const path = props.path
 
     const dir = this.Gio.file_new_for_path(path)
-    const cancellable = this.mkdirCancellables._create(requestId)
-
-    const handleError = (err) => {
-      this.dispatch({
-        type: 'MKDIR',
-        path: path,
-        requestId: requestId,
-        ready: true,
-        error: { message: err.message }
-      })
-    }
-
-    const handleSuccess = () => {
-      this.dispatch({
-        type: 'MKDIR',
-        path: path,
-        requestId: requestId,
-        ready: true,
-        result: { ok: true }
-      })
-    }
 
     dir.make_directory_async(
       this.GLib.PRIORITY_DEFAULT,
-      cancellable,
+      null,
       (_, result) => {
         try {
           handleSuccess()
@@ -313,21 +208,6 @@ exports.default = new Lang.Class({
   },
 
   /**
-   * Cancels a directory creation in progress.
-   */
-  cancelMkdir: function (action) {
-    const requestId = action.requestId
-
-    this.mkdirCancellables._cancel(requestId, () => {
-      this.dispatch({
-        type: 'MKDIR_CANCEL',
-        requestId: requestId,
-        ready: true
-      })
-    })
-  },
-
-  /**
    * Get a hash table of this.Gio.Drive or this.Gio.Volume identifiers. Known possible
    * keys for this.Gio.Volume: class, unix-device, uuid, label.
    */
@@ -336,15 +216,5 @@ exports.default = new Lang.Class({
       identifiers[type] = gX.get_identifier(type)
       return identifiers
     }, {})
-  },
-
-  _find: function (predicate, xs) {
-    for (let i = 0; i < xs.length; i++) {
-      if (predicate(xs[i])) {
-        return xs[i]
-      }
-    }
-
-    return null
   }
 })
