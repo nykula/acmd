@@ -9,6 +9,8 @@ exports.default = function Select (props) {
 
 exports.default.prototype.type = 'Widget'
 
+exports.default.prototype.name = 'Select'
+
 exports.default.prototype.init = function () {
   let node
 

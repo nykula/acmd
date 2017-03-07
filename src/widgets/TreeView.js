@@ -10,6 +10,8 @@ exports.default = function TreeView (props) {
 
 exports.default.prototype.type = 'Widget'
 
+exports.default.prototype.name = 'TreeView'
+
 exports.default.prototype.init = function (prev) {
   let node
 
