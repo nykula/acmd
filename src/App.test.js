@@ -1,14 +1,10 @@
-/* global it, smoke */
+/* global it */
 
 const noop = require('lodash/noop')
 const App = require('./App')
-const Panel = require('./components/Panel')
 const Store = require('./Store').default
 
-Panel.syncFocus = noop
-Panel.syncSelection = noop
-
-it('renders without crashing', () => {
+it('renders virtual dom without crashing', () => {
   const win = { destroy: noop }
   const store = Store(undefined, {
     GLib: {},
@@ -17,6 +13,5 @@ it('renders without crashing', () => {
     win: win,
     nextTick: noop
   })
-
-  smoke(App.render(store))
+  App.render(store)
 })
