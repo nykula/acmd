@@ -1,7 +1,7 @@
 /* global imports */
 /* eslint-disable no-new-func */
 const Pango = imports.gi.Pango
-const h = require('virtual-dom/h')
+const h = require('inferno-hyperscript')
 const Handler = require('../utils/Handler').default
 
 exports.handleActivate = Handler(dispatch => () => node => {

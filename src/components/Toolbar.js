@@ -1,6 +1,6 @@
 /* global imports */
 const Gtk = imports.gi.Gtk
-const h = require('virtual-dom/h')
+const h = require('inferno-hyperscript')
 const indexActions = require('../actions')
 const Handler = require('../utils/Handler').default
 

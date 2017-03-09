@@ -1,6 +1,6 @@
 /* global imports */
 const Gtk = imports.gi.Gtk
-const h = require('virtual-dom/h')
+const h = require('inferno-hyperscript')
 
 exports.renderVolume = ({ volume, isActive }) => {
   return (

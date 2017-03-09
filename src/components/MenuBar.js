@@ -1,4 +1,4 @@
-const h = require('virtual-dom/h')
+const h = require('inferno-hyperscript')
 
 const menus = [
   { label: 'Files' },

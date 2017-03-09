@@ -1,12 +1,40 @@
 /* global imports */
 /* eslint-disable camelcase */
 const camelCase = require('lodash/camelCase')
+const noop = require('lodash/noop')
 const upperFirst = require('lodash/upperFirst')
+
+function getFirstChild () {
+  return this.get_children()[0]
+}
+
+function getNextSibling () {
+  const siblings = this.parent.get_children()
+  return siblings[siblings.indexOf(this) + 1] || null
+}
+
+function getParentNode () {
+  return this.parent
+}
+
+function removeAllChildren () {
+  this.forall(function (x) {
+    this.remove(x)
+  })
+}
 
 /**
  * Monkey-patches a GTK+ widget to resemble a DOM node.
  */
 exports.domify = function (document, node) {
+  node.setAttribute = function (name, value) {
+    this[name] = value
+  }
+
+  node.removeAttribute = function (name) {
+    this[name] = null
+  }
+
   node.appendChild = function (node) {
     this.add(node)
 
@@ -22,34 +50,18 @@ exports.domify = function (document, node) {
     this.remove(node)
   }
 
-  Object.defineProperty(node, 'childNodes', {
-    get: function () {
-      try {
-        this.get_children()
-      } catch (err) {
-        // Is not a container.
-        return []
-      }
-
-      return new Proxy({}, {
-        get: (target, name) => {
-          return this.get_children()[name]
-        }
-      })
-    }
-  })
-
-  Object.defineProperty(node, 'children', {
-    get: function () {
-      return this.childNodes
-    }
-  })
-
-  Object.defineProperty(node, 'parentNode', {
-    get: function () { return this.parent }
+  Object.defineProperties(node, {
+    firstChild: { get: getFirstChild },
+    nextSibling: { get: getNextSibling },
+    parentNode: { get: getParentNode },
+    textContent: { get: noop, set: removeAllChildren }
   })
 
   node.insertBefore = function (newChild, existingChild) {
+    if (newChild.parent) {
+      newChild.parent.remove(newChild)
+    }
+
     if (existingChild) {
       const children = this.get_children()
       const position = children.indexOf(existingChild)
@@ -122,7 +134,7 @@ exports.domify = function (document, node) {
 
 /**
  * Instantiates a GTK+ widget associated with a given tag name. Assigns helpers
- * for it to be compatible with virtual-dom.
+ * for it to be compatible with Inferno.
  */
 exports.createElement = function (Gtk, domify, tagName) {
   return domify(new Gtk[upperFirst(camelCase(tagName))]())
@@ -136,25 +148,26 @@ exports.app = function ({ on_activate, on_startup }) {
   const app = new Gtk.Application()
   let win
   app.connect('startup', () => {
-    win = new Gtk.ApplicationWindow({ application: app })
-    on_startup && on_startup({ app: app, win: win })
+    win = window.domify(new Gtk.ApplicationWindow({ application: app }))
+    on_startup({ app: app, win: win })
   })
   app.connect('activate', () => {
     win.show_all()
-    on_activate && on_activate({ app: app, win: win })
+    on_activate({ app: app, win: win })
   })
   return app
 }
 
 /**
  * Assigns domify and createElement on window. Points document and global to
- * window. Sets process.env to an empty object. Aliases print as
+ * window. Sets navigator and process.env to empty objects. Aliases print as
  * console.error, console.log and console.warn.
  */
 exports.require = function () {
   window.document = window.global = window
   window.domify = exports.domify.bind(null, window)
   window.createElement = exports.createElement.bind(null, imports.gi.Gtk, window.domify)
+  window.navigator = {}
   window.process = { env: {} }
   window.console = { error: window.print, log: window.print, warn: window.print }
 }

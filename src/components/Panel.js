@@ -5,17 +5,17 @@ const Pango = imports.gi.Pango
 const actions = require('../actions')
 const assign = require('lodash/assign')
 const filesActions = require('../actions/files')
-const h = require('virtual-dom/h')
+const h = require('inferno-hyperscript')
 const Handler = require('../utils/Handler').default
-const Hook = fun => Object.create({ hook: fun })
-const Select = require('../widgets/Select').default
-const TreeView = require('../widgets/TreeView').default
+const WidgetRef = require('../utils/WidgetRef').create
+const SelectRef = WidgetRef(require('../widgets/Select').default)
+const TreeViewRef = WidgetRef(require('../widgets/TreeView').default)
 
 exports.renderVolume = ({ dispatch, key, panelId, volumes, onVolumeChanged }) => {
   return (
     h('box', { key: key, expand: false }, [
-      h('box', [
-        new Select({
+      h('box', {
+        ref: SelectRef({
           value: volumes.active[panelId],
           options: volumes.labels.map(x => volumes.entities[x]).map(volume => ({
             value: volume.label,
@@ -24,7 +24,7 @@ exports.renderVolume = ({ dispatch, key, panelId, volumes, onVolumeChanged }) =>
           })),
           on_changed: onVolumeChanged
         })
-      ]),
+      }),
       h('box', { border_width: 4, expand: true }, [
         h('label', {
           label: '[files] 65,623,892 k of 628,600,828 k free'
@@ -82,7 +82,7 @@ exports.renderLocation = ({ isActive, key, location }) => {
   return (
     h('list-box', {
       key: key,
-      hook: exports.syncSelection(isActive)
+      ref: exports.syncSelection(isActive)
     }, [
       h('list-box-row', [
         h('box', { border_width: 2 }, [
@@ -97,7 +97,7 @@ exports.renderLocation = ({ isActive, key, location }) => {
   )
 }
 
-exports.syncSelection = isActive => Hook(node => {
+exports.syncSelection = isActive => node => {
   GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
     const children = node.get_children()
 
@@ -107,7 +107,7 @@ exports.syncSelection = isActive => Hook(node => {
       node.unselect_row(children[0])
     }
   })
-})
+}
 
 exports.renderDirectory = (props) => {
   const {
@@ -125,26 +125,27 @@ exports.renderDirectory = (props) => {
       key: key,
       expand: true,
       hscrollbar_policy: Gtk.PolicyType.NEVER,
-      hook: exports.syncFocus(isActive)
-    }, [
-      new TreeView({
-        cols: [
+      ref: node => {
+        TreeViewRef({
+          cols: [
             { title: null, name: 'icon', attribute: 'icon-name' },
             { title: 'Name', name: 'filename', attribute: 'text', expand: true },
             { title: 'Ext', name: 'ext', attribute: 'text', min_width: 50 },
             { title: 'Size', name: 'size', attribute: 'text', min_width: 55 },
             { title: 'Date', name: 'mtime', attribute: 'text', min_width: 125 },
             { title: 'Attr', name: 'mode', attribute: 'text', min_width: 45 }
-        ].map(exports.prefixSort(sortedBy)),
-        cursor: activeFile,
-        on_activated: exports.handleActivated(dispatch)(panelId),
-        on_clicked: exports.handleClicked(dispatch)(panelId),
-        on_cursor: exports.handleCursor(dispatch)(panelId),
-        on_selected: exports.handleSelected(dispatch)(panelId),
-        rows: files.map(exports.renderFile),
-        selected: [activeFile]
-      })
-    ])
+          ].map(exports.prefixSort(sortedBy)),
+          cursor: activeFile,
+          on_activated: exports.handleActivated(dispatch)(panelId),
+          on_clicked: exports.handleClicked(dispatch)(panelId),
+          on_cursor: exports.handleCursor(dispatch)(panelId),
+          on_selected: exports.handleSelected(dispatch)(panelId),
+          rows: files.map(exports.renderFile),
+          selected: [activeFile]
+        })(node)
+        exports.syncFocus(isActive)(node)
+      }
+    })
   )
 }
 
@@ -174,7 +175,7 @@ exports.prefixSort = sortedBy => col => {
   return col
 }
 
-exports.syncFocus = isActive => Hook(node => {
+exports.syncFocus = isActive => node => {
   GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
     const children = node.get_children()
 
@@ -182,7 +183,7 @@ exports.syncFocus = isActive => Hook(node => {
       children[0].grab_focus()
     }
   })
-})
+}
 
 exports.renderFile = (file) => {
   let icon = 'text-x-generic'

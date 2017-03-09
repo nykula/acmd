@@ -1,7 +1,7 @@
 /* global imports */
 
 const Gtk = imports.gi.Gtk
-const h = require('virtual-dom/h')
+const h = require('inferno-hyperscript')
 const noop = require('lodash/noop')
 const ActionBar = require('./components/ActionBar')
 const MenuBar = require('./components/MenuBar')

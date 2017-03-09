@@ -6,12 +6,25 @@ const Gio = imports.gi.Gio
 const GLib = imports.gi.GLib
 const Gtk = imports.gi.Gtk
 const actions = require('./actions')
+const Component = require('inferno-component')
 const Dialog = require('./utils/Dialog').default
+const h = require('inferno-hyperscript')
+const { render } = require('inferno')
 const Store = require('./Store').default
-const { create, diff, patch } = require('virtual-dom')
+
+function Provider (props) {
+  Component.call(this, props)
+  this.state = { render: this.props.render }
+}
+
+Provider.prototype = Object.create(Component.prototype)
+
+Provider.prototype.render = function () {
+  return this.state.render(this.props.store)
+}
 
 require('./utils/GtkDom').app({
-  on_activate: ({win}) => {
+  on_activate: ({ win }) => {
     win.set_keep_above(true)
   },
 
@@ -34,20 +47,22 @@ require('./utils/GtkDom').app({
       }
     })
 
-    let render = require('./App').render
-    let tree = render(store)
-    let rootNode = create(tree)
-    win.add(rootNode)
+    let provider
+    render(
+      h(Provider, {
+        ref: instance => { provider = instance },
+        render: require('./App').render,
+        store: store
+      }),
+      win
+    )
 
     let state
     store.subscribe(() => {
       const newState = store.getState()
       if (newState !== state) {
-        const newTree = render(store)
-        const patches = diff(tree, newTree)
-        rootNode = patch(rootNode, patches)
         state = newState
-        tree = newTree
+        provider.forceUpdate()
       }
     })
 
@@ -55,11 +70,7 @@ require('./utils/GtkDom').app({
 
     if (module.hot) {
       module.hot.accept('./App', () => {
-        render = require('./App').render
-        const newTree = render(store)
-        const patches = diff(tree, newTree)
-        rootNode = patch(rootNode, patches)
-        tree = newTree
+        provider.setState({ render: require('./App').render })
       })
     }
   }
