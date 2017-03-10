@@ -1,8 +1,8 @@
 /* global imports */
+const { connect } = require('inferno-redux')
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const indexActions = require('../actions')
-const Handler = require('../utils/Handler').default
 
 const items = [
   { type: indexActions.REFRESH, icon_name: 'view-refresh', tooltip_text: 'Refresh' },
@@ -17,11 +17,7 @@ const items = [
   { control: 'TOGGLE', icon_name: 'dialog-warning', tooltip_text: 'Hidden files' }
 ]
 
-exports.handlePressed = Handler(dispatch => type => () => {
-  dispatch({ type: type })
-})
-
-exports.render = ({ dispatch }) => (
+exports.Toolbar = ({ handlePressed }) => (
   h('box', [
     items.map(item => {
       if (typeof item === 'string') {
@@ -32,7 +28,7 @@ exports.render = ({ dispatch }) => (
           active: !!item.active,
           key: item.icon_name,
           relief: Gtk.ReliefStyle.NONE,
-          on_pressed: exports.handlePressed(dispatch)(item.type),
+          on_pressed: handlePressed(item.type),
           tooltip_text: item.tooltip_text
         }, [
           h('image', {
@@ -44,3 +40,11 @@ exports.render = ({ dispatch }) => (
     })
   ])
 )
+
+exports.mapDispatchToProps = dispatch => ({
+  handlePressed: type => () => {
+    dispatch({ type: type })
+  }
+})
+
+exports.default = connect(null, exports.mapDispatchToProps)(exports.Toolbar)

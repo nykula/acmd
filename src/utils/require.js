@@ -200,6 +200,8 @@ self.require = function () {
       return require
     }
   })
+
+  self.Fun = window.require('./Fun').default
 }
 
 /**
@@ -301,7 +303,7 @@ self.requireClosure = function (parentFilename, path) {
   require.cache = self.cache
   require.resolve = self.resolve.bind(null, filename)
 
-  new Function('exports', 'require', 'module', '__filename', '__dirname',
+  self.Fun('exports', 'require', 'module', '__filename', '__dirname',
     contents
   )(module.exports, require, module, filename, dirname)
 

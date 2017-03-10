@@ -1,8 +1,8 @@
 /* global imports */
+const { connect } = require('inferno-redux')
 const indexActions = require('../actions')
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
-const Handler = require('../utils/Handler').default
 
 const actions = [
   { type: indexActions.VIEW, text: 'View', shortcut: 'F3' },
@@ -14,11 +14,7 @@ const actions = [
   { type: indexActions.EXIT, text: 'Exit', shortcut: 'Alt+F4' }
 ]
 
-exports.handlePressed = Handler(dispatch => type => () => {
-  dispatch({ type: type })
-})
-
-exports.render = ({ dispatch }) => {
+exports.ActionBar = ({ handlePressed }) => {
   return (
     h('box', { expand: false }, [
       actions.map(action => [
@@ -26,7 +22,7 @@ exports.render = ({ dispatch }) => {
           expand: true,
           key: action.type,
           label: action.shortcut + ' ' + action.text,
-          on_pressed: exports.handlePressed(dispatch)(action.type),
+          on_pressed: handlePressed(action.type),
           relief: Gtk.ReliefStyle.NONE
         }),
         h('v-separator', { key: action.type + '+' })
@@ -34,3 +30,11 @@ exports.render = ({ dispatch }) => {
     ])
   )
 }
+
+exports.mapDispatchToProps = dispatch => ({
+  handlePressed: type => () => {
+    dispatch({ type: type })
+  }
+})
+
+exports.default = connect(null, exports.mapDispatchToProps)(exports.ActionBar)

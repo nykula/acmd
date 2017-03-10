@@ -12,6 +12,10 @@
  * @see https://github.com/Matt-Esch/virtual-dom/blob/master/docs/widget.md
  */
 exports.default = widget => node => {
+  if (!node) {
+    return
+  }
+
   let child = node.get_children()[0]
 
   if (!child) {

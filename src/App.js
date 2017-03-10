@@ -2,46 +2,32 @@
 
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
-const noop = require('lodash/noop')
-const ActionBar = require('./components/ActionBar')
-const MenuBar = require('./components/MenuBar')
-const Panel = require('./components/Panel')
-const Prompt = require('./components/Prompt')
-const Toolbar = require('./components/Toolbar')
-const VolumeList = require('./components/VolumeList')
+const ActionBar = require('./components/ActionBar').default
+const MenuBar = require('./components/MenuBar').default
+const Panel = require('./components/Panel').default
+const Prompt = require('./components/Prompt').default
+const Toolbar = require('./components/Toolbar').default
+const VolumeList = require('./components/VolumeList').default
 
-exports.render = ({ dispatch, getState }) => {
-  const state = getState()
+exports.render = () => {
   return (
     h('box', { orientation: Gtk.Orientation.VERTICAL }, [
-      MenuBar.render(),
-      Toolbar.render({ dispatch: dispatch }),
+      h(MenuBar),
+      h(Toolbar),
       h('h-separator'),
       h('h-box', [
-        VolumeList.render({ panel: 0, volumes: state.volumes }),
-        VolumeList.render({ panel: 1, volumes: state.volumes })
+        h(VolumeList, { panelId: 0 }),
+        h(VolumeList, { panelId: 1 })
       ]),
       h('h-separator'),
       h('h-box', { spacing: 1 }, [
-        [0, 1].map(panelId => Panel.render({
-          activeFile: state.files.active[panelId],
-          files: state.files.byPanel[panelId],
-          dispatch: dispatch,
+        [0, 1].map(panelId => h(Panel, {
           id: panelId,
-          isActive: state.panels.active === panelId,
-          key: panelId,
-          location: state.locations[panelId],
-          onVolumeChanged: noop,
-          sortedBy: state.files.sortedBy[panelId],
-          tabs: state.tabs[panelId],
-          volumes: state.volumes
+          key: panelId
         }))
       ]),
-      Prompt.render({
-        dispatch: dispatch,
-        location: state.locations[state.panels.active]
-      }),
-      ActionBar.render({ dispatch: dispatch })
+      h(Prompt),
+      h(ActionBar)
     ])
   )
 }

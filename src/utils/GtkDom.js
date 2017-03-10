@@ -85,6 +85,10 @@ exports.domify = function (document, node) {
   }
 
   node.replaceChild = function (newChild, oldChild) {
+    if (!newChild.parent) {
+      newChild.show()
+    }
+
     this.insertBefore(newChild, oldChild)
     this.remove(oldChild)
   }

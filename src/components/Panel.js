@@ -4,9 +4,11 @@ const Gtk = imports.gi.Gtk
 const Pango = imports.gi.Pango
 const actions = require('../actions')
 const assign = require('lodash/assign')
+const { connect } = require('inferno-redux')
 const filesActions = require('../actions/files')
 const h = require('inferno-hyperscript')
 const Handler = require('../utils/Handler').default
+const noop = require('lodash/noop')
 const WidgetRef = require('../utils/WidgetRef').create
 const SelectRef = WidgetRef(require('../widgets/Select').default)
 const TreeViewRef = WidgetRef(require('../widgets/TreeView').default)
@@ -99,6 +101,10 @@ exports.renderLocation = ({ isActive, key, location }) => {
 
 exports.syncSelection = isActive => node => {
   GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
+    if (!node) {
+      return
+    }
+
     const children = node.get_children()
 
     if (isActive) {
@@ -177,6 +183,10 @@ exports.prefixSort = sortedBy => col => {
 
 exports.syncFocus = isActive => node => {
   GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
+    if (!node) {
+      return
+    }
+
     const children = node.get_children()
 
     if (isActive) {
@@ -241,7 +251,7 @@ exports.renderStats = () => {
   )
 }
 
-exports.render = (props) => {
+exports.Panel = (props) => {
   const id = props.id
   return (
     h('box', { orientation: Gtk.Orientation.VERTICAL }, [
@@ -278,3 +288,24 @@ exports.render = (props) => {
     ])
   )
 }
+
+exports.mapStateToProps = (state, { id }) => ({
+  activeFile: state.files.active[id],
+  files: state.files.byPanel[id],
+  isActive: state.panels.active === id,
+  location: state.locations[id],
+  onVolumeChanged: noop,
+  sortedBy: state.files.sortedBy[id],
+  tabs: state.tabs[id],
+  volumes: state.volumes
+})
+
+exports.mapDispatchToProps = dispatch => ({
+  dispatch: dispatch,
+  onVolumeChanged: noop
+})
+
+exports.default = connect(
+  exports.mapStateToProps,
+  exports.mapDispatchToProps
+)(exports.Panel)

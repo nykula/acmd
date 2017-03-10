@@ -1,4 +1,5 @@
 /* global imports */
+const { connect } = require('inferno-redux')
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 
@@ -19,13 +20,19 @@ exports.renderVolume = ({ volume, isActive }) => {
   )
 }
 
-exports.render = ({ panel, volumes }) => (
+exports.VolumeList = ({ panelId, volumes }) => (
   h('box', [
     volumes.labels.map(x => volumes.entities[x]).map(volume => {
       return exports.renderVolume({
         volume: volume,
-        isActive: volumes.active[panel] === volume.label
+        isActive: volumes.active[panelId] === volume.label
       })
     })
   ])
 )
+
+exports.mapStateToProps = state => ({
+  volumes: state.volumes
+})
+
+exports.default = connect(exports.mapStateToProps)(exports.VolumeList)

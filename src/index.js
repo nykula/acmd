@@ -9,18 +9,19 @@ const actions = require('./actions')
 const Component = require('inferno-component')
 const Dialog = require('./utils/Dialog').default
 const h = require('inferno-hyperscript')
+const { Provider } = require('inferno-redux')
 const { render } = require('inferno')
 const Store = require('./Store').default
 
-function Provider (props) {
+function View (props) {
   Component.call(this, props)
   this.state = { render: this.props.render }
 }
 
-Provider.prototype = Object.create(Component.prototype)
+View.prototype = Object.create(Component.prototype)
 
-Provider.prototype.render = function () {
-  return this.state.render(this.props.store)
+View.prototype.render = function () {
+  return this.state.render()
 }
 
 require('./utils/GtkDom').app({
@@ -47,30 +48,22 @@ require('./utils/GtkDom').app({
       }
     })
 
-    let provider
+    let view
     render(
-      h(Provider, {
-        ref: instance => { provider = instance },
-        render: require('./App').render,
-        store: store
-      }),
+      h(Provider, { store: store },
+        h(View, {
+          ref: instance => { view = instance },
+          render: require('./App').render
+        })
+      ),
       win
     )
-
-    let state
-    store.subscribe(() => {
-      const newState = store.getState()
-      if (newState !== state) {
-        state = newState
-        provider.forceUpdate()
-      }
-    })
 
     store.dispatch(actions.refresh())
 
     if (module.hot) {
       module.hot.accept('./App', () => {
-        provider.setState({ render: require('./App').render })
+        view.setState({ render: require('./App').render })
       })
     }
   }
