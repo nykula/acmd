@@ -8,29 +8,38 @@ const { connect } = require('inferno-redux')
 const filesActions = require('../actions/files')
 const h = require('inferno-hyperscript')
 const Handler = require('../utils/Handler').default
+const minLength = require('../utils/minLength').default
 const noop = require('lodash/noop')
 const WidgetRef = require('../utils/WidgetRef').create
 const SelectRef = WidgetRef(require('../widgets/Select').default)
 const TreeViewRef = WidgetRef(require('../widgets/TreeView').default)
 
-exports.renderVolume = ({ dispatch, key, panelId, volumes, onVolumeChanged }) => {
+exports.renderMount = ({ dispatch, key, panelId, mounts, onMountChanged }) => {
+  const activeMount = mounts.entities[mounts.active[panelId]]
+
+  const free = activeMount.attributes['filesystem::free'] / 1000
+  const size = activeMount.attributes['filesystem::size'] / 1000
+
+  const status = '[' + activeMount.name + '] ' +
+    Math.floor(free || 0).toLocaleString() + ' of ' +
+    Math.floor(size || 0).toLocaleString() + ' k free'
+
   return (
     h('box', { key: key, expand: false }, [
       h('box', {
         ref: SelectRef({
-          value: volumes.active[panelId],
-          options: volumes.labels.map(x => volumes.entities[x]).map(volume => ({
-            value: volume.label,
-            text: volume.label,
-            icon: volume.icon_name + '-symbolic'
+          value: mounts.active[panelId],
+          options: mounts.names.map(x => mounts.entities[x]).map(mount => ({
+            icon: mount.icon,
+            iconType: mount.iconType,
+            value: mount.name,
+            text: minLength(mounts.names, mount.name)
           })),
-          on_changed: onVolumeChanged
+          on_changed: onMountChanged
         })
       }),
       h('box', { border_width: 4, expand: true }, [
-        h('label', {
-          label: '[files] 65,623,892 k of 628,600,828 k free'
-        })
+        h('label', { label: status })
       ]),
       h('v-separator'),
       h('box', [
@@ -255,12 +264,12 @@ exports.Panel = (props) => {
   const id = props.id
   return (
     h('box', { orientation: Gtk.Orientation.VERTICAL }, [
-      exports.renderVolume({
+      exports.renderMount({
         dispatch: props.dispatch,
-        key: 'VOLUME',
+        key: 'MOUNT',
         panelId: id,
-        volumes: props.volumes,
-        onVolumeChanged: props.onVolumeChanged
+        mounts: props.mounts,
+        onMountChanged: props.onMountChanged
       }),
       exports.renderTabList({
         key: 'TAB_LIST',
@@ -294,15 +303,15 @@ exports.mapStateToProps = (state, { id }) => ({
   files: state.files.byPanel[id],
   isActive: state.panels.active === id,
   location: state.locations[id],
-  onVolumeChanged: noop,
+  onMountChanged: noop,
   sortedBy: state.files.sortedBy[id],
   tabs: state.tabs[id],
-  volumes: state.volumes
+  mounts: state.mounts
 })
 
 exports.mapDispatchToProps = dispatch => ({
   dispatch: dispatch,
-  onVolumeChanged: noop
+  onMountChanged: noop
 })
 
 exports.default = connect(

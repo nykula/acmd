@@ -4,10 +4,10 @@ const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const ActionBar = require('./components/ActionBar').default
 const MenuBar = require('./components/MenuBar').default
+const MountList = require('./components/MountList').default
 const Panel = require('./components/Panel').default
 const Prompt = require('./components/Prompt').default
 const Toolbar = require('./components/Toolbar').default
-const VolumeList = require('./components/VolumeList').default
 
 exports.render = () => {
   return (
@@ -16,8 +16,8 @@ exports.render = () => {
       h(Toolbar),
       h('h-separator'),
       h('h-box', [
-        h(VolumeList, { panelId: 0 }),
-        h(VolumeList, { panelId: 1 })
+        h(MountList, { panelId: 0 }),
+        h(MountList, { panelId: 1 })
       ]),
       h('h-separator'),
       h('h-box', { spacing: 1 }, [

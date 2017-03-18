@@ -114,7 +114,7 @@ exports.handleCtxMenu = action => (dispatch, getState, { Dialog, gioAdapter, Gtk
   const file = getActiveFile(getState())
 
   if (file.handlers.length === 0) {
-    Dialog.alert('No handlers registered for ' + file.contentType + '.')
+    Dialog.alert('No handlers registered for ' + file.contentType + '.', noop)
     return
   }
 
@@ -154,10 +154,10 @@ exports.handleDrives = action => (dispatch, getState, { gioAdapter }) => {
 
   if (isRequest(action)) {
     gioAdapter.drives({
-      onSuccess: (drives) => {
+      onSuccess: result => {
         dispatch(actions.drivesReady({
           requestId: requestId,
-          result: { drives: drives }
+          result: result
         }))
       }
     })
@@ -299,6 +299,7 @@ exports.handleRefresh = action => (dispatch, getState) => {
   const state = getState()
   dispatch(actions.ls(0, state.locations[0]))
   dispatch(actions.ls(1, state.locations[1]))
+  dispatch(actions.drives(Date.now()))
 }
 
 exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {

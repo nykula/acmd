@@ -1,16 +1,16 @@
 const { combineReducers } = require('redux/lib')
 const files = require('./files').default
 const locations = require('./locations').default
+const mounts = require('./mounts').default
 const panels = require('./panels').default
 const tabs = require('./tabs').default
-const volumes = require('./volumes').default
 
 const rootReducer = combineReducers({
   files: files,
   locations: locations,
   panels: panels,
   tabs: tabs,
-  volumes: volumes
+  mounts: mounts
 })
 
 exports.default = (_state, payload) => {

@@ -1,6 +1,8 @@
 /* global imports */
+const Gio = imports.gi.Gio
 const GObject = imports.gi.GObject
 const Gtk = imports.gi.Gtk
+const Icon = require('../utils/Icon').default
 const isEqual = require('lodash/isEqual')
 
 exports.default = function Select (props) {
@@ -17,12 +19,12 @@ exports.default.prototype.init = function () {
   const store = new Gtk.ListStore()
   store.set_column_types([
     GObject.TYPE_STRING,
-    GObject.TYPE_STRING
+    Gio.Icon
   ])
 
   this.props.options.forEach(option => {
     const iter = store.append()
-    store.set(iter, [0, 1], [option.text, option.icon])
+    store.set(iter, [0, 1], [option.text, Icon(option)])
   })
 
   node = new Gtk.ComboBox({ model: store })
@@ -34,7 +36,7 @@ exports.default.prototype.init = function () {
   node.pack_end(rendererText, false)
 
   node.add_attribute(rendererText, 'text', 0)
-  node.add_attribute(rendererPixbuf, 'icon-name', 1)
+  node.add_attribute(rendererPixbuf, 'gicon', 1)
 
   for (let i = 0; i < this.props.options.length; i++) {
     if (this.props.options[i].value === this.props.value) {

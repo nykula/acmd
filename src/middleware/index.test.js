@@ -12,6 +12,14 @@ it('provides info about drives', () => {
 
   const props = {
     Gio: {
+      File: {
+        new_for_path: () => ({
+          query_filesystem_info: () => ({
+            get_attribute_as_string: () => 1,
+            list_attributes: () => ['filesystem::free']
+          })
+        })
+      },
       VolumeMonitor: {
         get: () => gVolMon
       }
@@ -48,12 +56,49 @@ it('provides info about drives', () => {
       enumerate_identifiers: () => ['uuid'],
       get_identifier: () => null,
       get_mount: () => ({
+        get_name: () => 'System',
+        get_icon: () => ({
+          to_string: () => '. GThemedIcon drive-harddisk-usb drive-harddisk drive'
+        }),
         get_root: () => ({
-          get_uri: () => '/media/System'
+          get_uri: () => 'file:///media/System',
+          query_filesystem_info: () => ({
+            get_attribute_as_string: () => 1,
+            list_attributes: () => ['filesystem::free']
+          })
         })
       })
     }]
   }]
+
+  gVolMon.get_mounts = () => [
+    {
+      get_name: () => 'foo on bar.example.com',
+      get_icon: () => ({
+        to_string: () => '. GThemedIcon folder-remote folder'
+      }),
+      get_root: () => ({
+        get_uri: () => 'sftp:///foo@bar.example.com/',
+        query_filesystem_info: () => ({
+          get_attribute_as_string: () => 1,
+          list_attributes: () => ['filesystem::free']
+        })
+      })
+    },
+    {
+      get_name: () => 'System',
+      get_icon: () => ({
+        to_string: () => '. GThemedIcon drive-harddisk-usb drive-harddisk drive'
+      }),
+      get_root: () => ({
+        get_uri: () => 'file:///media/System',
+        query_filesystem_info: () => ({
+          get_attribute_as_string: () => 1,
+          list_attributes: () => ['filesystem::free']
+        })
+      })
+    }
+  ]
 
   dispatchRequest({
     type: actions.DRIVES,
@@ -75,11 +120,38 @@ it('provides info about drives', () => {
         },
         volumes: [{
           mount: {
-            root: { uri: '/media/System' }
+            name: 'System',
+            icon: '. GThemedIcon drive-harddisk-usb drive-harddisk drive',
+            iconType: 'GICON',
+            rootUri: 'file:///media/System',
+            attributes: { 'filesystem::free': 1 }
           },
           identifiers: { uuid: null }
         }]
-      }]
+      }],
+      mounts: [
+        {
+          name: '/',
+          icon: 'computer',
+          iconType: 'ICON_NAME',
+          rootUri: 'file:///',
+          attributes: { 'filesystem::free': 1 }
+        },
+        {
+          name: 'foo on bar.example.com',
+          icon: '. GThemedIcon folder-remote folder',
+          iconType: 'GICON',
+          rootUri: 'sftp:///foo@bar.example.com/',
+          attributes: { 'filesystem::free': 1 }
+        },
+        {
+          name: 'System',
+          icon: '. GThemedIcon drive-harddisk-usb drive-harddisk drive',
+          iconType: 'GICON',
+          rootUri: 'file:///media/System',
+          attributes: { 'filesystem::free': 1 }
+        }
+      ]
     }
   })
 })

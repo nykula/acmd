@@ -40,13 +40,16 @@ const state = {
       }
     }
   },
-  volumes: {
+  mounts: {
     active: { 0: 'System' },
-    labels: ['System'],
+    names: ['System'],
     entities: {
       System: {
-        label: 'System',
-        icon: 'media-harddisk'
+        name: 'System',
+        icon: 'media-harddisk',
+        iconType: 'ICON_NAME',
+        root: '/',
+        attributes: {}
       }
     }
   }

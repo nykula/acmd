@@ -40,8 +40,23 @@ exports.default = new Lang.Class({
 
     const gDrives = this.gVolMon.get_connected_drives()
     const drives = gDrives.map(this._serializeDrive)
+    const rootInfo = this.Gio.File.new_for_path('/').query_filesystem_info('*', null)
+    const mounts = [{
+      name: '/',
+      icon: 'computer',
+      iconType: 'ICON_NAME',
+      rootUri: 'file:///',
+      attributes: rootInfo.list_attributes(null)
+        .reduce((prev, key) => {
+          prev[key] = rootInfo.get_attribute_as_string(key)
+          return prev
+        }, {})
+    }].concat(this.gVolMon.get_mounts().map(this._serializeMount))
 
-    handleSuccess(drives)
+    handleSuccess({
+      drives: drives,
+      mounts: mounts
+    })
   },
 
   _serializeDrive: function (gDrive) {
@@ -102,11 +117,17 @@ exports.default = new Lang.Class({
 
   _serializeMount: function (gMount) {
     const root = gMount.get_root()
+    const rootInfo = root.query_filesystem_info('*', null)
 
     const mount = {
-      root: root ? {
-        uri: root.get_uri()
-      } : null
+      name: gMount.get_name(),
+      icon: gMount.get_icon().to_string(),
+      iconType: 'GICON',
+      rootUri: root ? root.get_uri() : null,
+      attributes: root ? rootInfo.list_attributes(null).reduce((prev, key) => {
+        prev[key] = rootInfo.get_attribute_as_string(key)
+        return prev
+      }, {}) : {}
     }
 
     return mount
