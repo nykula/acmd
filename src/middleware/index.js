@@ -262,15 +262,19 @@ exports.handleMkdir = action => (dispatch, getState, { Dialog, gioAdapter }) => 
 }
 
 exports.handleMount = action => (dispatch, getState, { gioAdapter }) => {
-  const { identifier, requestId } = action
+  if (isRequest(action)) {
+    const { identifier, requestId } = action
 
-  gioAdapter.mount({
-    identifier: identifier,
+    gioAdapter.mount({
+      identifier: identifier,
 
-    onSuccess: () => {
-      dispatch(actions.mountReady(requestId))
-    }
-  })
+      onSuccess: () => {
+        dispatch(actions.mountReady(requestId))
+      }
+    })
+  } else if (isResponse(action)) {
+    dispatch(actions.refresh())
+  }
 }
 
 exports.handleMv = action => (dispatch, getState, { Dialog, gioAdapter }) => {
@@ -319,15 +323,19 @@ exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 }
 
 exports.handleUnmount = action => (dispatch, getState, { gioAdapter }) => {
-  const { identifier, requestId } = action
+  if (isRequest(action)) {
+    const { requestId, uri } = action
 
-  gioAdapter.unmount({
-    identifier: identifier,
+    gioAdapter.unmount({
+      uri: uri,
 
-    onSuccess: () => {
-      dispatch(actions.unmountReady(requestId))
-    }
-  })
+      onSuccess: () => {
+        dispatch(actions.unmountReady(requestId))
+      }
+    })
+  } else if (isResponse(action)) {
+    dispatch(actions.refresh())
+  }
 }
 
 exports.handleView = action => (dispatch, getState, { Dialog }) => {

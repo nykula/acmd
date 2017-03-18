@@ -54,7 +54,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [ ] Select multiple files with right mouse button
 
-- [ ] List drives from /dev and their labels for udisks mount, open and unmount
+- [x] List drives from /dev and their labels for udisks mount, open and unmount
 
 - [ ] Create gvfs mount, list gvfs mounts for open and unmount
 

@@ -1,16 +1,70 @@
 /* global imports */
+const actions = require('../actions')
+const Component = require('inferno-component')
 const { connect } = require('inferno-redux')
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const Icon = require('../utils/Icon').default
 const minLength = require('../utils/minLength').default
 
-exports.renderMount = props => {
-  const { icon, iconType, name, isActive, short } = props
+exports.Mount = function (props) {
+  Component.call(this, props)
+  this.handleClicked = this.handleClicked.bind(this)
+}
+
+exports.Mount.prototype = Object.create(Component.prototype)
+
+exports.Mount.prototype.handleClicked = function () {
+  const { activePath, dispatch, mount } = this.props
+  const path = mount.rootUri && mount.rootUri.replace(/^file:\/\//, '')
+  const isActive = mount.rootUri && activePath.indexOf(path) === 0
+
+  const menu = new Gtk.Menu()
+  let item
+
+  if (path !== activePath) {
+    item = new Gtk.MenuItem()
+    item.label = 'Open'
+    item.connect('activate', () => {
+      dispatch(actions.ls(this.props.panelId, path))
+    })
+    menu.add(item)
+  }
+
+  if (!isActive) {
+    item = new Gtk.MenuItem()
+    item.label = 'Unmount'
+    item.connect('activate', () => {
+      dispatch(actions.unmount(mount.rootUri))
+    })
+    menu.add(item)
+  }
+
+  if (!mount.rootUri) {
+    item = new Gtk.MenuItem()
+    item.label = 'Mount'
+    item.connect('activate', () => {
+      dispatch(actions.mount(mount.uuid))
+    })
+    menu.add(item)
+  }
+
+  if (!item) {
+    return
+  }
+
+  menu.show_all()
+  menu.popup(null, null, null, null, null)
+}
+
+exports.Mount.prototype.render = function () {
+  const { mount, isActive, short } = this.props
+  const { icon, iconType, name } = mount
   return (
     h(isActive ? 'toggle-button' : 'button', {
       active: isActive,
       relief: Gtk.ReliefStyle.NONE,
+      on_clicked: this.handleClicked,
       tooltip_text: name
     }, [
       h('box', { spacing: 4 }, [
@@ -24,21 +78,23 @@ exports.renderMount = props => {
   )
 }
 
-exports.MountList = ({ panelId, mounts }) => (
+exports.MountList = ({ activePath, dispatch, panelId, mounts }) => (
   h('box', [
     mounts.names.map(x => mounts.entities[x]).map(mount => {
-      return exports.renderMount({
-        icon: mount.icon,
-        iconType: mount.iconType,
+      return h(exports.Mount, {
+        activePath: activePath,
+        dispatch: dispatch,
+        mount: mount,
+        panelId: panelId,
         isActive: mounts.active[panelId] === mount.name,
-        name: mount.name,
         short: minLength(mounts.names, mount.name)
       })
     })
   ])
 )
 
-exports.mapStateToProps = state => ({
+exports.mapStateToProps = (state, { panelId }) => ({
+  activePath: state.locations[panelId],
   mounts: state.mounts
 })
 

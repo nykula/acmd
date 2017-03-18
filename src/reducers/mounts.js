@@ -31,10 +31,11 @@ exports.default = (_state, action) => {
 
       mounts = mounts.concat(action.result.drives.reduce((prev, drive) => {
         return prev.concat(drive.volumes.map(volume => volume.mount || {
+          uuid: volume.identifiers.uuid,
           name: volume.identifiers.label || volume.identifiers.uuid,
           icon: 'drive-harddisk',
           iconType: 'ICON_NAME',
-          root: null,
+          rootUri: null,
           attributes: {}
         }))
       }, []))

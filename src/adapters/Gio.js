@@ -103,12 +103,10 @@ exports.default = new Lang.Class({
    */
   unmount: function (props) {
     const handleSuccess = props.onSuccess
-    const identifier = props.identifier
+    const uri = props.uri
 
-    const gMount = find(this.gVolMon.get_mounts(), _gMount => {
-      const gVolume = _gMount.get_volume()
-      return gVolume && gVolume.get_identifier(identifier.type) === identifier.value
-    })
+    const gFile = this.Gio.File.new_for_uri(uri)
+    const gMount = gFile.find_enclosing_mount(null)
 
     gMount.unmount(this.Gio.MountUnmountFlags.NONE, null, () => {
       handleSuccess()

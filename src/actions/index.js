@@ -105,6 +105,16 @@ exports.mkdirSuccess = ({ path, requestId, result }) => {
 }
 
 exports.MOUNT = 'MOUNT'
+exports.mount = uuid => {
+  return {
+    type: exports.MOUNT,
+    requestId: Date.now(),
+    identifier: {
+      type: 'uuid',
+      value: uuid
+    }
+  }
+}
 exports.mountReady = requestId => {
   return {
     type: exports.MOUNT,
@@ -148,11 +158,18 @@ exports.rm = (paths) => {
 }
 
 exports.UNMOUNT = 'UNMOUNT'
+exports.unmount = uri => {
+  return {
+    type: exports.UNMOUNT,
+    requestId: Date.now(),
+    uri: uri
+  }
+}
 exports.unmountReady = requestId => {
   return {
     type: exports.UNMOUNT,
-    requestId: requestId,
-    ready: true
+    ready: true,
+    requestId: requestId
   }
 }
 

@@ -23,8 +23,7 @@ it('provides info about drives', () => {
       VolumeMonitor: {
         get: () => gVolMon
       }
-    },
-    nextTick: x => x()
+    }
   }
 
   const { dispatchRequest, responses } = setup(props)
@@ -230,8 +229,7 @@ it('lists files in a directory', () => {
       VolumeMonitor: { get: () => null },
       file_new_for_path: () => dirGFile
     },
-    GLib: {},
-    nextTick: x => x()
+    GLib: {}
   }
 
   const { dispatchRequest, responses } = setup(props)
@@ -293,8 +291,7 @@ it('creates a directory', () => {
         }
       })
     },
-    GLib: {},
-    nextTick: x => x()
+    GLib: {}
   }
 
   const { dispatchRequest, responses } = setup(props)
@@ -333,8 +330,7 @@ it('mounts a volume', () => {
     },
     Gtk: {
       MountOperation: function () { }
-    },
-    nextTick: x => x()
+    }
   }
 
   const { dispatchRequest, responses } = setup(props)
@@ -356,23 +352,20 @@ it('mounts a volume', () => {
 })
 
 it('unmounts a volume', () => {
-  const gVolMon = {
-    get_mounts: () => [{
-      get_volume: () => ({
-        get_identifier: () => 'def'
-      }),
-      unmount: () => {
-        arguments[arguments.length - 1]()
-      }
-    }]
-  }
-
   const props = {
     Gio: {
+      File: {
+        new_for_uri: () => ({
+          find_enclosing_mount: () => ({
+            unmount: () => {
+              arguments[arguments.length - 1]()
+            }
+          })
+        })
+      },
       MountUnmountFlags: {},
-      VolumeMonitor: { get: () => gVolMon }
-    },
-    nextTick: x => x()
+      VolumeMonitor: { get: noop }
+    }
   }
 
   const { dispatchRequest, responses } = setup(props)
@@ -380,10 +373,7 @@ it('unmounts a volume', () => {
   dispatchRequest({
     type: actions.UNMOUNT,
     requestId: 5,
-    identifier: {
-      type: actions.label,
-      value: 'def'
-    }
+    uri: 'file:///media/Test'
   })
 
   expect(responses).toMatch([{

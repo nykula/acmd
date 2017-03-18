@@ -7,6 +7,7 @@ it('renders without crashing', () => {
   h(MountList).type(assign(
         { panelId: 0 },
         mapStateToProps({
+          locations: { 0: '/' },
           mounts: {
             active: { 0: 'Music', 1: 'System' },
             names: ['System', 'Music'],
@@ -25,6 +26,6 @@ it('renders without crashing', () => {
               }
             }
           }
-        })
+        }, { panelId: 0 })
     ))
 })
