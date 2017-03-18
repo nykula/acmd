@@ -26,17 +26,11 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Mock back-end: List, view, edit, copy, move, mkdir, touch and delete
 
-- [ ] Retry on remote error, remounting if necessary
-
-- [ ] Prompt whether to continue after 3 retries
-
 - [ ] Multiple tabs on each panel
 
 - [x] Local back-end
 
 - [x] Gvfs back-end
-
-- [ ] Passive FTP connection
 
 - [x] Sort files by name, ext or date
 
@@ -45,8 +39,6 @@ yarn run coverage && xdg-open coverage/index.html
 - [x] Show file permissions
 
 - [x] Icons for common file and medium (drive) types
-
-- [ ] Toggle lowercasing 8.3 filenames after first letter
 
 - [ ] Toggle dotfiles visibility with a button
 
