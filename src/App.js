@@ -20,7 +20,7 @@ exports.render = () => {
         h(MountList, { panelId: 1 })
       ]),
       h('h-separator'),
-      h('h-box', { spacing: 1 }, [
+      h('h-box', { homogeneous: true, spacing: 1 }, [
         [0, 1].map(panelId => h(Panel, {
           id: panelId,
           key: panelId
