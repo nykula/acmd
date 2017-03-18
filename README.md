@@ -58,7 +58,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [ ] Create gvfs mount, list gvfs mounts for open and unmount
 
-- [ ] Find out with xdg mime query how to open file in different ways
+- [x] Find out with xdg mime query how to open file in different ways
 
 - [ ] Open terminal in current directory
 

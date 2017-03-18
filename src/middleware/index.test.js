@@ -98,6 +98,7 @@ it('lists files in a directory', () => {
       next_files_finish: () => [{
         list_attributes: () => ['someNamespace::someKey'],
         get_attribute_as_string: () => 'someValue',
+        get_content_type: () => 'text/plain',
         get_display_name: () => 'file.txt',
         get_file_type: () => 2,
         get_name: () => '?@$/@!#$/*@!)(#</>E',
@@ -111,6 +112,43 @@ it('lists files in a directory', () => {
 
   const props = {
     Gio: {
+      AppInfo: {
+        get_all_for_type: () => [
+          {
+            get_commandline: () => '/usr/share/code/code --unity-launch %U',
+            get_display_name: () => 'Visual Studio Code',
+            get_icon: () => ({
+              to_string: () => 'code'
+            })
+          },
+          {
+            get_commandline: () => '/usr/bin/gedit %U',
+            get_display_name: () => 'Text Editor',
+            get_icon: () => ({
+              to_string: () => 'gedit'
+            })
+          },
+          {
+            get_commandline: () => '/usr/bin/foobar %U',
+            get_display_name: () => 'Foobar',
+            get_icon: () => null
+          },
+          {
+            get_commandline: () => '/usr/bin/gedit %U',
+            get_display_name: () => 'Text Editor',
+            get_icon: () => ({
+              to_string: () => 'gedit'
+            })
+          }
+        ],
+        get_default_for_type: () => ({
+          get_commandline: () => '/usr/bin/gedit %U',
+          get_display_name: () => 'Text Editor',
+          get_icon: () => ({
+            to_string: () => 'gedit'
+          })
+        })
+      },
       FileQueryInfoFlags: {},
       FileType: {
         'typeA': 0,
@@ -141,6 +179,7 @@ it('lists files in a directory', () => {
     result: {
       files: [
         {
+          contentType: 'text/plain',
           displayName: 'file.txt',
           fileType: 'typeC',
           name: '?@$/@!#$/*@!)(#</>E',
@@ -148,7 +187,24 @@ it('lists files in a directory', () => {
           size: 1,
           attributes: {
             'someNamespace::someKey': 'someValue'
-          }
+          },
+          handlers: [
+            {
+              commandline: '/usr/bin/gedit %U',
+              displayName: 'Text Editor',
+              icon: 'gedit'
+            },
+            {
+              commandline: '/usr/share/code/code --unity-launch %U',
+              displayName: 'Visual Studio Code',
+              icon: 'code'
+            },
+            {
+              commandline: '/usr/bin/foobar %U',
+              displayName: 'Foobar',
+              icon: null
+            }
+          ]
         }
       ]
     }

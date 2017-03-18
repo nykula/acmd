@@ -43,6 +43,7 @@ require('./utils/GtkDom').app({
         Gio: Gio,
         Gtk: Gtk
       }),
+      Gtk: Gtk,
       win: win
     })
 

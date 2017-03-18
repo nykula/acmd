@@ -22,6 +22,7 @@ exports.default = new Lang.Class({
     this._serializeMount = Lang.bind(this, this._serializeMount)
 
     this.drives = this.drives.bind(this)
+    this.launch = this.launch.bind(this)
     this.ls = this.ls.bind(this)
     this.mkdir = this.mkdir.bind(this)
     this.mount = this.mount.bind(this)
@@ -112,6 +113,20 @@ exports.default = new Lang.Class({
   },
 
   /**
+   * Opens paths in an application.
+   */
+  launch: function (handler, paths) {
+    const gAppInfo = this.Gio.AppInfo.create_from_commandline(
+      handler.commandline,
+      null,
+      this.Gio.AppInfoCreateFlags.NONE
+    )
+
+    const gFiles = paths.map(x => this.Gio.File.new_for_path(x))
+    gAppInfo.launch(gFiles, null)
+  },
+
+  /**
    * For every file in a given directory, lists its display name, name,
    * modification time and size. Also lists standard, access and ownership
    * attributes as strings.
@@ -166,13 +181,41 @@ exports.default = new Lang.Class({
             return prev
           }, {})
 
+        const contentType = gFileInfo.get_content_type()
+        const gAppInfos = this.Gio.AppInfo.get_all_for_type(contentType)
+
+        const def = this.Gio.AppInfo.get_default_for_type(contentType, false)
+        if (def) {
+          gAppInfos.unshift(def)
+        }
+
+        const handlers = gAppInfos
+          .map(gAppInfo => {
+            const icon = gAppInfo.get_icon()
+            return {
+              commandline: gAppInfo.get_commandline(),
+              displayName: gAppInfo.get_display_name(),
+              icon: icon ? icon.to_string() : null
+            }
+          })
+          .filter((x, i, xs) => {
+            for (let j = 0; j < i; j++) {
+              if (xs[j].commandline === x.commandline) {
+                return false
+              }
+            }
+            return true
+          })
+
         const file = {
+          contentType: contentType,
           displayName: gFileInfo.get_display_name(),
           fileType: Object.keys(this.Gio.FileType)[gFileInfo.get_file_type()],
           name: gFileInfo.get_name(),
           modificationTime: gFileInfo.get_modification_time().tv_sec,
           size: gFileInfo.get_size(),
-          attributes: attributes
+          attributes: attributes,
+          handlers: handlers
         }
 
         return file

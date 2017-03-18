@@ -17,6 +17,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
       exports.handleCp(action)(dispatch, getState, extra)
       break
 
+    case actions.CTX_MENU:
+      exports.handleCtxMenu(action)(dispatch, getState, extra)
+      break
+
     case actions.DRIVES:
       exports.handleDrives(action)(dispatch, getState, extra)
       break
@@ -65,16 +69,17 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
   return next(action)
 }
 
-exports.handleActivated = action => (dispatch, getState) => {
+exports.handleActivated = action => (dispatch, getState, extra) => {
   const state = getState()
 
   const file = state.files.byPanel[action.panelId][action.index]
   const location = state.locations[action.panelId]
   const path = location.replace(/\/?$/, '') + '/' + file.name
 
-  // if (file.fileType !== 'DIRECTORY') {
-  //   return this.handleView()
-  // }
+  if (file.fileType !== 'DIRECTORY') {
+    exports.handleCtxMenu(action)(dispatch, getState, extra)
+    return
+  }
 
   // if (file.name === '..') {
   //   return this.handleLevelUp()
@@ -103,6 +108,45 @@ exports.handleCp = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   } else if (isResponse(action)) {
     dispatch(actions.refresh())
   }
+}
+
+exports.handleCtxMenu = action => (dispatch, getState, { Dialog, gioAdapter, Gtk }) => {
+  const file = getActiveFile(getState())
+
+  if (file.handlers.length === 0) {
+    Dialog.alert('No handlers registered for ' + file.contentType + '.')
+    return
+  }
+
+  const menu = new Gtk.Menu()
+
+  file.handlers.forEach(handler => {
+    let item
+
+    if (handler.icon) {
+      item = new Gtk.MenuItem()
+
+      const box = new Gtk.Box()
+      item.add(box)
+
+      const image = Gtk.Image.new_from_icon_name(handler.icon, Gtk.IconSize.MENU)
+      box.add(image)
+
+      const label = new Gtk.Label({ label: handler.displayName })
+      box.add(label)
+    } else {
+      item = new Gtk.MenuItem({ label: handler.displayName })
+    }
+
+    item.connect('activate', () => {
+      gioAdapter.launch(handler, [ file.path ])
+    })
+
+    menu.add(item)
+  })
+
+  menu.show_all()
+  menu.popup(null, null, null, null, null)
 }
 
 exports.handleDrives = action => (dispatch, getState, { gioAdapter }) => {
