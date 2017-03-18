@@ -30,7 +30,7 @@ const state = {
     byPanel: { 0: files },
     sortedBy: { 0: 'ext' }
   },
-  locations: { 0: '/' },
+  locations: { 0: 'file:///' },
   panels: {
     active: 0
   },
@@ -55,7 +55,7 @@ const state = {
         name: 'System',
         icon: 'media-harddisk',
         iconType: 'ICON_NAME',
-        root: '/',
+        rootUri: 'file:///',
         attributes: {}
       }
     }

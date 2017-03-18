@@ -90,7 +90,7 @@ exports.renderTabList = ({ key, tabs }) => {
 }
 
 exports.renderLocation = ({ isActive, key, location }) => {
-  const label = location.replace(/\/?$/, '/*')
+  const label = location.replace(/\/?$/, '/*').replace(/^file:\/\//, '')
   return (
     h('list-box', {
       key: key,

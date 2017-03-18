@@ -34,7 +34,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Local back-end
 
-- [ ] Gvfs back-end
+- [x] Gvfs back-end
 
 - [ ] Passive FTP connection
 

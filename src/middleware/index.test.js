@@ -13,7 +13,7 @@ it('provides info about drives', () => {
   const props = {
     Gio: {
       File: {
-        new_for_path: () => ({
+        new_for_uri: () => ({
           query_filesystem_info: () => ({
             get_attribute_as_string: () => 1,
             list_attributes: () => ['filesystem::free']
@@ -230,7 +230,7 @@ it('lists files in a directory', () => {
         'typeC': 0
       },
       VolumeMonitor: { get: () => null },
-      file_new_for_path: () => dirGFile
+      file_new_for_uri: () => dirGFile
     },
     GLib: {}
   }
@@ -240,14 +240,14 @@ it('lists files in a directory', () => {
   dispatchRequest({
     type: actions.LS,
     requestId: 2,
-    path: '/',
+    uri: 'file:///',
     panel: 0
   })
 
   expect(responses[responses.length - 1]).toMatch({
     type: actions.LS,
     requestId: 2,
-    path: '/',
+    uri: 'file:///',
     panel: 0,
     result: {
       files: [
@@ -290,7 +290,7 @@ it('creates a directory', () => {
   const props = {
     Gio: {
       VolumeMonitor: { get: () => null },
-      file_new_for_path: () => ({
+      file_new_for_uri: () => ({
         make_directory_async: () => {
           arguments[arguments.length - 1]()
         }
@@ -304,14 +304,14 @@ it('creates a directory', () => {
   dispatchRequest({
     type: actions.MKDIR,
     requestId: 3,
-    path: '/someDir',
+    uri: 'file:///someDir',
     panel: 0
   })
 
   expect(responses[responses.length - 1]).toMatch({
     type: actions.MKDIR,
     requestId: 3,
-    path: '/someDir',
+    uri: 'file:///someDir',
     result: {
       ok: true
     }
@@ -391,7 +391,7 @@ it('unmounts a volume', () => {
 it('opens a terminal in the current directory', () => {
   const props = {
     getState: () => ({
-      locations: { 0: '/' },
+      locations: { 0: 'file:///' },
       panels: { active: 0 }
     }),
     Gio: {

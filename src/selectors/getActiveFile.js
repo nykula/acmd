@@ -6,7 +6,7 @@ exports.default = state => {
   const activeFile = state.files.active[activePanel]
   const files = state.files.byPanel[activePanel]
   const file = files[activeFile]
-  const path = location.replace(/\/?$/, '') + '/' + file.name
+  const uri = location.replace(/\/?$/, '') + '/' + file.name
 
-  return assign({}, file, { path: path })
+  return assign({}, file, { uri: uri })
 }

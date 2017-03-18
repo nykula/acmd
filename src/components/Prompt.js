@@ -10,7 +10,7 @@ exports.Prompt = ({ handleActivate, location }) => {
       h('box', { border_width: 4 }),
       h('label', {
         ellipsize: Pango.EllipsizeMode.MIDDLE,
-        label: location + '$'
+        label: location.replace(/^file:\/\//, '') + '$'
       }),
       h('box', { border_width: 4 }),
       h('entry', { expand: true, on_activate: handleActivate })

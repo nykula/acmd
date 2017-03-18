@@ -42,16 +42,16 @@ exports.default = new Lang.Class({
 
   /**
    * Copies sources to a destination directory. Recurses if a source is a
-   * directory. Splices the first path component relative to the source if the
-   * source path ends with a slash, or if there is only one source path and the
+   * directory. Splices the first URI component relative to the source if the
+   * source URI ends with a slash, or if there is only one source URI and the
    * destination isn't an existing directory. Dispatches progress reports.
    */
   cp: function (action, dispatch) {
-    const destPath = action.destPath
-    const srcPaths = action.srcPaths
+    const destUri = action.destUri
+    const srcUris = action.srcUris
 
     try {
-      const data = this.prepare(destPath, srcPaths)
+      const data = this.prepare(destUri, srcUris)
 
       data.files.forEach(file => {
         if (file.gFileInfo.get_file_type() === Gio.FileType.DIRECTORY) {
@@ -59,8 +59,8 @@ exports.default = new Lang.Class({
           return
         }
 
-        const filePath = file.gFile.get_path()
-        const fileDestPath = file.dest.get_path()
+        const fileUri = file.gFile.get_uri()
+        const fileDestUri = file.dest.get_uri()
 
         file.gFile.copy(
           file.dest,
@@ -71,8 +71,8 @@ exports.default = new Lang.Class({
               type: 'CP',
               requestId: action.requestId,
               progress: {
-                src: filePath,
-                dest: fileDestPath,
+                src: fileUri,
+                dest: fileDestUri,
                 doneSize: doneSize,
                 size: size,
                 totalDoneSize: data.totalDoneSize + doneSize,
@@ -105,8 +105,8 @@ exports.default = new Lang.Class({
    */
   mv: function (action, dispatch) {
     const requestId = action.requestId
-    const destPath = action.destPath
-    const srcPaths = action.srcPaths
+    const destUri = action.destUri
+    const srcUris = action.srcUris
     let failed = false
 
     const handleError = (error) => {
@@ -119,8 +119,8 @@ exports.default = new Lang.Class({
     }
 
     this.cp({
-      destPath: destPath,
-      srcPaths: srcPaths
+      destUri: destUri,
+      srcUris: srcUris
     }, (_action) => {
       if (_action.error) {
         failed = true
@@ -139,7 +139,7 @@ exports.default = new Lang.Class({
       }
     })
 
-    this.rm({ paths: srcPaths }, (_action) => {
+    this.rm({ uris: srcUris }, (_action) => {
       if (_action.error) {
         failed = true
         handleError(_action.error)
@@ -172,10 +172,10 @@ exports.default = new Lang.Class({
    * Deletes files. Recurses into directories. Dispatches progress reports.
    */
   rm: function (action, dispatch) {
-    const paths = action.paths
+    const uris = action.uris
 
     try {
-      const gFiles = paths.map(x => Gio.file_new_for_path(x))
+      const gFiles = uris.map(x => Gio.file_new_for_uri(x))
 
       const files = gFiles.reduce((prev, gFile) => {
         return prev.concat(this.flatten(gFile).files)
@@ -189,7 +189,7 @@ exports.default = new Lang.Class({
       }
 
       data.files.forEach(file => {
-        const filePath = file.gFile.get_path()
+        const fileUri = file.gFile.get_uri()
         file.gFile.delete(null)
         data.totalDone++
 
@@ -197,7 +197,7 @@ exports.default = new Lang.Class({
           type: 'RM',
           requestId: action.requestId,
           progress: {
-            path: filePath,
+            uri: fileUri,
             totalDone: data.totalDone
           }
         })
@@ -222,11 +222,11 @@ exports.default = new Lang.Class({
   },
 
   /**
-   * Traverses source paths. Maps every source file to a destination file.
+   * Traverses source URIs. Maps every source file to a destination file.
    * Initializes fields to keep track of processed size.
    */
-  prepare: function (destPath, srcPaths) {
-    const dest = Gio.file_new_for_path(destPath)
+  prepare: function (destUri, srcUris) {
+    const dest = Gio.file_new_for_uri(destUri)
 
     const isDestExistingDir = dest.query_exists(null) && dest.query_info(
       'standard::*',
@@ -234,36 +234,36 @@ exports.default = new Lang.Class({
       null
     ).get_file_type() === Gio.FileType.DIRECTORY
 
-    const willCreateDest = srcPaths.length === 1 && !isDestExistingDir
+    const willCreateDest = srcUris.length === 1 && !isDestExistingDir
 
-    const data = srcPaths.reduce((prev, srcPath) => {
-      const src = Gio.file_new_for_path(srcPath)
+    const data = srcUris.reduce((prev, srcUri) => {
+      const src = Gio.file_new_for_uri(srcUri)
       const srcName = src.get_basename()
-      const splice = srcPath[srcPath.length - 1] === '/' || willCreateDest
+      const splice = srcUri[srcUri.length - 1] === '/' || willCreateDest
       const data = this.flatten(src)
 
       data.files.forEach(file => {
         if (!splice && !file.relativePath) {
-          file.destPath = dest.get_child(srcName).get_path()
-          file.dest = Gio.file_new_for_path(file.destPath)
+          file.destUri = dest.get_child(srcName).get_uri()
+          file.dest = Gio.file_new_for_uri(file.destUri)
           return
         }
 
         if (!splice && file.relativePath) {
-          file.destPath = dest.get_child(srcName).get_child(file.relativePath).get_path()
-          file.dest = Gio.file_new_for_path(file.destPath)
+          file.destUri = dest.get_child(srcName).get_child(file.relativePath).get_uri()
+          file.dest = Gio.file_new_for_uri(file.destUri)
           return
         }
 
         if (splice && !file.relativePath) {
-          file.destPath = dest.get_path()
+          file.destUri = dest.get_uri()
           file.dest = dest
           return
         }
 
         if (splice && file.relativePath) {
-          file.destPath = dest.get_child(file.relativePath).get_path()
-          file.dest = Gio.file_new_for_path(file.destPath)
+          file.destUri = dest.get_child(file.relativePath).get_uri()
+          file.dest = Gio.file_new_for_uri(file.destUri)
           return
         }
       })

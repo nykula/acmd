@@ -12,7 +12,7 @@ const initialState = {
       name: '/',
       icon: 'computer',
       iconType: 'ICON_NAME',
-      root: '/',
+      rootUri: 'file:///',
       attributes: {}
     }
   }

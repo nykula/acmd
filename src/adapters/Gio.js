@@ -41,7 +41,7 @@ exports.default = new Lang.Class({
 
     const gDrives = this.gVolMon.get_connected_drives()
     const drives = gDrives.map(this._serializeDrive)
-    const rootInfo = this.Gio.File.new_for_path('/').query_filesystem_info('*', null)
+    const rootInfo = this.Gio.File.new_for_uri('file:///').query_filesystem_info('*', null)
     const mounts = [{
       name: '/',
       icon: 'computer',
@@ -133,16 +133,16 @@ exports.default = new Lang.Class({
   },
 
   /**
-   * Opens paths in an application.
+   * Opens URIs in an application.
    */
-  launch: function (handler, paths) {
+  launch: function (handler, uris) {
     const gAppInfo = this.Gio.AppInfo.create_from_commandline(
       handler.commandline,
       null,
       this.Gio.AppInfoCreateFlags.NONE
     )
 
-    const gFiles = paths.map(x => this.Gio.File.new_for_path(x))
+    const gFiles = uris.map(x => this.Gio.File.new_for_uri(x))
     gAppInfo.launch(gFiles, null)
   },
 
@@ -154,10 +154,10 @@ exports.default = new Lang.Class({
   ls: function (props) {
     const handleError = props.onError
     const handleSuccess = props.onSuccess
-    const path = props.path
+    const uri = props.uri
 
     const handleRequest = () => {
-      const dir = this.Gio.file_new_for_path(path)
+      const dir = this.Gio.file_new_for_uri(uri)
       dir.enumerate_children_async(
         'standard::*,access::*,owner::*,time::*,unix::*',
         this.Gio.FileQueryInfoFlags.NONE,
@@ -255,9 +255,9 @@ exports.default = new Lang.Class({
   mkdir: function (props) {
     const handleError = props.onError
     const handleSuccess = props.onSuccess
-    const path = props.path
+    const uri = props.uri
 
-    const dir = this.Gio.file_new_for_path(path)
+    const dir = this.Gio.file_new_for_uri(uri)
 
     dir.make_directory_async(
       this.GLib.PRIORITY_DEFAULT,

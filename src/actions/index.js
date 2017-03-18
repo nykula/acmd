@@ -1,6 +1,6 @@
 exports.CP = 'CP'
-exports.cp = (srcPaths, destPath) => {
-  if (!srcPaths) {
+exports.cp = (srcUris, destUri) => {
+  if (!srcUris) {
     return {
       type: exports.CP
     }
@@ -8,8 +8,8 @@ exports.cp = (srcPaths, destPath) => {
   return {
     type: exports.CP,
     requestId: Date.now(),
-    srcPaths: srcPaths,
-    destPath: destPath
+    srcUris: srcUris,
+    destUri: destUri
   }
 }
 
@@ -48,29 +48,29 @@ exports.levelUp = ({ panelId }) => {
 }
 
 exports.LS = 'LS'
-exports.ls = (panelId, path) => {
+exports.ls = (panelId, uri) => {
   return {
     type: exports.LS,
     requestId: Date.now(),
     panel: panelId,
-    path: path
+    uri: uri
   }
 }
-exports.lsError = ({ panel, path, requestId, error }) => {
+exports.lsError = ({ panel, uri, requestId, error }) => {
   return {
     type: exports.LS,
     panel: panel,
-    path: path,
+    uri: uri,
     requestId: requestId,
     ready: true,
     error: { message: error.message }
   }
 }
-exports.lsSuccess = ({ panel, path, requestId, result }) => {
+exports.lsSuccess = ({ panel, uri, requestId, result }) => {
   return {
     type: exports.LS,
     panel: panel,
-    path: path,
+    uri: uri,
     requestId: requestId,
     ready: true,
     result: result
@@ -78,26 +78,26 @@ exports.lsSuccess = ({ panel, path, requestId, result }) => {
 }
 
 exports.MKDIR = 'MKDIR'
-exports.mkdir = path => {
+exports.mkdir = uri => {
   return {
     type: exports.MKDIR,
     requestId: Date.now(),
-    path: path
+    uri: uri
   }
 }
-exports.mkdirError = ({ path, requestId, error }) => {
+exports.mkdirError = ({ uri, requestId, error }) => {
   return {
     type: exports.MKDIR,
-    path: path,
+    uri: uri,
     requestId: requestId,
     ready: true,
     error: error
   }
 }
-exports.mkdirSuccess = ({ path, requestId, result }) => {
+exports.mkdirSuccess = ({ uri, requestId, result }) => {
   return {
     type: exports.MKDIR,
-    path: path,
+    uri: uri,
     requestId: requestId,
     ready: true,
     result: result
@@ -124,8 +124,8 @@ exports.mountReady = requestId => {
 }
 
 exports.MV = 'MV'
-exports.mv = (srcPaths, destPath) => {
-  if (!srcPaths) {
+exports.mv = (srcUris, destUri) => {
+  if (!srcUris) {
     return {
       type: exports.MV
     }
@@ -133,8 +133,8 @@ exports.mv = (srcPaths, destPath) => {
   return {
     type: exports.MV,
     requestId: Date.now(),
-    srcPaths: srcPaths,
-    destPath: destPath
+    srcUris: srcUris,
+    destUri: destUri
   }
 }
 
@@ -144,8 +144,8 @@ exports.refresh = () => ({
 })
 
 exports.RM = 'RM'
-exports.rm = (paths) => {
-  if (!paths) {
+exports.rm = uris => {
+  if (!uris) {
     return {
       type: exports.RM
     }
@@ -153,7 +153,7 @@ exports.rm = (paths) => {
   return {
     type: exports.RM,
     requestId: Date.now(),
-    paths: paths
+    uris: uris
   }
 }
 

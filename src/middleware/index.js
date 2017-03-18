@@ -74,7 +74,7 @@ exports.handleActivated = action => (dispatch, getState, extra) => {
 
   const file = state.files.byPanel[action.panelId][action.index]
   const location = state.locations[action.panelId]
-  const path = location.replace(/\/?$/, '') + '/' + file.name
+  const uri = location.replace(/\/?$/, '') + '/' + file.name
 
   if (file.fileType !== 'DIRECTORY') {
     exports.handleCtxMenu(action)(dispatch, getState, extra)
@@ -85,7 +85,7 @@ exports.handleActivated = action => (dispatch, getState, extra) => {
   //   return this.handleLevelUp()
   // }
 
-  dispatch(actions.ls(action.panelId, path))
+  dispatch(actions.ls(action.panelId, uri))
 }
 
 exports.handleCp = action => (dispatch, getState, { Dialog, gioAdapter }) => {
@@ -95,12 +95,12 @@ exports.handleCp = action => (dispatch, getState, { Dialog, gioAdapter }) => {
     const file = getActiveFile(state)
     const target = state.locations[state.panels.active === 0 ? 1 : 0]
 
-    const path = file.path
-    let targetPath = target + '/' + file.name
+    const uri = file.uri
+    let destUri = target + '/' + file.name
 
-    Dialog.prompt('Copy ' + path + ' to:', targetPath, (targetPath) => {
-      if (targetPath) {
-        dispatch(actions.cp([path], targetPath))
+    Dialog.prompt('Copy ' + uri + ' to:', destUri, destUri => {
+      if (destUri) {
+        dispatch(actions.cp([uri], destUri))
       }
     })
   } else if (isRequest(action)) {
@@ -139,7 +139,7 @@ exports.handleCtxMenu = action => (dispatch, getState, { Dialog, gioAdapter, Gtk
     }
 
     item.connect('activate', () => {
-      gioAdapter.launch(handler, [ file.path ])
+      gioAdapter.launch(handler, [file.uri])
     })
 
     menu.add(item)
@@ -168,7 +168,7 @@ exports.handleEditor = action => (dispatch, getState, { Dialog }) => {
   const state = getState()
 
   const file = getActiveFile(state)
-  Dialog.alert('Editing ' + file.path, noop)
+  Dialog.alert('Editing ' + file.uri, noop)
 }
 
 exports.handleLevelUp = action => (dispatch, getState) => {
@@ -189,15 +189,15 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
   if (isRequest(action)) {
-    const { panel, path, requestId } = action
+    const { panel, uri, requestId } = action
 
     gioAdapter.ls({
-      path: path,
+      uri: uri,
 
       onError: (err) => {
         dispatch(actions.lsError({
           panel: panel,
-          path: path,
+          uri: uri,
           requestId: requestId,
           error: { message: err.message }
         }))
@@ -206,7 +206,7 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
       onSuccess: (files) => {
         dispatch(actions.lsSuccess({
           panel: panel,
-          path: path,
+          uri: uri,
           requestId: requestId,
           result: { files: files }
         }))
@@ -214,8 +214,8 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
     })
   } else if (isError(action)) {
     Dialog.alert(action.error.message, () => {
-      if (state.locations[action.panel] !== '/') {
-        dispatch(actions.ls(action.panel, '/'))
+      if (state.locations[action.panel] !== 'file:///') {
+        dispatch(actions.ls(action.panel, 'file:///'))
       }
     })
   }
@@ -235,14 +235,14 @@ exports.handleMkdir = action => (dispatch, getState, { Dialog, gioAdapter }) => 
       }
     })
   } else if (isRequest(action)) {
-    const { path, requestId } = action
+    const { uri, requestId } = action
 
     gioAdapter.mkdir({
-      path: path,
+      uri: uri,
 
       onError: (err) => {
         dispatch(actions.mkdirError({
-          path: path,
+          uri: uri,
           requestId: requestId,
           error: { message: err.message }
         }))
@@ -250,7 +250,7 @@ exports.handleMkdir = action => (dispatch, getState, { Dialog, gioAdapter }) => 
 
       onSuccess: () => {
         dispatch(actions.mkdirSuccess({
-          path: path,
+          uri: uri,
           requestId: requestId,
           result: { ok: true }
         }))
@@ -284,12 +284,12 @@ exports.handleMv = action => (dispatch, getState, { Dialog, gioAdapter }) => {
     const file = getActiveFile(state)
     const target = state.locations[state.panels.active === 0 ? 1 : 0]
 
-    const path = file.path
-    let targetPath = target + '/' + file.name
+    const uri = file.uri
+    let destUri = target + '/' + file.name
 
-    Dialog.prompt('Move ' + path + ' to:', targetPath, (targetPath) => {
-      if (targetPath) {
-        dispatch(actions.mv([path], targetPath))
+    Dialog.prompt('Move ' + uri + ' to:', destUri, destUri => {
+      if (destUri) {
+        dispatch(actions.mv([uri], destUri))
       }
     })
   } else if (isRequest(action)) {
@@ -310,10 +310,10 @@ exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
   if (isTrigger(action)) {
-    const path = getActiveFile(state).path
+    const uri = getActiveFile(state).uri
 
-    Dialog.confirm('Are you sure you want to remove ' + path + '?', (yes) => {
-      dispatch(actions.rm([path]))
+    Dialog.confirm('Are you sure you want to remove ' + uri + '?', (yes) => {
+      dispatch(actions.rm([uri]))
     })
   } else if (isRequest(action)) {
     gioAdapter.work.run(action, dispatch)
@@ -322,12 +322,17 @@ exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   }
 }
 
-exports.handleTerminal = action => (dispatch, getState, { gioAdapter }) => {
+exports.handleTerminal = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
-  const cwd = state.locations[state.panels.active]
+  const location = state.locations[state.panels.active]
+
+  if (location.indexOf('file:///') !== 0) {
+    Dialog.alert('Operation not supported.', noop)
+    return
+  }
 
   gioAdapter.spawn({
-    cwd: cwd,
+    cwd: location.replace(/^file:\/\//, ''),
     argv: ['x-terminal-emulator']
   })
 }
@@ -351,5 +356,5 @@ exports.handleUnmount = action => (dispatch, getState, { gioAdapter }) => {
 exports.handleView = action => (dispatch, getState, { Dialog }) => {
   const state = getState()
   const file = getActiveFile(state)
-  Dialog.alert('Viewing ' + file.path, noop)
+  Dialog.alert('Viewing ' + file.uri, noop)
 }

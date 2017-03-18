@@ -15,18 +15,18 @@ exports.Mount = function (props) {
 exports.Mount.prototype = Object.create(Component.prototype)
 
 exports.Mount.prototype.handleClicked = function () {
-  const { activePath, dispatch, mount } = this.props
-  const path = mount.rootUri && mount.rootUri.replace(/^file:\/\//, '')
-  const isActive = mount.rootUri && activePath.indexOf(path) === 0
+  const { activeUri, dispatch, mount } = this.props
+  const uri = mount.rootUri
+  const isActive = mount.rootUri && activeUri.indexOf(uri) === 0
 
   const menu = new Gtk.Menu()
   let item
 
-  if (path !== activePath) {
+  if (uri !== activeUri) {
     item = new Gtk.MenuItem()
     item.label = 'Open'
     item.connect('activate', () => {
-      dispatch(actions.ls(this.props.panelId, path))
+      dispatch(actions.ls(this.props.panelId, uri))
     })
     menu.add(item)
   }
@@ -78,11 +78,11 @@ exports.Mount.prototype.render = function () {
   )
 }
 
-exports.MountList = ({ activePath, dispatch, panelId, mounts }) => (
+exports.MountList = ({ activeUri, dispatch, panelId, mounts }) => (
   h('box', [
     mounts.names.map(x => mounts.entities[x]).map(mount => {
       return h(exports.Mount, {
-        activePath: activePath,
+        activeUri: activeUri,
         dispatch: dispatch,
         mount: mount,
         panelId: panelId,
@@ -94,7 +94,7 @@ exports.MountList = ({ activePath, dispatch, panelId, mounts }) => (
 )
 
 exports.mapStateToProps = (state, { panelId }) => ({
-  activePath: state.locations[panelId],
+  activeUri: state.locations[panelId],
   mounts: state.mounts
 })
 
