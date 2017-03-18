@@ -17,10 +17,6 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
       exports.handleCp(action)(dispatch, getState, extra)
       break
 
-    case actions.CTX_MENU:
-      exports.handleCtxMenu(action)(dispatch, getState, extra)
-      break
-
     case actions.DRIVES:
       exports.handleDrives(action)(dispatch, getState, extra)
       break
@@ -55,6 +51,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
 
     case actions.RM:
       exports.handleRm(action)(dispatch, getState, extra)
+      break
+
+    case actions.TERMINAL:
+      exports.handleTerminal(action)(dispatch, getState, extra)
       break
 
     case actions.UNMOUNT:
@@ -320,6 +320,16 @@ exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   } else if (isResponse(action)) {
     dispatch(actions.refresh())
   }
+}
+
+exports.handleTerminal = action => (dispatch, getState, { gioAdapter }) => {
+  const state = getState()
+  const cwd = state.locations[state.panels.active]
+
+  gioAdapter.spawn({
+    cwd: cwd,
+    argv: ['x-terminal-emulator']
+  })
 }
 
 exports.handleUnmount = action => (dispatch, getState, { gioAdapter }) => {

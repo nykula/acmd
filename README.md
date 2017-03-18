@@ -60,6 +60,6 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Find out with xdg mime query how to open file in different ways
 
-- [ ] Open terminal in current directory
+- [x] Open terminal in current directory
 
 - [ ] Run command in current directory

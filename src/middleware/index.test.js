@@ -388,6 +388,27 @@ it('unmounts a volume', () => {
   }])
 })
 
+it('opens a terminal in the current directory', () => {
+  const props = {
+    getState: () => ({
+      locations: { 0: '/' },
+      panels: { active: 0 }
+    }),
+    Gio: {
+      SubprocessFlags: {},
+      SubprocessLauncher: function () {
+        this.set_cwd = noop
+        this.set_flags = noop
+        this.spawnv = noop
+      },
+      VolumeMonitor: { get: noop }
+    }
+  }
+
+  const { dispatchRequest } = setup(props)
+  dispatchRequest({ type: actions.TERMINAL })
+})
+
 function setup (props) {
   props.gioAdapter = new GioAdapter(props)
 
@@ -399,7 +420,7 @@ function setup (props) {
 
   const store = {
     dispatch: dispatchResponse,
-    getState: noop
+    getState: props.getState || noop
   }
 
   const next = noop

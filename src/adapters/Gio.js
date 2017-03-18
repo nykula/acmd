@@ -26,6 +26,7 @@ exports.default = new Lang.Class({
     this.ls = this.ls.bind(this)
     this.mkdir = this.mkdir.bind(this)
     this.mount = this.mount.bind(this)
+    this.spawn = this.spawn.bind(this)
     this.unmount = this.unmount.bind(this)
 
     this.gVolMon = this.Gio.VolumeMonitor.get()
@@ -269,6 +270,16 @@ exports.default = new Lang.Class({
         }
       }
     )
+  },
+
+  /**
+   * Spawns a subprocess in a given working directory.
+   */
+  spawn: function ({ argv, cwd }) {
+    const launcher = new this.Gio.SubprocessLauncher()
+    launcher.set_cwd(cwd)
+    launcher.set_flags(this.Gio.SubprocessFlags.NONE)
+    return launcher.spawnv(argv)
   },
 
   /**

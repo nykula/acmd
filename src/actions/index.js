@@ -157,6 +157,8 @@ exports.rm = (paths) => {
   }
 }
 
+exports.TERMINAL = 'TERMINAL'
+
 exports.UNMOUNT = 'UNMOUNT'
 exports.unmount = uri => {
   return {
