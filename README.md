@@ -56,7 +56,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] List drives from /dev and their labels for udisks mount, open and unmount
 
-- [ ] Create gvfs mount, list gvfs mounts for open and unmount
+- [x] Create gvfs mount, list gvfs mounts for open and unmount
 
 - [x] Find out with xdg mime query how to open file in different ways
 

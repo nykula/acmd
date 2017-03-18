@@ -13,6 +13,7 @@ const items = [
   { icon_name: 'go-previous', tooltip_text: 'Back' },
   { icon_name: 'go-next', tooltip_text: 'Forward' },
   'MISC',
+  { type: indexActions.LS, icon_name: 'go-jump', tooltip_text: 'Go to URI' },
   { icon_name: 'document-new', tooltip_text: 'Create file' },
   { type: indexActions.TERMINAL, icon_name: 'utilities-terminal', tooltip_text: 'Terminal' },
   { control: 'TOGGLE', icon_name: 'dialog-warning', tooltip_text: 'Hidden files' }

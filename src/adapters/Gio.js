@@ -1,6 +1,7 @@
 /* global imports */
 const find = require('lodash/find')
 const Lang = imports.lang
+const Uri = require('url-parse')
 const WorkerRunner = require('./WorkerRunner').default
 
 /**
@@ -74,18 +75,54 @@ exports.default = new Lang.Class({
    * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Volume.html
    */
   mount: function (props) {
-    const handleSuccess = props.onSuccess
-    const identifier = props.identifier
+    let mountOperation
 
-    const gVolume = find(this.gVolMon.get_volumes(), _gVolume => {
-      return _gVolume.get_identifier(identifier.type) === identifier.value
-    })
+    if (props.identifier) {
+      const identifier = props.identifier
 
-    const mountOperation = new this.Gtk.MountOperation()
+      const gVolume = find(this.gVolMon.get_volumes(), _gVolume => {
+        return _gVolume.get_identifier(identifier.type) === identifier.value
+      })
 
-    gVolume.mount(this.Gio.MountMountFlags.NONE, mountOperation, null, () => {
-      handleSuccess()
-    })
+      mountOperation = new this.Gtk.MountOperation()
+
+      gVolume.mount(this.Gio.MountMountFlags.NONE, mountOperation, null, () => {
+        props.onSuccess()
+      })
+    } else {
+      const uri = new Uri(props.uri)
+      const { auth, username, password, host } = uri
+
+      if (!uri.pathname) {
+        uri.set('pathname', '/')
+      }
+
+      let mountOperation
+
+      if ((username && password) || auth === username + ':') {
+        mountOperation = new this.Gio.MountOperation()
+        mountOperation.connect('ask-password', () => {
+          mountOperation.set_domain(host)
+          mountOperation.set_username(username)
+          mountOperation.set_password(password)
+          mountOperation.reply(this.Gio.MountOperationResult.HANDLED)
+        })
+      } else {
+        mountOperation = new this.Gtk.MountOperation()
+      }
+
+      uri.set('password', '')
+      const gFile = this.Gio.File.new_for_uri(uri.toString())
+      gFile.mount_enclosing_volume(this.Gio.MountMountFlags.NONE, mountOperation, null, (_, result) => {
+        try {
+          gFile.mount_enclosing_volume_finish(result)
+        } catch (error) {
+          props.onError(error)
+          return
+        }
+        props.onSuccess(uri.toString())
+      })
+    }
   },
 
   _serializeVolume: function (gVolume) {

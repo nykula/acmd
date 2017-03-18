@@ -188,7 +188,30 @@ exports.handleLevelUp = action => (dispatch, getState) => {
 exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
-  if (isRequest(action)) {
+  if (isTrigger(action)) {
+    Dialog.prompt('List files at URI: ', '', input => {
+      if (input.indexOf('file:///') === 0) {
+        dispatch(actions.ls(state.panels.active, input))
+        return
+      }
+
+      if (input[0] === '/') {
+        dispatch(actions.ls(state.panels.active, 'file://' + input))
+        return
+      }
+
+      gioAdapter.mount({
+        uri: input,
+        onError: error => {
+          Dialog.alert(error.message, noop)
+        },
+        onSuccess: uri => {
+          dispatch(actions.ls(state.panels.active, uri))
+          dispatch(actions.drives(Date.now()))
+        }
+      })
+    })
+  } else if (isRequest(action)) {
     const { panel, uri, requestId } = action
 
     gioAdapter.ls({
@@ -227,11 +250,9 @@ exports.handleMkdir = action => (dispatch, getState, { Dialog, gioAdapter }) => 
     const activePanel = state.panels.active
     const location = state.locations[activePanel]
 
-    Dialog.prompt('Name of the new dir:', '', (name) => {
-      name = name.replace(/\//g, '_')
-
+    Dialog.prompt('Name of the new dir:', '', name => {
       if (name) {
-        dispatch(actions.mkdir(location + '/' + name))
+        dispatch(actions.mkdir(location + '/' + name.replace(/\//g, '_')))
       }
     })
   } else if (isRequest(action)) {

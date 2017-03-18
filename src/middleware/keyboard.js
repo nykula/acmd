@@ -59,5 +59,27 @@ exports.handleReleased = action => (dispatch, getState, { Gdk }) => {
     case Gdk.KEY_F4:
       dispatch(indexActions.editor())
       return
+
+    case Gdk.KEY_F5:
+      dispatch(indexActions.cp())
+      return
+
+    case Gdk.KEY_F6:
+      dispatch(indexActions.mv())
+      return
+
+    case Gdk.KEY_F7:
+      dispatch({ type: indexActions.MKDIR })
+      return
+
+    case Gdk.KEY_F8:
+      dispatch(indexActions.rm())
+      return
+
+    case Gdk.KEY_l:
+      if (action.ctrlKey) {
+        dispatch({ type: indexActions.LS })
+      }
+      return
   }
 }

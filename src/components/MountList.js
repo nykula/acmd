@@ -22,7 +22,7 @@ exports.Mount.prototype.handleClicked = function () {
   const menu = new Gtk.Menu()
   let item
 
-  if (uri !== activeUri) {
+  if (mount.rootUri && uri !== activeUri) {
     item = new Gtk.MenuItem()
     item.label = 'Open'
     item.connect('activate', () => {
@@ -31,7 +31,7 @@ exports.Mount.prototype.handleClicked = function () {
     menu.add(item)
   }
 
-  if (!isActive) {
+  if (mount.rootUri && !isActive) {
     item = new Gtk.MenuItem()
     item.label = 'Unmount'
     item.connect('activate', () => {
