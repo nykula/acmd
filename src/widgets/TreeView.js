@@ -1,4 +1,5 @@
 /* global imports */
+const Gio = imports.gi.Gio
 const GObject = imports.gi.GObject
 const Gtk = imports.gi.Gtk
 const Pango = imports.gi.Pango
@@ -16,7 +17,13 @@ exports.default.prototype.init = function (prev) {
   let node
 
   const store = new Gtk.ListStore()
-  store.set_column_types(this.props.cols.map(() => GObject.TYPE_STRING))
+  store.set_column_types(this.props.cols.map(col => {
+    if (col.attribute === 'gicon') {
+      return Gio.Icon
+    }
+
+    return GObject.TYPE_STRING
+  }))
 
   this.props.rows.forEach(row => {
     store.set(
@@ -73,7 +80,7 @@ exports.default.prototype.init = function (prev) {
     const tvCol = new Gtk.TreeViewColumn({ title: col.title })
     let renderer
 
-    if (col.attribute === 'icon-name') {
+    if (col.attribute === 'gicon') {
       renderer = new Gtk.CellRendererPixbuf()
     }
 

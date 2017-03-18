@@ -230,6 +230,8 @@ exports.default = new Lang.Class({
           contentType: contentType,
           displayName: gFileInfo.get_display_name(),
           fileType: Object.keys(this.Gio.FileType)[gFileInfo.get_file_type()],
+          icon: gFileInfo.get_icon().to_string(),
+          iconType: 'GICON',
           name: gFileInfo.get_name(),
           modificationTime: gFileInfo.get_modification_time().tv_sec,
           size: gFileInfo.get_size(),

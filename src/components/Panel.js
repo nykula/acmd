@@ -8,6 +8,7 @@ const { connect } = require('inferno-redux')
 const filesActions = require('../actions/files')
 const h = require('inferno-hyperscript')
 const Handler = require('../utils/Handler').default
+const Icon = require('../utils/Icon').default
 const minLength = require('../utils/minLength').default
 const noop = require('lodash/noop')
 const WidgetRef = require('../utils/WidgetRef').create
@@ -143,7 +144,7 @@ exports.renderDirectory = (props) => {
       ref: node => {
         TreeViewRef({
           cols: [
-            { title: null, name: 'icon', attribute: 'icon-name' },
+            { title: null, name: 'icon', attribute: 'gicon' },
             { title: 'Name', name: 'filename', attribute: 'text', expand: true },
             { title: 'Ext', name: 'ext', attribute: 'text', min_width: 50 },
             { title: 'Size', name: 'size', attribute: 'text', min_width: 55 },
@@ -205,7 +206,7 @@ exports.syncFocus = isActive => node => {
 }
 
 exports.renderFile = (file) => {
-  let icon = 'text-x-generic'
+  let { icon, iconType } = file
   let filename = file.name
   let ext = ''
   let mode = ''
@@ -218,12 +219,12 @@ exports.renderFile = (file) => {
   }
 
   if (file.fileType === 'DIRECTORY') {
-    icon = 'folder'
     filename = '[' + file.name + ']'
   }
 
   if (file.name === '..') {
     icon = 'go-up'
+    iconType = 'ICON_NAME'
   }
 
   const mtime = ((time) => {
@@ -243,7 +244,7 @@ exports.renderFile = (file) => {
   }
 
   return {
-    icon: icon,
+    icon: Icon({ icon: icon, iconType: iconType }),
     filename: filename,
     ext: ext,
     size: file.fileType === 'DIRECTORY' ? '<DIR>' : file.size,

@@ -172,6 +172,9 @@ it('lists files in a directory', () => {
         get_content_type: () => 'text/plain',
         get_display_name: () => 'file.txt',
         get_file_type: () => 2,
+        get_icon: () => ({
+          to_string: () => 'some gio icon'
+        }),
         get_name: () => '?@$/@!#$/*@!)(#</>E',
         get_modification_time: () => ({
           tv_sec: 0
@@ -252,6 +255,8 @@ it('lists files in a directory', () => {
           contentType: 'text/plain',
           displayName: 'file.txt',
           fileType: 'typeC',
+          icon: 'some gio icon',
+          iconType: 'GICON',
           name: '?@$/@!#$/*@!)(#</>E',
           modificationTime: 0,
           size: 1,

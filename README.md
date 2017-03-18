@@ -44,7 +44,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Show file permissions
 
-- [ ] Icons for common file and medium (drive) types
+- [x] Icons for common file and medium (drive) types
 
 - [ ] Toggle lowercasing 8.3 filenames after first letter
 

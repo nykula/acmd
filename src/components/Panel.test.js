@@ -10,11 +10,18 @@ const files = [
   {
     name: '..',
     fileType: 'DIRECTORY',
+    icon: 'folder',
     modificationTime: 0,
     size: 0
   },
-  { name: '.viminfo' },
-  { name: 'himem.sys' }
+  {
+    icon: 'folder',
+    name: '.viminfo'
+  },
+  {
+    icon: 'folder',
+    name: 'himem.sys'
+  }
 ]
 
 const state = {

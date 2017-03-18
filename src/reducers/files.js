@@ -7,12 +7,16 @@ const sampleFiles = [
   {
     name: '..',
     fileType: 'DIRECTORY',
+    icon: 'folder',
+    iconType: 'ICON_NAME',
     size: 0,
     modificationTime: Date.now(),
     mode: '0755'
   },
   {
     name: 'clan in da front.txt',
+    icon: 'text-x-generic',
+    iconType: 'ICON_NAME',
     size: 4110,
     modificationTime: Date.now(),
     mode: '0644'
