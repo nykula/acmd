@@ -1,4 +1,4 @@
-exports.default = win => store => next => action => {
+exports.default = ({ win }) => store => next => action => {
   if (action.type === 'EXIT') {
     win.destroy()
   }

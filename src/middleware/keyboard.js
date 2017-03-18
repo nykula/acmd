@@ -1,39 +1,47 @@
-const actions = require('../actions/keyboard')
 const indexActions = require('../actions')
 const panelsActions = require('../actions/panels')
-const listen = require('../utils/keyboard').default
 
-exports.default = ({ Gdk, win }) => {
+exports.default = extra => {
+  const { Gdk, win } = extra
   let isListening = false
+  const pressed = {}
 
-  return ({dispatch, getState}) => next => action => {
-    if (!isListening) {
-      listen({
-        dispatch: dispatch,
-        Gdk: Gdk,
-        win: win
-      })
-      isListening = true
+  return ({ dispatch, getState }) => next => action => {
+    if (isListening) {
       return next(action)
     }
 
-    if (action.type === actions.KEY_RELEASED) {
-      exports.handleReleased({
-        dispatch: dispatch,
-        Gdk: Gdk,
-        state: getState(),
-        win: win
-      }, action)
-    }
+    isListening = true
+
+    win.connect('key-press-event', (_, ev) => {
+      const keyval = ev.get_keyval()[1]
+      pressed[keyval] = true
+    })
+
+    win.connect('key-release-event', (_, ev) => {
+      const keyval = ev.get_keyval()[1]
+
+      const action = {
+        which: keyval,
+        ctrlKey: pressed[Gdk.KEY_Control_L] || pressed[Gdk.KEY_Control_R],
+        shiftKey: pressed[Gdk.KEY_Shift_L] || pressed[Gdk.KEY_Shift_R],
+        altKey: pressed[Gdk.KEY_Alt_L] || pressed[Gdk.KEY_Alt_R],
+        metaKey: pressed[Gdk.KEY_Meta_L] || pressed[Gdk.KEY_Meta_R]
+      }
+
+      exports.handleReleased(action)(dispatch, getState, extra)
+
+      pressed[keyval] = false
+    })
 
     return next(action)
   }
 }
 
-exports.handleReleased = ({ dispatch, Gdk, state }, action) => {
+exports.handleReleased = action => (dispatch, getState, { Gdk }) => {
   switch (action.which) {
     case Gdk.KEY_BackSpace:
-      dispatch(indexActions.levelUp({ panelId: state.panels.active }))
+      dispatch(indexActions.levelUp({ panelId: getState().panels.active }))
       return
 
     case Gdk.KEY_Tab:

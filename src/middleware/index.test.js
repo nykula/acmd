@@ -1,6 +1,8 @@
 /* global expect, it */
 
-const gio = require('./gio').default
+const actions = require('../actions')
+const GioAdapter = require('../adapters/Gio').default
+const middleware = require('.').default
 const noop = require('lodash/noop')
 
 it('provides info about drives', () => {
@@ -54,12 +56,12 @@ it('provides info about drives', () => {
   }]
 
   dispatchRequest({
-    type: 'DRIVES_REQUESTED',
+    type: actions.DRIVES,
     requestId: 1
   })
 
   expect(responses[responses.length - 1]).toMatch({
-    type: 'DRIVES_REQUESTED',
+    type: actions.DRIVES,
     requestId: 1,
     ready: true,
     result: {
@@ -125,14 +127,14 @@ it('lists files in a directory', () => {
   const { dispatchRequest, responses } = setup(props)
 
   dispatchRequest({
-    type: 'LS',
+    type: actions.LS,
     requestId: 2,
     path: '/',
     panel: 0
   })
 
   expect(responses[responses.length - 1]).toMatch({
-    type: 'LS',
+    type: actions.LS,
     requestId: 2,
     path: '/',
     panel: 0,
@@ -170,14 +172,14 @@ it('creates a directory', () => {
   const { dispatchRequest, responses } = setup(props)
 
   dispatchRequest({
-    type: 'MKDIR',
+    type: actions.MKDIR,
     requestId: 3,
     path: '/someDir',
     panel: 0
   })
 
   expect(responses[responses.length - 1]).toMatch({
-    type: 'MKDIR',
+    type: actions.MKDIR,
     requestId: 3,
     path: '/someDir',
     result: {
@@ -210,16 +212,16 @@ it('mounts a volume', () => {
   const { dispatchRequest, responses } = setup(props)
 
   dispatchRequest({
-    type: 'MOUNT_REQUESTED',
+    type: actions.MOUNT,
     requestId: 4,
     identifier: {
-      type: 'uuid',
+      type: actions.uuid,
       value: 'abc'
     }
   })
 
   expect(responses).toMatch([{
-    type: 'MOUNT_REQUESTED',
+    type: actions.MOUNT,
     requestId: 4,
     ready: true
   }])
@@ -248,33 +250,39 @@ it('unmounts a volume', () => {
   const { dispatchRequest, responses } = setup(props)
 
   dispatchRequest({
-    type: 'UNMOUNT_REQUESTED',
+    type: actions.UNMOUNT,
     requestId: 5,
     identifier: {
-      type: 'label',
+      type: actions.label,
       value: 'def'
     }
   })
 
   expect(responses).toMatch([{
-    type: 'UNMOUNT_REQUESTED',
+    type: actions.UNMOUNT,
     requestId: 5,
     ready: true
   }])
 })
 
 function setup (props) {
+  props.gioAdapter = new GioAdapter(props)
+
   const responses = []
 
   const dispatchResponse = (action) => {
     responses.push(action)
   }
 
-  const store = { dispatch: dispatchResponse }
+  const store = {
+    dispatch: dispatchResponse,
+    getState: noop
+  }
+
   const next = noop
 
   return {
-    dispatchRequest: gio(props)(store)(next),
+    dispatchRequest: middleware(props)(store)(next),
     responses: responses
   }
 }

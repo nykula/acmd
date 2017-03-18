@@ -18,9 +18,9 @@
     "redux": "^3.6.0"
   },
   "scripts": {
-    "start": "gjs bin/start.js",
-    "test": "gjs bin/test.js",
-    "coverage": "bash bin/coverage.sh",
+    "start": "gjs bin/start.js 2>&1 | grep -v 'Message.*node_modules'",
+    "test": "gjs bin/test.js 2>&1 | grep -v 'Message.*node_modules'",
+    "coverage": "bash bin/coverage.sh 2>&1 | grep -v 'Message.*node_modules'",
     "lint": "standard 'bin/**/*.js' 'src/**/*.js'",
     "lint-fix": "standard --fix 'bin/**/*.js' 'src/**/*.js'"
   }

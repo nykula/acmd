@@ -1,6 +1,6 @@
 const assign = require('lodash/assign')
 
-exports.getActiveFile = state => {
+exports.default = state => {
   const activePanel = state.panels.active
   const location = state.locations[activePanel]
   const activeFile = state.files.active[activePanel]

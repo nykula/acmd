@@ -8,6 +8,7 @@ const Gtk = imports.gi.Gtk
 const actions = require('./actions')
 const Component = require('inferno-component')
 const Dialog = require('./utils/Dialog').default
+const GioAdapter = require('./adapters/Gio').default
 const h = require('inferno-hyperscript')
 const { Provider } = require('inferno-redux')
 const { render } = require('inferno')
@@ -37,15 +38,12 @@ require('./utils/GtkDom').app({
     const store = Store(undefined, {
       Dialog: Dialog({ Gtk: Gtk, win: win }),
       Gdk: Gdk,
-      Gio: Gio,
-      GLib: GLib,
-      Gtk: Gtk,
-      win: win,
-      nextTick: (callback) => {
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 0, () => {
-          callback()
-        })
-      }
+      gioAdapter: new GioAdapter({
+        GLib: GLib,
+        Gio: Gio,
+        Gtk: Gtk
+      }),
+      win: win
     })
 
     let view

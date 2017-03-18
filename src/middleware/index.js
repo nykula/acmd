@@ -1,8 +1,11 @@
 const actions = require('../actions')
 const filesActions = require('../actions/files')
-const isResponse = action => !action.error && action.ready
+const getActiveFile = require('../selectors/getActiveFile').default
+const isError = action => !!action.error
+const isRequest = a => !!a.requestId && !a.error && !a.progress && !a.ready
+const isResponse = action => !action.error && !!action.ready
+const isTrigger = action => !action.requestId
 const noop = require('lodash/noop')
-const selectors = require('../selectors')
 
 exports.default = extra => ({ dispatch, getState }) => next => action => {
   switch (action.type) {
@@ -12,6 +15,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
 
     case actions.CP:
       exports.handleCp(action)(dispatch, getState, extra)
+      break
+
+    case actions.DRIVES:
+      exports.handleDrives(action)(dispatch, getState, extra)
       break
 
     case actions.EDITOR:
@@ -30,6 +37,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
       exports.handleMkdir(action)(dispatch, getState, extra)
       break
 
+    case actions.MOUNT:
+      exports.handleMount(action)(dispatch, getState, extra)
+      break
+
     case actions.MV:
       exports.handleMv(action)(dispatch, getState, extra)
       break
@@ -40,6 +51,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
 
     case actions.RM:
       exports.handleRm(action)(dispatch, getState, extra)
+      break
+
+    case actions.UNMOUNT:
+      exports.handleUnmount(action)(dispatch, getState, extra)
       break
 
     case actions.VIEW:
@@ -68,11 +83,11 @@ exports.handleActivated = action => (dispatch, getState) => {
   dispatch(actions.ls(action.panelId, path))
 }
 
-exports.handleCp = action => (dispatch, getState, { Dialog }) => {
+exports.handleCp = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
-  if (!action.requestId) {
-    const file = selectors.getActiveFile(state)
+  if (isTrigger(action)) {
+    const file = getActiveFile(state)
     const target = state.locations[state.panels.active === 0 ? 1 : 0]
 
     const path = file.path
@@ -83,15 +98,32 @@ exports.handleCp = action => (dispatch, getState, { Dialog }) => {
         dispatch(actions.cp([path], targetPath))
       }
     })
+  } else if (isRequest(action)) {
+    gioAdapter.work.run(action, dispatch)
   } else if (isResponse(action)) {
     dispatch(actions.refresh())
+  }
+}
+
+exports.handleDrives = action => (dispatch, getState, { gioAdapter }) => {
+  const { requestId } = action
+
+  if (isRequest(action)) {
+    gioAdapter.drives({
+      onSuccess: (drives) => {
+        dispatch(actions.drivesReady({
+          requestId: requestId,
+          result: { drives: drives }
+        }))
+      }
+    })
   }
 }
 
 exports.handleEditor = action => (dispatch, getState, { Dialog }) => {
   const state = getState()
 
-  const file = selectors.getActiveFile(state)
+  const file = getActiveFile(state)
   Dialog.alert('Editing ' + file.path, noop)
 }
 
@@ -109,10 +141,34 @@ exports.handleLevelUp = action => (dispatch, getState) => {
   dispatch(actions.ls(panelId, nextLocation))
 }
 
-exports.handleLs = action => (dispatch, getState, { Dialog }) => {
+exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
-  if (action.error) {
+  if (isRequest(action)) {
+    const { panel, path, requestId } = action
+
+    gioAdapter.ls({
+      path: path,
+
+      onError: (err) => {
+        dispatch(actions.lsError({
+          panel: panel,
+          path: path,
+          requestId: requestId,
+          error: { message: err.message }
+        }))
+      },
+
+      onSuccess: (files) => {
+        dispatch(actions.lsSuccess({
+          panel: panel,
+          path: path,
+          requestId: requestId,
+          result: { files: files }
+        }))
+      }
+    })
+  } else if (isError(action)) {
     Dialog.alert(action.error.message, () => {
       if (state.locations[action.panel] !== '/') {
         dispatch(actions.ls(action.panel, '/'))
@@ -121,8 +177,8 @@ exports.handleLs = action => (dispatch, getState, { Dialog }) => {
   }
 }
 
-exports.handleMkdir = action => (dispatch, getState, { Dialog }) => {
-  if (!action.requestId) {
+exports.handleMkdir = action => (dispatch, getState, { Dialog, gioAdapter }) => {
+  if (isTrigger(action)) {
     const state = getState()
     const activePanel = state.panels.active
     const location = state.locations[activePanel]
@@ -134,16 +190,50 @@ exports.handleMkdir = action => (dispatch, getState, { Dialog }) => {
         dispatch(actions.mkdir(location + '/' + name))
       }
     })
+  } else if (isRequest(action)) {
+    const { path, requestId } = action
+
+    gioAdapter.mkdir({
+      path: path,
+
+      onError: (err) => {
+        dispatch(actions.mkdirError({
+          path: path,
+          requestId: requestId,
+          error: { message: err.message }
+        }))
+      },
+
+      onSuccess: () => {
+        dispatch(actions.mkdirSuccess({
+          path: path,
+          requestId: requestId,
+          result: { ok: true }
+        }))
+      }
+    })
   } else if (isResponse(action)) {
     dispatch(actions.refresh())
   }
 }
 
-exports.handleMv = action => (dispatch, getState, { Dialog }) => {
+exports.handleMount = action => (dispatch, getState, { gioAdapter }) => {
+  const { identifier, requestId } = action
+
+  gioAdapter.mount({
+    identifier: identifier,
+
+    onSuccess: () => {
+      dispatch(actions.mountReady(requestId))
+    }
+  })
+}
+
+exports.handleMv = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
-  if (!action.requestId) {
-    const file = selectors.getActiveFile(state)
+  if (isTrigger(action)) {
+    const file = getActiveFile(state)
     const target = state.locations[state.panels.active === 0 ? 1 : 0]
 
     const path = file.path
@@ -154,6 +244,8 @@ exports.handleMv = action => (dispatch, getState, { Dialog }) => {
         dispatch(actions.mv([path], targetPath))
       }
     })
+  } else if (isRequest(action)) {
+    gioAdapter.work.run(action, dispatch)
   } else if (isResponse(action)) {
     dispatch(actions.refresh())
   }
@@ -165,22 +257,36 @@ exports.handleRefresh = action => (dispatch, getState) => {
   dispatch(actions.ls(1, state.locations[1]))
 }
 
-exports.handleRm = action => (dispatch, getState, { Dialog }) => {
+exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
-  if (!action.requestId) {
-    const path = selectors.getActiveFile(state).path
+  if (isTrigger(action)) {
+    const path = getActiveFile(state).path
 
     Dialog.confirm('Are you sure you want to remove ' + path + '?', (yes) => {
       dispatch(actions.rm([path]))
     })
+  } else if (isRequest(action)) {
+    gioAdapter.work.run(action, dispatch)
   } else if (isResponse(action)) {
     dispatch(actions.refresh())
   }
 }
 
+exports.handleUnmount = action => (dispatch, getState, { gioAdapter }) => {
+  const { identifier, requestId } = action
+
+  gioAdapter.unmount({
+    identifier: identifier,
+
+    onSuccess: () => {
+      dispatch(actions.unmountReady(requestId))
+    }
+  })
+}
+
 exports.handleView = action => (dispatch, getState, { Dialog }) => {
   const state = getState()
-  const file = selectors.getActiveFile(state)
+  const file = getActiveFile(state)
   Dialog.alert('Viewing ' + file.path, noop)
 }
