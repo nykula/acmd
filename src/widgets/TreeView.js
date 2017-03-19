@@ -23,8 +23,8 @@ TreeView.prototype.init = function (node) {
   }
 
   this.node = node
-  this.node.enable_search = false
   this.node.set_model(ListStore.fromProps(this.props))
+  this.node.set_search_equal_func(this.props.on_search)
 
   const sel = this.sel = this.node.get_selection()
   sel.mode = Gtk.SelectionMode.MULTIPLE
@@ -80,6 +80,10 @@ TreeView.prototype.componentDidUpdate = function (prevProps) {
   node.set_cursor(Gtk.TreePath.new_from_string(String(this.props.cursor)), null, null)
 
   node.isUpdatingSelect = false
+
+  if (prevProps.on_search !== this.props.on_search) {
+    node.set_search_equal_func(this.props.on_search)
+  }
 }
 
 TreeView.prototype.handleCursorChanged = function () {

@@ -42,7 +42,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Toggle dotfiles visibility with a button
 
-- [ ] Focus matching file as user types
+- [x] Focus matching file as user types
 
 - [ ] Select multiple files with right mouse button
 

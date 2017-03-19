@@ -163,6 +163,7 @@ exports.renderDirectory = (props) => {
         on_clicked: exports.handleClicked(dispatch)(panelId),
         on_cursor: exports.handleCursor(dispatch)(panelId),
         on_selected: exports.handleSelected(dispatch)(panelId),
+        on_search: exports.handleSearch,
         rows: getVisibleFiles({
           files: files,
           showHidSys: showHidSys
@@ -188,6 +189,23 @@ exports.handleCursor = Handler(dispatch => panelId => cursor => {
 exports.handleSelected = Handler(dispatch => panelId => selected => {
   dispatch(filesActions.selected({ panelId: panelId, selected: selected }))
 })
+
+exports.handleSearch = (store, col, input, iter) => {
+  const filename = store.get_value(iter, col)
+  const ext = store.get_value(iter, col + 1)
+  const isDir = store.get_value(iter, col + 2) === '<DIR>'
+  let name = filename
+
+  if (isDir) {
+    name = name.slice(1, -1)
+  }
+
+  if (ext) {
+    name += '.' + ext
+  }
+
+  return name.toLowerCase().indexOf(input.toLowerCase()) !== 0
+}
 
 exports.prefixSort = sortedBy => col => {
   if (col.name === sortedBy) {
