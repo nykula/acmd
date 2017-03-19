@@ -8,12 +8,10 @@ const { connect } = require('inferno-redux')
 const filesActions = require('../actions/files')
 const h = require('inferno-hyperscript')
 const Handler = require('../utils/Handler').default
-const Icon = require('../utils/Icon').default
 const minLength = require('../utils/minLength').default
 const noop = require('lodash/noop')
-const WidgetRef = require('../utils/WidgetRef').create
-const SelectRef = WidgetRef(require('../widgets/Select').default)
-const TreeViewRef = WidgetRef(require('../widgets/TreeView').default)
+const Select = require('../widgets/Select').default
+const TreeView = require('../widgets/TreeView').default
 
 exports.renderMount = ({ dispatch, key, panelId, mounts, onMountChanged }) => {
   const activeMount = mounts.entities[mounts.active[panelId]]
@@ -27,18 +25,24 @@ exports.renderMount = ({ dispatch, key, panelId, mounts, onMountChanged }) => {
 
   return (
     h('box', { key: key, expand: false }, [
-      h('box', {
-        ref: SelectRef({
-          value: mounts.active[panelId],
-          options: mounts.names.map(x => mounts.entities[x]).map(mount => ({
-            icon: mount.icon,
-            iconType: mount.iconType,
+      h('box', [
+        h(Select, {
+          cols: [
+            { name: 'text', attribute: 'text', pack: 'pack_end' },
+            { name: 'icon', attribute: 'gicon' }
+          ],
+          rows: mounts.names.map(x => mounts.entities[x]).map(mount => ({
+            icon: {
+              icon: mount.icon,
+              iconType: mount.iconType
+            },
             value: mount.name,
             text: minLength(mounts.names, mount.name)
           })),
+          value: mounts.active[panelId],
           on_changed: onMountChanged
         })
-      }),
+      ]),
       h('box', { border_width: 4, expand: true }, [
         h('label', { label: status })
       ]),
@@ -141,27 +145,26 @@ exports.renderDirectory = (props) => {
       key: key,
       expand: true,
       hscrollbar_policy: Gtk.PolicyType.NEVER,
-      ref: node => {
-        TreeViewRef({
-          cols: [
-            { title: null, name: 'icon', attribute: 'gicon' },
-            { title: 'Name', name: 'filename', attribute: 'text', expand: true },
-            { title: 'Ext', name: 'ext', attribute: 'text', min_width: 50 },
-            { title: 'Size', name: 'size', attribute: 'text', min_width: 55 },
-            { title: 'Date', name: 'mtime', attribute: 'text', min_width: 125 },
-            { title: 'Attr', name: 'mode', attribute: 'text', min_width: 45 }
-          ].map(exports.prefixSort(sortedBy)),
-          cursor: activeFile,
-          on_activated: exports.handleActivated(dispatch)(panelId),
-          on_clicked: exports.handleClicked(dispatch)(panelId),
-          on_cursor: exports.handleCursor(dispatch)(panelId),
-          on_selected: exports.handleSelected(dispatch)(panelId),
-          rows: files.map(exports.renderFile),
-          selected: [activeFile]
-        })(node)
-        exports.syncFocus(isActive)(node)
-      }
-    })
+      ref: exports.syncFocus(isActive)
+    }, [
+      h(TreeView, {
+        cols: [
+          { title: null, name: 'icon', attribute: 'gicon' },
+          { title: 'Name', name: 'filename', attribute: 'text', expand: true },
+          { title: 'Ext', name: 'ext', attribute: 'text', min_width: 50 },
+          { title: 'Size', name: 'size', attribute: 'text', min_width: 55 },
+          { title: 'Date', name: 'mtime', attribute: 'text', min_width: 125 },
+          { title: 'Attr', name: 'mode', attribute: 'text', min_width: 45 }
+        ].map(exports.prefixSort(sortedBy)),
+        cursor: activeFile,
+        on_activated: exports.handleActivated(dispatch)(panelId),
+        on_clicked: exports.handleClicked(dispatch)(panelId),
+        on_cursor: exports.handleCursor(dispatch)(panelId),
+        on_selected: exports.handleSelected(dispatch)(panelId),
+        rows: files.map(exports.renderFile),
+        selected: [activeFile]
+      })
+    ])
   )
 }
 
@@ -244,7 +247,7 @@ exports.renderFile = (file) => {
   }
 
   return {
-    icon: Icon({ icon: icon, iconType: iconType }),
+    icon: { icon: icon, iconType: iconType },
     filename: filename,
     ext: ext,
     size: file.fileType === 'DIRECTORY' ? '<DIR>' : file.size,

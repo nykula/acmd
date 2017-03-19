@@ -1,75 +1,49 @@
-/* global imports */
-const Gio = imports.gi.Gio
-const GObject = imports.gi.GObject
-const Gtk = imports.gi.Gtk
-const Icon = require('../utils/Icon').default
+const Component = require('inferno-component')
+const h = require('inferno-hyperscript')
 const isEqual = require('lodash/isEqual')
+const ListStore = require('../utils/ListStore')
 
-exports.default = function Select (props) {
-  this.props = props
+const Select = exports.default = function Select (props) {
+  Component.call(this, props)
+
+  this.init = this.init.bind(this)
+  this.updateActive = this.updateActive.bind(this)
 }
 
-exports.default.prototype.type = 'Widget'
+Select.prototype = Object.create(Component.prototype)
 
-exports.default.prototype.name = 'Select'
+Select.prototype.init = function (node) {
+  if (!node || this.node) {
+    return
+  }
 
-exports.default.prototype.init = function () {
-  let node
+  this.node = node
+  node.set_model(ListStore.fromProps(this.props))
+  this.props.cols.forEach((col, i) => ListStore.configureColumn(node, col, i))
+  this.updateActive()
+}
 
-  const store = new Gtk.ListStore()
-  store.set_column_types([
-    GObject.TYPE_STRING,
-    Gio.Icon
-  ])
+Select.prototype.shouldComponentUpdate = function (nextProps) {
+  return !isEqual(this.props, nextProps)
+}
 
-  this.props.options.forEach(option => {
-    const iter = store.append()
-    store.set(iter, [0, 1], [option.text, Icon(option)])
-  })
+Select.prototype.componentDidUpdate = function () {
+  this.node.set_model(ListStore.fromProps(this.props))
+  this.updateActive()
+}
 
-  node = new Gtk.ComboBox({ model: store })
-
-  const rendererPixbuf = new Gtk.CellRendererPixbuf()
-  const rendererText = new Gtk.CellRendererText()
-
-  node.pack_start(rendererPixbuf, false)
-  node.pack_end(rendererText, false)
-
-  node.add_attribute(rendererText, 'text', 0)
-  node.add_attribute(rendererPixbuf, 'gicon', 1)
-
-  for (let i = 0; i < this.props.options.length; i++) {
-    if (this.props.options[i].value === this.props.value) {
-      node.set_active(i)
+Select.prototype.updateActive = function () {
+  for (let i = 0; i < this.props.rows.length; i++) {
+    if (this.props.rows[i].value === this.props.value) {
+      this.node.set_active(i)
       break
     }
   }
-
-  node.connect('changed', this.props.on_changed)
-  node.show()
-  return node
 }
 
-exports.default.prototype.update = function (prev, node) {
-  node.widget = this
-  const willUpdate = !isEqual(this.props, prev.props)
-
-  if (!willUpdate) {
-    return null
-  }
-
-  if (!isEqual(prev.props, this.props)) {
-    const nextNode = this.init(prev)
-
-    const parent = node.parent
-    node.parent.remove(node)
-    parent.add(nextNode)
-
-    return nextNode
-  }
-
-  return null
-}
-
-exports.default.prototype.destroy = function () {
+Select.prototype.render = function () {
+  return h('combo-box', {
+    on_changed: this.props.on_changed,
+    ref: this.init
+  })
 }
