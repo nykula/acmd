@@ -6,6 +6,7 @@ const actions = require('../actions')
 const assign = require('lodash/assign')
 const { connect } = require('inferno-redux')
 const filesActions = require('../actions/files')
+const getVisibleFiles = require('../selectors/getVisibleFiles').default
 const h = require('inferno-hyperscript')
 const Handler = require('../utils/Handler').default
 const minLength = require('../utils/minLength').default
@@ -137,6 +138,7 @@ exports.renderDirectory = (props) => {
     files,
     isActive,
     panelId,
+    showHidSys,
     sortedBy
   } = props
 
@@ -161,7 +163,10 @@ exports.renderDirectory = (props) => {
         on_clicked: exports.handleClicked(dispatch)(panelId),
         on_cursor: exports.handleCursor(dispatch)(panelId),
         on_selected: exports.handleSelected(dispatch)(panelId),
-        rows: files.map(exports.renderFile),
+        rows: getVisibleFiles({
+          files: files,
+          showHidSys: showHidSys
+        }).map(exports.renderFile),
         selected: [activeFile]
       })
     ])
@@ -293,6 +298,7 @@ exports.Panel = (props) => {
         isActive: props.isActive,
         files: props.files,
         panelId: id,
+        showHidSys: props.showHidSys,
         sortedBy: props.sortedBy
       }),
       exports.renderStats({
@@ -308,6 +314,7 @@ exports.mapStateToProps = (state, { id }) => ({
   isActive: state.panels.active === id,
   location: state.locations[id],
   onMountChanged: noop,
+  showHidSys: state.files.showHidSys,
   sortedBy: state.files.sortedBy[id],
   tabs: state.tabs[id],
   mounts: state.mounts

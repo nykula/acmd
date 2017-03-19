@@ -35,7 +35,8 @@ const initialState = {
   byPanel: {
     0: sampleFiles,
     1: sampleFiles
-  }
+  },
+  showHidSys: false
 }
 
 exports.default = (_state, payload) => {
@@ -73,6 +74,11 @@ exports.default = (_state, payload) => {
         return state
       }
     }
+
+    case indexActions.SHOW_HID_SYS:
+      return assign({}, state, {
+        showHidSys: !state.showHidSys
+      })
 
     case actions.SORTED: {
       by = exports.nextSort(state.sortedBy[payload.panelId], payload.by)

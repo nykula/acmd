@@ -1,6 +1,7 @@
 const actions = require('../actions')
 const filesActions = require('../actions/files')
 const getActiveFile = require('../selectors/getActiveFile').default
+const getVisibleFiles = require('../selectors/getVisibleFiles').default
 const isError = action => !!action.error
 const isRequest = a => !!a.requestId && !a.error && !a.progress && !a.ready
 const isResponse = action => !action.error && !!action.ready
@@ -72,7 +73,11 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
 exports.handleActivated = action => (dispatch, getState, extra) => {
   const state = getState()
 
-  const file = state.files.byPanel[action.panelId][action.index]
+  const file = getVisibleFiles({
+    files: state.files.byPanel[action.panelId],
+    showHidSys: state.files.showHidSys
+  })[action.index]
+
   const location = state.locations[action.panelId]
   const uri = location.replace(/\/?$/, '') + '/' + file.name
 

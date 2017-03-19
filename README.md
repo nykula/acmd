@@ -40,7 +40,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Icons for common file and medium (drive) types
 
-- [ ] Toggle dotfiles visibility with a button
+- [x] Toggle dotfiles visibility with a button
 
 - [ ] Focus matching file as user types
 

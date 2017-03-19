@@ -157,6 +157,8 @@ exports.rm = uris => {
   }
 }
 
+exports.SHOW_HID_SYS = 'SHOW_HID_SYS'
+
 exports.TERMINAL = 'TERMINAL'
 
 exports.UNMOUNT = 'UNMOUNT'
