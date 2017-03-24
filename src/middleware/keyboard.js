@@ -1,5 +1,7 @@
+const getActiveTabId = require('../selectors/getActiveTabId').default
 const indexActions = require('../actions')
 const panelsActions = require('../actions/panels')
+const tabsActions = require('../actions/tabs')
 
 exports.default = extra => {
   const { Gdk, win } = extra
@@ -41,11 +43,18 @@ exports.default = extra => {
 exports.handleReleased = action => (dispatch, getState, { Gdk }) => {
   switch (action.which) {
     case Gdk.KEY_BackSpace:
-      dispatch(indexActions.levelUp({ panelId: getState().panels.active }))
+      dispatch(indexActions.levelUp({ panelId: getState().panels.activeId }))
       return
 
+    case Gdk.KEY_ISO_Left_Tab:
     case Gdk.KEY_Tab:
-      dispatch(panelsActions.toggledActive())
+      if (action.ctrlKey && action.shiftKey) {
+        dispatch(tabsActions.prev(getState().panels.activeId))
+      } else if (action.ctrlKey) {
+        dispatch(tabsActions.next(getState().panels.activeId))
+      } else {
+        dispatch(panelsActions.toggledActive())
+      }
       return
 
     case Gdk.KEY_F2:
@@ -76,9 +85,27 @@ exports.handleReleased = action => (dispatch, getState, { Gdk }) => {
       dispatch(indexActions.rm())
       return
 
+    case Gdk.KEY_b:
+      if (action.ctrlKey) {
+        dispatch({ type: indexActions.SHOW_HID_SYS })
+      }
+      return
+
     case Gdk.KEY_l:
       if (action.ctrlKey) {
         dispatch({ type: indexActions.LS })
+      }
+      return
+
+    case Gdk.KEY_t:
+      if (action.ctrlKey) {
+        dispatch(tabsActions.create(getState().panels.activeId))
+      }
+      return
+
+    case Gdk.KEY_w:
+      if (action.ctrlKey) {
+        dispatch(tabsActions.remove(getActiveTabId(getState())))
       }
       return
   }

@@ -52,7 +52,7 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
 }
 
 exports.mapStateToProps = state => ({
-  showHidSys: state.showHidSys
+  showHidSys: state.files.showHidSys
 })
 
 exports.mapDispatchToProps = dispatch => ({

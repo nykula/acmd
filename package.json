@@ -14,7 +14,6 @@
     "inferno-hyperscript": "^1.3.0-rc.10",
     "inferno-redux": "^1.3.1",
     "lodash": "^4.17.4",
-    "memoizerific": "^1.10.0",
     "redux": "^3.6.0",
     "url-parse": "^1.1.8"
   },

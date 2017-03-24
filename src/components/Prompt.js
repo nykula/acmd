@@ -2,6 +2,7 @@
 const { connect } = require('inferno-redux')
 const Fun = require('../utils/Fun').default
 const h = require('inferno-hyperscript')
+const getActiveTabId = require('../selectors/getActiveTabId').default
 const Pango = imports.gi.Pango
 
 exports.Prompt = ({ handleActivate, location }) => {
@@ -19,7 +20,7 @@ exports.Prompt = ({ handleActivate, location }) => {
 }
 
 exports.mapStateToProps = state => ({
-  location: state.locations[state.panels.active]
+  location: state.locations[getActiveTabId(state)]
 })
 
 exports.mapDispatchToProps = dispatch => ({

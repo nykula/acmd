@@ -1,4 +1,4 @@
-const actions = require('../actions/locations')
+const actions = require('../actions')
 const assign = require('lodash/assign')
 
 exports.initialState = {
@@ -6,13 +6,13 @@ exports.initialState = {
   1: 'file:///'
 }
 
-exports.default = (_state, payload) => {
+exports.default = (_state, action) => {
   const state = _state || exports.initialState
 
-  switch (payload.type) {
+  switch (action.type) {
     case actions.LS: {
       let __state = assign({}, state)
-      __state[payload.panel] = payload.uri
+      __state[action.tabId] = action.uri
       return __state
     }
 

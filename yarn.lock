@@ -792,16 +792,6 @@ loose-envify@^1.1.0:
   dependencies:
     js-tokens "^3.0.0"
 
-map-or-similar@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/map-or-similar/-/map-or-similar-1.5.0.tgz#6de2653174adfb5d9edc33c69d3e92a1b76faf08"
-
-memoizerific@^1.10.0:
-  version "1.10.0"
-  resolved "https://registry.yarnpkg.com/memoizerific/-/memoizerific-1.10.0.tgz#55b921baa9e1789aef10c1e2f7e92492c8a27da8"
-  dependencies:
-    map-or-similar "^1.5.0"
-
 minimatch@^3.0.2:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.0.3.tgz#2a4e4090b96b2db06a9d7df01055a62a77c9b774"

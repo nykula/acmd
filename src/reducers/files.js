@@ -32,7 +32,7 @@ const initialState = {
     0: 'ext',
     1: 'ext'
   },
-  byPanel: {
+  byTabId: {
     0: sampleFiles,
     1: sampleFiles
   },
@@ -46,13 +46,13 @@ exports.default = (_state, payload) => {
 
   switch (payload.type) {
     case actions.CURSOR: {
-      if (state.active[payload.panelId] === payload.cursor) {
+      if (state.active[payload.tabId] === payload.cursor) {
         return state
       }
       return assign({}, state, {
         active: (() => {
           const active = assign({}, state.active)
-          active[payload.panelId] = payload.cursor
+          active[payload.tabId] = payload.cursor
           return active
         })()
       })
@@ -61,12 +61,12 @@ exports.default = (_state, payload) => {
     case actions.SELECTED: {
       if (
         payload.selected.length === 1 &&
-        state.active[payload.panelId] !== payload.selected[0]
+        state.active[payload.tabId] !== payload.selected[0]
       ) {
         return assign({}, state, {
           active: (() => {
             const active = assign({}, state.active)
-            active[payload.panelId] = payload.selected[0]
+            active[payload.tabId] = payload.selected[0]
             return active
           })()
         })
@@ -81,31 +81,31 @@ exports.default = (_state, payload) => {
       })
 
     case actions.SORTED: {
-      by = exports.nextSort(state.sortedBy[payload.panelId], payload.by)
-      files = exports.sortFiles(by, state.byPanel[payload.panelId])
+      by = exports.nextSort(state.sortedBy[payload.tabId], payload.by)
+      files = exports.sortFiles(by, state.byTabId[payload.tabId])
       return assign({}, state, {
         sortedBy: (() => {
           const sortedBy = assign({}, state.sortedBy)
-          sortedBy[payload.panelId] = by
+          sortedBy[payload.tabId] = by
           return sortedBy
         })(),
-        byPanel: (() => {
-          const byPanel = assign({}, state.byPanel)
-          byPanel[payload.panelId] = files
-          return byPanel
+        byTabId: (() => {
+          const byTabId = assign({}, state.byTabId)
+          byTabId[payload.tabId] = files
+          return byTabId
         })()
       })
     }
 
     case indexActions.LS: {
       if (payload.result) {
-        by = state.sortedBy[payload.panel]
+        by = state.sortedBy[payload.tabId]
         files = exports.sortFiles(by, payload.result.files)
         return assign({}, state, {
-          byPanel: (() => {
-            const byPanel = assign({}, state.byPanel)
-            byPanel[payload.panel] = files
-            return byPanel
+          byTabId: (() => {
+            const byTabId = assign({}, state.byTabId)
+            byTabId[payload.tabId] = files
+            return byTabId
           })()
         })
       } else {

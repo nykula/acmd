@@ -48,28 +48,28 @@ exports.levelUp = ({ panelId }) => {
 }
 
 exports.LS = 'LS'
-exports.ls = (panelId, uri) => {
+exports.ls = (tabId, uri) => {
   return {
     type: exports.LS,
     requestId: Date.now(),
-    panel: panelId,
+    tabId: tabId,
     uri: uri
   }
 }
-exports.lsError = ({ panel, uri, requestId, error }) => {
+exports.lsError = ({ tabId, uri, requestId, error }) => {
   return {
     type: exports.LS,
-    panel: panel,
+    tabId: tabId,
     uri: uri,
     requestId: requestId,
     ready: true,
     error: { message: error.message }
   }
 }
-exports.lsSuccess = ({ panel, uri, requestId, result }) => {
+exports.lsSuccess = ({ tabId, uri, requestId, result }) => {
   return {
     type: exports.LS,
-    panel: panel,
+    tabId: tabId,
     uri: uri,
     requestId: requestId,
     ready: true,

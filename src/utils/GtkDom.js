@@ -18,8 +18,9 @@ function getParentNode () {
 }
 
 function removeAllChildren () {
+  const node = this
   this.forall(function (x) {
-    this.remove(x)
+    node.remove(x)
   })
 }
 

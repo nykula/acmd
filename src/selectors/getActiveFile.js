@@ -1,12 +1,13 @@
 const assign = require('lodash/assign')
+const getActiveTabId = require('./getActiveTabId').default
 const getVisibleFiles = require('./getVisibleFiles').default
 
 exports.default = state => {
-  const activePanel = state.panels.active
-  const location = state.locations[activePanel]
-  const activeFile = state.files.active[activePanel]
+  const activeTabId = getActiveTabId(state)
+  const location = state.locations[activeTabId]
+  const activeFile = state.files.active[activeTabId]
   const file = getVisibleFiles({
-    files: state.files.byPanel[activePanel],
+    files: state.files.byTabId[activeTabId],
     showHidSys: state.files.showHidSys
   })[activeFile]
   const uri = location.replace(/\/?$/, '') + '/' + file.name

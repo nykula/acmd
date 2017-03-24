@@ -26,7 +26,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Mock back-end: List, view, edit, copy, move, mkdir, touch and delete
 
-- [ ] Multiple tabs on each panel
+- [x] Multiple tabs on each panel
 
 - [x] Local back-end
 

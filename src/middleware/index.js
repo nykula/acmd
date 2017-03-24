@@ -1,6 +1,8 @@
 const actions = require('../actions')
 const filesActions = require('../actions/files')
 const getActiveFile = require('../selectors/getActiveFile').default
+const getActiveTabId = require('../selectors/getActiveTabId').default
+const getDest = require('../selectors/getDest').default
 const getVisibleFiles = require('../selectors/getVisibleFiles').default
 const isError = action => !!action.error
 const isRequest = a => !!a.requestId && !a.error && !a.progress && !a.ready
@@ -74,11 +76,11 @@ exports.handleActivated = action => (dispatch, getState, extra) => {
   const state = getState()
 
   const file = getVisibleFiles({
-    files: state.files.byPanel[action.panelId],
+    files: state.files.byTabId[action.tabId],
     showHidSys: state.files.showHidSys
   })[action.index]
 
-  const location = state.locations[action.panelId]
+  const location = state.locations[action.tabId]
   const uri = location.replace(/\/?$/, '') + '/' + file.name
 
   if (file.fileType !== 'DIRECTORY') {
@@ -90,7 +92,7 @@ exports.handleActivated = action => (dispatch, getState, extra) => {
   //   return this.handleLevelUp()
   // }
 
-  dispatch(actions.ls(action.panelId, uri))
+  dispatch(actions.ls(action.tabId, uri))
 }
 
 exports.handleCp = action => (dispatch, getState, { Dialog, gioAdapter }) => {
@@ -98,10 +100,10 @@ exports.handleCp = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 
   if (isTrigger(action)) {
     const file = getActiveFile(state)
-    const target = state.locations[state.panels.active === 0 ? 1 : 0]
+    const dest = getDest(state)
 
     const uri = file.uri
-    let destUri = target + '/' + file.name
+    let destUri = dest + '/' + file.name
 
     Dialog.prompt('Copy ' + uri + ' to:', destUri, destUri => {
       if (destUri) {
@@ -179,15 +181,15 @@ exports.handleEditor = action => (dispatch, getState, { Dialog }) => {
 exports.handleLevelUp = action => (dispatch, getState) => {
   const state = getState()
 
-  const panelId = action.panelId
-  const location = state.locations[panelId]
+  const tabId = state.panels.activeTabId[action.panelId]
+  const location = state.locations[tabId]
   let nextLocation = location.replace(/\/[^/]+$/, '')
 
-  if (nextLocation === '') {
-    nextLocation = '/'
+  if (nextLocation === 'file://') {
+    nextLocation = 'file:///'
   }
 
-  dispatch(actions.ls(panelId, nextLocation))
+  dispatch(actions.ls(tabId, nextLocation))
 }
 
 exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
@@ -195,13 +197,15 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 
   if (isTrigger(action)) {
     Dialog.prompt('List files at URI: ', '', input => {
+      const activeTabId = getActiveTabId(state)
+
       if (input.indexOf('file:///') === 0) {
-        dispatch(actions.ls(state.panels.active, input))
+        dispatch(actions.ls(activeTabId, input))
         return
       }
 
       if (input[0] === '/') {
-        dispatch(actions.ls(state.panels.active, 'file://' + input))
+        dispatch(actions.ls(activeTabId, 'file://' + input))
         return
       }
 
@@ -211,20 +215,20 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
           Dialog.alert(error.message, noop)
         },
         onSuccess: uri => {
-          dispatch(actions.ls(state.panels.active, uri))
+          dispatch(actions.ls(activeTabId, uri))
           dispatch(actions.drives(Date.now()))
         }
       })
     })
   } else if (isRequest(action)) {
-    const { panel, uri, requestId } = action
+    const { tabId, uri, requestId } = action
 
     gioAdapter.ls({
       uri: uri,
 
       onError: (err) => {
         dispatch(actions.lsError({
-          panel: panel,
+          tabId: tabId,
           uri: uri,
           requestId: requestId,
           error: { message: err.message }
@@ -233,7 +237,7 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 
       onSuccess: (files) => {
         dispatch(actions.lsSuccess({
-          panel: panel,
+          tabId: tabId,
           uri: uri,
           requestId: requestId,
           result: { files: files }
@@ -242,8 +246,8 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
     })
   } else if (isError(action)) {
     Dialog.alert(action.error.message, () => {
-      if (state.locations[action.panel] !== 'file:///') {
-        dispatch(actions.ls(action.panel, 'file:///'))
+      if (state.locations[action.tabId] !== 'file:///') {
+        dispatch(actions.ls(action.tabId, 'file:///'))
       }
     })
   }
@@ -252,8 +256,7 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 exports.handleMkdir = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   if (isTrigger(action)) {
     const state = getState()
-    const activePanel = state.panels.active
-    const location = state.locations[activePanel]
+    const location = state.locations[getActiveTabId(state)]
 
     Dialog.prompt('Name of the new dir:', '', name => {
       if (name) {
@@ -308,10 +311,10 @@ exports.handleMv = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 
   if (isTrigger(action)) {
     const file = getActiveFile(state)
-    const target = state.locations[state.panels.active === 0 ? 1 : 0]
+    const dest = getDest(state)
 
     const uri = file.uri
-    let destUri = target + '/' + file.name
+    let destUri = dest + '/' + file.name
 
     Dialog.prompt('Move ' + uri + ' to:', destUri, destUri => {
       if (destUri) {
@@ -350,7 +353,7 @@ exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 
 exports.handleTerminal = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
-  const location = state.locations[state.panels.active]
+  const location = state.locations[getActiveTabId(state)]
 
   if (location.indexOf('file:///') !== 0) {
     Dialog.alert('Operation not supported.', noop)
