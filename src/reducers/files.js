@@ -169,7 +169,7 @@ exports.sortFiles = (by, files) => {
           x => x.fileType === 'DIRECTORY',
           x => {
             const matches = /^(.+)\.(.*?)$/.exec(x.name)
-            return matches ? matches[1].toLowerCase() : ''
+            return matches ? matches[2].toLowerCase() : ''
           },
           x => x.name.toLowerCase()
         ],
@@ -183,7 +183,7 @@ exports.sortFiles = (by, files) => {
           x => x.fileType === 'DIRECTORY',
           x => {
             const matches = /^(.+)\.(.*?)$/.exec(x.name)
-            return matches ? matches[1].toLowerCase() : ''
+            return matches ? matches[2].toLowerCase() : ''
           },
           x => x.name.toLowerCase()
         ],
@@ -198,7 +198,7 @@ exports.sortFiles = (by, files) => {
           'modificationTime',
           x => x.name.toLowerCase()
         ],
-        ['desc', 'desc', 'asc']
+        ['desc', 'asc', 'asc']
       )
 
     case '-mtime':
