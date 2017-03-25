@@ -9,6 +9,7 @@ const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const TreeView = require('../widgets/TreeView').default
 
+exports.Directory = Directory
 function Directory (props) {
   Component.call(this, props)
   this.handleActivated = this.handleActivated.bind(this)

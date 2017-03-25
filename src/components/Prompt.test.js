@@ -10,7 +10,10 @@ it('dispatches action when user activates field', () => {
   const tree = h(Prompt).type(assign({},
         mapStateToProps({
           locations: { 0: 'file:///' },
-          panels: { active: 0 }
+          panels: {
+            activeId: 0,
+            activeTabId: { 0: 0 }
+          }
         }),
         mapDispatchToProps(dispatch)
     ))

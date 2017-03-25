@@ -241,14 +241,14 @@ it('lists files in a directory', () => {
     type: actions.LS,
     requestId: 2,
     uri: 'file:///',
-    panel: 0
+    tabId: 0
   })
 
   expect(responses[responses.length - 1]).toMatch({
     type: actions.LS,
     requestId: 2,
     uri: 'file:///',
-    panel: 0,
+    tabId: 0,
     result: {
       files: [
         {
@@ -392,7 +392,10 @@ it('opens a terminal in the current directory', () => {
   const props = {
     getState: () => ({
       locations: { 0: 'file:///' },
-      panels: { active: 0 }
+      panels: {
+        activeId: 0,
+        activeTabId: {0: 0}
+      }
     }),
     Gio: {
       SubprocessFlags: {},
