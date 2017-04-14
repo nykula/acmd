@@ -48,6 +48,9 @@ exports.configureColumn = function (node, col, i) {
   if (col.type === CHECKBOX) {
     attribute = 'active'
     renderer = new Gtk.CellRendererToggle()
+    renderer.connect('toggled', (_, value) => {
+      col.on_toggled(Number(value) === 1)
+    })
   }
 
   if (col.type === GICON) {

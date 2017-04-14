@@ -1,18 +1,21 @@
 /* global imports */
+const assign = require('lodash/assign')
 const Component = require('inferno-component')
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const isEqual = require('lodash/isEqual')
 const ListStore = require('../utils/ListStore')
 
-const TreeView = exports.default = function TreeView (props) {
+const TreeView = exports.default = function TreeView(props) {
   Component.call(this, props)
 
+  this.getCols = this.getCols.bind(this)
   this.handleCursorChanged = this.handleCursorChanged.bind(this)
   this.handleRowActivated = this.handleRowActivated.bind(this)
-  this.handleSelectionChanged = this.handleSelectionChanged.bind(this)
+  this.handleToggled = this.handleToggled.bind(this)
   this.init = this.init.bind(this)
   this.updateSelect = this.updateSelect.bind(this)
+  this.updateStore = this.updateStore.bind(this)
 }
 
 TreeView.prototype = Object.create(Component.prototype)
@@ -23,14 +26,11 @@ TreeView.prototype.init = function (node) {
   }
 
   this.node = node
-  this.node.set_model(ListStore.fromProps(this.props))
+  this.updateStore()
   this.node.set_search_equal_func(this.props.on_search)
+  this.sel = this.node.get_selection()
 
-  const sel = this.sel = this.node.get_selection()
-  sel.mode = Gtk.SelectionMode.MULTIPLE
-  sel.connect('changed', this.handleSelectionChanged)
-
-  this.props.cols.forEach((col, i) => {
+  this.getCols().forEach((col, i) => {
     const tvCol = new Gtk.TreeViewColumn({ title: col.title })
     ListStore.configureColumn(tvCol, col, i)
 
@@ -66,24 +66,25 @@ TreeView.prototype.componentDidUpdate = function (prevProps) {
     !isEqual(prevProps.cols, this.props.cols) ||
     !isEqual(prevProps.rows, this.props.rows)
   ) {
-    node.set_model(ListStore.fromProps(this.props))
+    this.updateStore()
   }
 
-  node.isUpdatingSelect = true
-
-  sel.unselect_all()
-
-  this.props.selected.forEach(x => {
-    sel.select_path(Gtk.TreePath.new_from_string(String(x)))
-  })
-
-  node.set_cursor(Gtk.TreePath.new_from_string(String(this.props.cursor)), null, null)
-
-  node.isUpdatingSelect = false
+  this.updateSelect(prevProps)
 
   if (prevProps.on_search !== this.props.on_search) {
     node.set_search_equal_func(this.props.on_search)
   }
+}
+
+TreeView.prototype.getCols = function () {
+  const selectedCol = {
+    title: null,
+    name: 'selected',
+    type: ListStore.CHECKBOX,
+    on_toggled: this.handleToggled
+  }
+
+  return [selectedCol].concat(this.props.cols)
 }
 
 TreeView.prototype.handleCursorChanged = function () {
@@ -109,36 +110,43 @@ TreeView.prototype.handleRowActivated = function (_, row) {
   this.props.on_activated(index)
 }
 
-TreeView.prototype.handleSelectionChanged = function () {
-  if (this.node.isUpdatingSelect) {
-    return
-  }
-
-  const selected = this.sel.get_selected_rows().reduce((prev, x) => {
-    return !x.reduce ? prev : x.reduce((prev, y) => {
-      return prev.concat(y.get_indices())
-    }, prev)
-  }, [])
-
-  if (!isEqual(this.props.selected, selected)) {
-    this.props.on_selected(selected)
+TreeView.prototype.handleToggled = function (value) {
+  if (this.props.selected.indexOf(value) === -1) {
+    this.props.on_selected(this.props.selected.concat(value))
+  } else {
+    this.props.on_selected(this.props.selected.filter(x => x !== value))
   }
 }
 
-TreeView.prototype.updateSelect = function () {
-  const { node, sel } = this
+TreeView.prototype.updateSelect = function (prevProps) {
+  const { node, sel, store } = this
 
   node.isUpdatingSelect = true
 
   sel.unselect_all()
+  sel.select_path(Gtk.TreePath.new_from_string(String(this.props.cursor)))
+  node.set_cursor(Gtk.TreePath.new_from_string(String(this.props.cursor)), node.get_column(1), null)
+
+  if (prevProps) {
+    prevProps.selected.forEach(x => {
+      store.set_value(store.iter_nth_child(null, x)[1], 0, false)
+    })
+  }
 
   this.props.selected.forEach(x => {
-    sel.select_path(Gtk.TreePath.new_from_string(String(x)))
+    store.set_value(store.iter_nth_child(null, x)[1], 0, true)
   })
 
-  node.set_cursor(Gtk.TreePath.new_from_string(String(this.props.cursor)), null, null)
-
   node.isUpdatingSelect = false
+}
+
+TreeView.prototype.updateStore = function () {
+  this.store = ListStore.fromProps({
+    cols: this.getCols(),
+    rows: this.props.rows.map(row => assign({}, row, { selected: false }))
+  })
+
+  this.node.set_model(this.store)
 }
 
 TreeView.prototype.render = function () {
