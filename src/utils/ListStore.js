@@ -49,7 +49,7 @@ exports.configureColumn = function (node, col, i) {
     attribute = 'active'
     renderer = new Gtk.CellRendererToggle()
     renderer.connect('toggled', (_, value) => {
-      col.on_toggled(Number(value) === 1)
+      col.on_toggled(Number(value))
     })
   }
 

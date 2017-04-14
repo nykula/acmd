@@ -1,8 +1,10 @@
 const actions = require('../actions')
 const filesActions = require('../actions/files')
-const getActiveFile = require('../selectors/getActiveFile').default
+const getActiveFiles = require('../selectors/getActiveFiles').default
 const getActiveTabId = require('../selectors/getActiveTabId').default
+const getCursor = require('../selectors/getCursor').default
 const getDest = require('../selectors/getDest').default
+const getSelected = require('../selectors/getSelected').default
 const getVisibleFiles = require('../selectors/getVisibleFiles').default
 const isError = action => !!action.error
 const isRequest = a => !!a.requestId && !a.error && !a.progress && !a.ready
@@ -99,15 +101,16 @@ exports.handleCp = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
   if (isTrigger(action)) {
-    const file = getActiveFile(state)
+    const files = getActiveFiles(state)
+    const uris = files.map(x => x.uri)
+    const urisStr = files.length === 1 ? uris[0] + ' ' : '\n' + uris.join('\n') + '\n'
+
     const dest = getDest(state)
+    const destUri = dest + '/' + (files.length === 1 ? files[0].name : '')
 
-    const uri = file.uri
-    let destUri = dest + '/' + file.name
-
-    Dialog.prompt('Copy ' + uri + ' to:', destUri, destUri => {
+    Dialog.prompt('Copy ' + urisStr + 'to:', destUri, destUri => {
       if (destUri) {
-        dispatch(actions.cp([uri], destUri))
+        dispatch(actions.cp(uris, destUri))
       }
     })
   } else if (isRequest(action)) {
@@ -118,7 +121,7 @@ exports.handleCp = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 }
 
 exports.handleCtxMenu = action => (dispatch, getState, { Dialog, gioAdapter, Gtk }) => {
-  const file = getActiveFile(getState())
+  const file = getCursor(getState())
 
   if (file.handlers.length === 0) {
     Dialog.alert('No handlers registered for ' + file.contentType + '.', noop)
@@ -174,7 +177,7 @@ exports.handleDrives = action => (dispatch, getState, { gioAdapter }) => {
 exports.handleEditor = action => (dispatch, getState, { Dialog }) => {
   const state = getState()
 
-  const file = getActiveFile(state)
+  const file = getCursor(state)
   Dialog.alert('Editing ' + file.uri, noop)
 }
 
@@ -310,15 +313,16 @@ exports.handleMv = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
   if (isTrigger(action)) {
-    const file = getActiveFile(state)
+    const files = getActiveFiles(state)
+    const uris = files.map(x => x.uri)
+    const urisStr = files.length === 1 ? uris[0] + ' ' : '\n' + uris.join('\n') + '\n'
+
     const dest = getDest(state)
+    const destUri = dest + '/' + (files.length === 1 ? files[0].name : '')
 
-    const uri = file.uri
-    let destUri = dest + '/' + file.name
-
-    Dialog.prompt('Move ' + uri + ' to:', destUri, destUri => {
+    Dialog.prompt('Move ' + urisStr + 'to:', destUri, destUri => {
       if (destUri) {
-        dispatch(actions.mv([uri], destUri))
+        dispatch(actions.mv(uris, destUri))
       }
     })
   } else if (isRequest(action)) {
@@ -339,10 +343,12 @@ exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
 
   if (isTrigger(action)) {
-    const uri = getActiveFile(state).uri
+    const files = getActiveFiles(state)
+    const uris = files.map(x => x.uri)
+    const urisStr = files.length === 1 ? uris[0] : '\n' + uris.join('\n') + '\n'
 
-    Dialog.confirm('Are you sure you want to remove ' + uri + '?', (yes) => {
-      dispatch(actions.rm([uri]))
+    Dialog.confirm('Are you sure you want to remove ' + urisStr + '?', () => {
+      dispatch(actions.rm(uris))
     })
   } else if (isRequest(action)) {
     gioAdapter.work.run(action, dispatch)
@@ -384,6 +390,6 @@ exports.handleUnmount = action => (dispatch, getState, { gioAdapter }) => {
 
 exports.handleView = action => (dispatch, getState, { Dialog }) => {
   const state = getState()
-  const file = getActiveFile(state)
+  const file = getCursor(state)
   Dialog.alert('Viewing ' + file.uri, noop)
 }

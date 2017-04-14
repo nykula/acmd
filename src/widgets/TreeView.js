@@ -129,7 +129,9 @@ TreeView.prototype.updateSelect = function (prevProps) {
 
   if (prevProps) {
     prevProps.selected.forEach(x => {
-      store.set_value(store.iter_nth_child(null, x)[1], 0, false)
+      if (this.props.selected.indexOf(x) === -1) {
+        store.set_value(store.iter_nth_child(null, x)[1], 0, false)
+      }
     })
   }
 

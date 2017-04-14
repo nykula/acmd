@@ -24,10 +24,6 @@ const sampleFiles = [
 ]
 
 const initialState = {
-  active: {
-    0: 0,
-    1: 0
-  },
   sortedBy: {
     0: 'ext',
     1: 'ext'
@@ -45,36 +41,6 @@ exports.default = (_state, payload) => {
   let files
 
   switch (payload.type) {
-    case actions.CURSOR: {
-      if (state.active[payload.tabId] === payload.cursor) {
-        return state
-      }
-      return assign({}, state, {
-        active: (() => {
-          const active = assign({}, state.active)
-          active[payload.tabId] = payload.cursor
-          return active
-        })()
-      })
-    }
-
-    case actions.SELECTED: {
-      if (
-        payload.selected.length === 1 &&
-        state.active[payload.tabId] !== payload.selected[0]
-      ) {
-        return assign({}, state, {
-          active: (() => {
-            const active = assign({}, state.active)
-            active[payload.tabId] = payload.selected[0]
-            return active
-          })()
-        })
-      } else {
-        return state
-      }
-    }
-
     case indexActions.SHOW_HID_SYS:
       return assign({}, state, {
         showHidSys: !state.showHidSys

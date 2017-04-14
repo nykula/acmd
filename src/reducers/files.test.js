@@ -3,41 +3,6 @@ const actions = require('../actions/files')
 const indexActions = require('../actions')
 const reducer = require('./files').default
 
-it('saves which file is selected in tab', () => {
-  let action
-  let state = {
-    active: { 0: 0 }
-  }
-
-  action = actions.cursor({
-    tabId: 0,
-    cursor: 1
-  })
-  state = reducer(state, action)
-  expect(state).toEqual({
-    active: { 0: 1 }
-  })
-  action = actions.selected({
-    tabId: 0,
-    selected: [1]
-  })
-  expect(reducer(state, action)).toBe(state)
-
-  action = actions.selected({
-    tabId: 0,
-    selected: [0]
-  })
-  state = reducer(state, action)
-  expect(state).toEqual({
-    active: { 0: 0 }
-  })
-  action = actions.cursor({
-    tabId: 0,
-    cursor: 0
-  })
-  expect(reducer(state, action)).toBe(state)
-})
-
 it('toggles hidden file visibility', () => {
   let state = { showHidSys: false }
   const action = { type: indexActions.SHOW_HID_SYS }

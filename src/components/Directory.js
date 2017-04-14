@@ -76,8 +76,7 @@ Directory.prototype.refContainer = function (node) {
 }
 
 Directory.prototype.render = function () {
-  const activeFile = this.props.activeFile
-  const rows = this.props.rows
+  const { cursor, rows, selected } = this.props
 
   return (
     h('scrolled-window', {
@@ -94,14 +93,14 @@ Directory.prototype.render = function () {
           { title: 'Date', name: 'mtime', type: TEXT, min_width: 125 },
           { title: 'Attr', name: 'mode', type: TEXT, min_width: 45 }
         ].map(this.prefixSort),
-        cursor: activeFile,
+        cursor: cursor,
         on_activated: this.handleActivated,
         on_clicked: this.handleClicked,
         on_cursor: this.handleCursor,
         on_selected: this.handleSelected,
         on_search: handleSearch,
         rows: rows,
-        selected: [activeFile]
+        selected: selected
       })
     ])
   )
@@ -179,7 +178,7 @@ function mapStateToProps (state, { panelId }) {
   const tabId = state.panels.activeTabId[panelId]
 
   return {
-    activeFile: state.files.active[tabId],
+    cursor: state.entities.tabs[tabId].cursor,
 
     isActive: state.panels.activeId === panelId,
 
@@ -187,6 +186,8 @@ function mapStateToProps (state, { panelId }) {
       files: state.files.byTabId[tabId],
       showHidSys: state.files.showHidSys
     }).map(mapFileToRow),
+
+    selected: state.entities.tabs[tabId].selected,
 
     sortedBy: state.files.sortedBy[tabId],
 

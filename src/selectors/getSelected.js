@@ -5,12 +5,13 @@ const getVisibleFiles = require('./getVisibleFiles').default
 exports.default = state => {
   const activeTabId = getActiveTabId(state)
   const location = state.locations[activeTabId]
-  const activeFile = state.files.active[activeTabId]
-  const file = getVisibleFiles({
+  const selectedFiles = state.entities.tabs[activeTabId].selected
+  const visibleFiles = getVisibleFiles({
     files: state.files.byTabId[activeTabId],
     showHidSys: state.files.showHidSys
-  })[activeFile]
-  const uri = location.replace(/\/?$/, '') + '/' + file.name
-
-  return assign({}, file, { uri: uri })
+  })
+  const visSel = visibleFiles.filter((x, i) => selectedFiles.indexOf(i) !== -1)
+  return visSel.map(file => assign({}, file, {
+    uri: location.replace(/\/?$/, '') + '/' + file.name
+  }))
 }
