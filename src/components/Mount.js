@@ -1,6 +1,7 @@
 /* global imports */
 const actions = require('../actions')
 const { connect } = require('inferno-redux')
+const { GICON, TEXT } = require('../utils/ListStore')
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const minLength = require('../utils/minLength').default
@@ -18,8 +19,8 @@ function Mount ({ free, mounts, name, onLevelUp, onMountChanged, size }) {
       h('box', [
         h(Select, {
           cols: [
-            { name: 'text', attribute: 'text', pack: 'pack_end' },
-            { name: 'icon', attribute: 'gicon' }
+            { name: 'text', type: TEXT, pack: 'pack_end' },
+            { name: 'icon', type: GICON }
           ],
           rows: mounts.names.map(x => mounts.entities[x]).map(mount => ({
             icon: {

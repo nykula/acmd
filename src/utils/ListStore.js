@@ -5,12 +5,20 @@ const Gtk = imports.gi.Gtk
 const Icon = require('../utils/Icon').default
 const Pango = imports.gi.Pango
 
+const CHECKBOX = exports.CHECKBOX = 'CHECKBOX'
+const GICON = exports.GICON = 'GICON'
+const TEXT = exports.TEXT = 'TEXT'
+
 exports.fromProps = function (props) {
   const store = new Gtk.ListStore()
 
   store.set_column_types(props.cols.map(col => {
-    if (col.attribute === 'gicon') {
+    if (col.type === GICON) {
       return Gio.Icon
+    }
+
+    if (col.type === CHECKBOX) {
+      return GObject.TYPE_BOOLEAN
     }
 
     return GObject.TYPE_STRING
@@ -21,7 +29,7 @@ exports.fromProps = function (props) {
       store.append(),
       props.cols.map((x, i) => i),
       props.cols.map(col => {
-        if (col.attribute === 'gicon') {
+        if (col.type === GICON) {
           return Icon(row[col.name])
         }
 
@@ -34,18 +42,26 @@ exports.fromProps = function (props) {
 }
 
 exports.configureColumn = function (node, col, i) {
+  let attribute
   let renderer
 
-  if (col.attribute === 'gicon') {
+  if (col.type === CHECKBOX) {
+    attribute = 'active'
+    renderer = new Gtk.CellRendererToggle()
+  }
+
+  if (col.type === GICON) {
+    attribute = 'gicon'
     renderer = new Gtk.CellRendererPixbuf()
   }
 
-  if (col.attribute === 'text') {
+  if (col.type === TEXT) {
+    attribute = 'text'
     renderer = new Gtk.CellRendererText({
       ellipsize: Pango.EllipsizeMode.MIDDLE
     })
   }
 
   node[col.pack || 'pack_start'](renderer, false)
-  node.add_attribute(renderer, col.attribute, i)
+  node.add_attribute(renderer, attribute, i)
 }

@@ -5,6 +5,7 @@ const Component = require('inferno-component')
 const { connect } = require('inferno-redux')
 const filesActions = require('../actions/files')
 const getVisibleFiles = require('../selectors/getVisibleFiles').default
+const { GICON, TEXT } = require('../utils/ListStore')
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const TreeView = require('../widgets/TreeView').default
@@ -86,12 +87,12 @@ Directory.prototype.render = function () {
     }, [
       h(TreeView, {
         cols: [
-          { title: null, name: 'icon', attribute: 'gicon' },
-          { title: 'Name', name: 'filename', attribute: 'text', expand: true },
-          { title: 'Ext', name: 'ext', attribute: 'text', min_width: 50 },
-          { title: 'Size', name: 'size', attribute: 'text', min_width: 55 },
-          { title: 'Date', name: 'mtime', attribute: 'text', min_width: 125 },
-          { title: 'Attr', name: 'mode', attribute: 'text', min_width: 45 }
+          { title: null, name: 'icon', type: GICON },
+          { title: 'Name', name: 'filename', type: TEXT, expand: true },
+          { title: 'Ext', name: 'ext', type: TEXT, min_width: 50 },
+          { title: 'Size', name: 'size', type: TEXT, min_width: 55 },
+          { title: 'Date', name: 'mtime', type: TEXT, min_width: 125 },
+          { title: 'Attr', name: 'mode', type: TEXT, min_width: 45 }
         ].map(this.prefixSort),
         cursor: activeFile,
         on_activated: this.handleActivated,
