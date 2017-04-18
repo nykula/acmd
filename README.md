@@ -44,7 +44,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Focus matching file as user types
 
-- [ ] Select multiple files with right mouse button
+- [x] Select multiple files with keyboard
 
 - [x] List drives from /dev and their labels for udisks mount, open and unmount
 

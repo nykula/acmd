@@ -1,56 +1,36 @@
 const getActiveTabId = require('../selectors/getActiveTabId').default
+const KeyListener = require('../utils/KeyListener').default
 const indexActions = require('../actions')
 const panelsActions = require('../actions/panels')
 const tabsActions = require('../actions/tabs')
 
 exports.default = extra => {
-  const { Gdk, win } = extra
   let isListening = false
-  const pressed = {}
 
   return ({ dispatch, getState }) => next => action => {
-    if (isListening) {
-      return next(action)
+    if (!isListening) {
+      isListening = true
+
+      new KeyListener(extra.win).on('key-press-event', ev => {
+        exports.handleReleased(ev)(dispatch, getState, extra)
+      })
     }
-
-    isListening = true
-
-    win.connect('key-press-event', (_, ev) => {
-      const keyval = ev.get_keyval()[1]
-      pressed[keyval] = true
-    })
-
-    win.connect('key-release-event', (_, ev) => {
-      const keyval = ev.get_keyval()[1]
-
-      const action = {
-        which: keyval,
-        ctrlKey: pressed[Gdk.KEY_Control_L] || pressed[Gdk.KEY_Control_R],
-        shiftKey: pressed[Gdk.KEY_Shift_L] || pressed[Gdk.KEY_Shift_R],
-        altKey: pressed[Gdk.KEY_Alt_L] || pressed[Gdk.KEY_Alt_R],
-        metaKey: pressed[Gdk.KEY_Meta_L] || pressed[Gdk.KEY_Meta_R]
-      }
-
-      exports.handleReleased(action)(dispatch, getState, extra)
-
-      pressed[keyval] = false
-    })
 
     return next(action)
   }
 }
 
-exports.handleReleased = action => (dispatch, getState, { Gdk }) => {
-  switch (action.which) {
+exports.handleReleased = ev => (dispatch, getState, { Gdk }) => {
+  switch (ev.which) {
     case Gdk.KEY_BackSpace:
       dispatch(indexActions.levelUp({ panelId: getState().panels.activeId }))
       return
 
     case Gdk.KEY_ISO_Left_Tab:
     case Gdk.KEY_Tab:
-      if (action.ctrlKey && action.shiftKey) {
+      if (ev.ctrlKey && ev.shiftKey) {
         dispatch(tabsActions.prev(getState().panels.activeId))
-      } else if (action.ctrlKey) {
+      } else if (ev.ctrlKey) {
         dispatch(tabsActions.next(getState().panels.activeId))
       } else {
         dispatch(panelsActions.toggledActive())
@@ -86,25 +66,25 @@ exports.handleReleased = action => (dispatch, getState, { Gdk }) => {
       return
 
     case Gdk.KEY_b:
-      if (action.ctrlKey) {
+      if (ev.ctrlKey) {
         dispatch({ type: indexActions.SHOW_HID_SYS })
       }
       return
 
     case Gdk.KEY_l:
-      if (action.ctrlKey) {
+      if (ev.ctrlKey) {
         dispatch({ type: indexActions.LS })
       }
       return
 
     case Gdk.KEY_t:
-      if (action.ctrlKey) {
+      if (ev.ctrlKey) {
         dispatch(tabsActions.create(getState().panels.activeId))
       }
       return
 
     case Gdk.KEY_w:
-      if (action.ctrlKey) {
+      if (ev.ctrlKey) {
         dispatch(tabsActions.remove(getActiveTabId(getState())))
       }
       return

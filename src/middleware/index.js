@@ -4,7 +4,6 @@ const getActiveFiles = require('../selectors/getActiveFiles').default
 const getActiveTabId = require('../selectors/getActiveTabId').default
 const getCursor = require('../selectors/getCursor').default
 const getDest = require('../selectors/getDest').default
-const getSelected = require('../selectors/getSelected').default
 const getVisibleFiles = require('../selectors/getVisibleFiles').default
 const isError = action => !!action.error
 const isRequest = a => !!a.requestId && !a.error && !a.progress && !a.ready

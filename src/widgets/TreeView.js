@@ -4,18 +4,25 @@ const Component = require('inferno-component')
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const isEqual = require('lodash/isEqual')
+const KeyListener = require('../utils/KeyListener').default
 const ListStore = require('../utils/ListStore')
+const range = require('lodash/range')
+const select = require('../utils/select').default
 
-const TreeView = exports.default = function TreeView(props) {
+const TreeView = exports.default = function TreeView (props) {
   Component.call(this, props)
 
   this.getCols = this.getCols.bind(this)
   this.handleCursorChanged = this.handleCursorChanged.bind(this)
+  this.handleKeyPressEvent = this.handleKeyPressEvent.bind(this)
   this.handleRowActivated = this.handleRowActivated.bind(this)
+  this.handleSizeAllocate = this.handleSizeAllocate.bind(this)
   this.handleToggled = this.handleToggled.bind(this)
   this.init = this.init.bind(this)
   this.updateSelect = this.updateSelect.bind(this)
   this.updateStore = this.updateStore.bind(this)
+
+  this.limit = 1
 }
 
 TreeView.prototype = Object.create(Component.prototype)
@@ -53,6 +60,8 @@ TreeView.prototype.init = function (node) {
   })
 
   this.updateSelect()
+
+  new KeyListener(node).on('key-press-event', this.handleKeyPressEvent)
 }
 
 TreeView.prototype.shouldComponentUpdate = function (nextProps) {
@@ -60,8 +69,6 @@ TreeView.prototype.shouldComponentUpdate = function (nextProps) {
 }
 
 TreeView.prototype.componentDidUpdate = function (prevProps) {
-  const { node, sel } = this
-
   if (
     !isEqual(prevProps.cols, this.props.cols) ||
     !isEqual(prevProps.rows, this.props.rows)
@@ -72,7 +79,7 @@ TreeView.prototype.componentDidUpdate = function (prevProps) {
   this.updateSelect(prevProps)
 
   if (prevProps.on_search !== this.props.on_search) {
-    node.set_search_equal_func(this.props.on_search)
+    this.node.set_search_equal_func(this.props.on_search)
   }
 }
 
@@ -105,9 +112,45 @@ TreeView.prototype.handleCursorChanged = function () {
   }
 }
 
+TreeView.prototype.handleKeyPressEvent = function (ev) {
+  const visible = this.node.get_visible_range()
+  const top = visible[1].get_indices()[0]
+
+  const state = {
+    limit: this.limit,
+    indices: range(0, this.props.rows.length),
+    cursor: this.props.cursor,
+    selected: this.props.selected,
+    top: top
+  }
+
+  const nextState = select(state, ev)
+
+  if (state !== nextState) {
+    if (state.cursor !== nextState.cursor) {
+      this.props.on_cursor(nextState.cursor)
+    }
+
+    if (!isEqual(state.selected, nextState.selected)) {
+      this.props.on_selected(nextState.selected)
+    }
+
+    return true
+  }
+
+  return false
+}
+
 TreeView.prototype.handleRowActivated = function (_, row) {
   const index = row.get_indices()[0]
   this.props.on_activated(index)
+}
+
+TreeView.prototype.handleSizeAllocate = function (_) {
+  const node = this.node
+  const rowHeight = node.get_background_area(Gtk.TreePath.new_from_string('0'), null).height
+  const height = node.get_visible_rect().height
+  this.limit = (height / rowHeight).toFixed(2)
 }
 
 TreeView.prototype.handleToggled = function (value) {
@@ -154,6 +197,7 @@ TreeView.prototype.updateStore = function () {
 TreeView.prototype.render = function () {
   return h('tree-view', {
     on_cursor_changed: this.handleCursorChanged,
+    on_size_allocate: this.handleSizeAllocate,
     on_row_activated: this.handleRowActivated,
     ref: this.init
   })
