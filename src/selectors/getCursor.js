@@ -7,8 +7,8 @@ exports.default = state => {
   const location = state.locations[activeTabId]
   const activeFile = state.entities.tabs[activeTabId].cursor
   const file = getVisibleFiles({
-    files: state.files.byTabId[activeTabId],
-    showHidSys: state.files.showHidSys
+    files: state.entities.tabs[activeTabId].files,
+    showHidSys: state.showHidSys
   })[activeFile]
   const uri = location.replace(/\/?$/, '') + '/' + file.name
 

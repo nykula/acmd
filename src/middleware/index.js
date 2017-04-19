@@ -82,8 +82,8 @@ exports.handleActivated = action => (dispatch, getState, extra) => {
   const state = getState()
 
   const file = getVisibleFiles({
-    files: state.files.byTabId[action.tabId],
-    showHidSys: state.files.showHidSys
+    files: state.entities.tabs[action.tabId].files,
+    showHidSys: state.showHidSys
   })[action.index]
 
   const location = state.locations[action.tabId]

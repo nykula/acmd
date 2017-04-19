@@ -22,35 +22,31 @@ it('counts total size of selected files', () => {
   })
 })
 
-function setup () {
+function setup() {
   const state = {
     entities: {
       tabs: {
         '0': {
+          files: [
+            {
+              name: 'foo',
+              size: 0
+            },
+            {
+              name: 'bar',
+              size: 10
+            },
+            {
+              name: 'baz',
+              size: 20
+            },
+            {
+              name: 'qux',
+              size: 30
+            }
+          ],
           selected: [0, 2]
         }
-      }
-    },
-    files: {
-      byTabId: {
-        '0': [
-          {
-            name: 'foo',
-            size: 0
-          },
-          {
-            name: 'bar',
-            size: 10
-          },
-          {
-            name: 'baz',
-            size: 20
-          },
-          {
-            name: 'qux',
-            size: 30
-          }
-        ]
       }
     },
     panels: {

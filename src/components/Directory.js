@@ -184,13 +184,13 @@ function mapStateToProps (state, { panelId }) {
     isActive: state.panels.activeId === panelId,
 
     rows: getVisibleFiles({
-      files: state.files.byTabId[tabId],
-      showHidSys: state.files.showHidSys
+      files: state.entities.tabs[tabId].files,
+      showHidSys: state.showHidSys
     }).map(mapFileToRow),
 
     selected: state.entities.tabs[tabId].selected,
 
-    sortedBy: state.files.sortedBy[tabId],
+    sortedBy: state.entities.tabs[tabId].sortedBy,
 
     tabId: tabId
   }

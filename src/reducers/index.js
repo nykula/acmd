@@ -1,18 +1,18 @@
 const assign = require('lodash/assign')
 const { combineReducers } = require('redux/lib')
 const entities = require('./entities').default
-const files = require('./files').default
 const locations = require('./locations').default
 const mounts = require('./mounts').default
 const panels = require('./panels').default
+const showHidSys = require('./showHidSys').default
 const tabsActions = require('../actions/tabs')
 
 const rootReducer = combineReducers({
   entities: entities,
-  files: files,
   locations: locations,
   mounts: mounts,
-  panels: panels
+  panels: panels,
+  showHidSys: showHidSys
 })
 
 exports.default = function (_state, action) {
@@ -27,32 +27,20 @@ exports.default = function (_state, action) {
         tabs: (tabs => {
           tabs[tabId] = {
             cursor: 0,
-            selected: []
+            files: tabs[prevTabId].files,
+            selected: [],
+            sortedBy: tabs[prevTabId].sortedBy
           }
 
           return tabs
         })(assign({}, state.entities.tabs))
       })
 
-      const files = (files => {
-        const sortedBy = assign({}, files.sortedBy)
-        sortedBy[tabId] = sortedBy[prevTabId]
-
-        const byTabId = assign({}, files.byTabId)
-        byTabId[tabId] = byTabId[prevTabId]
-
-        return assign({}, files, {
-          sortedBy: sortedBy,
-          byTabId: byTabId
-        })
-      })(state.files)
-
       const locations = assign({}, state.locations)
       locations[tabId] = locations[prevTabId]
 
       return assign({}, state, {
         entities: entities,
-        files: files,
         locations: locations
       })
     }

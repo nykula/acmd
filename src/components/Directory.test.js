@@ -19,28 +19,24 @@ it('renders without crashing', () => {
         tabs: {
           '0': {
             cursor: 0,
-            selected: []
+            files: [{
+              fileType: 'REGULAR',
+              icon: 'some gio icon',
+              iconType: 'GICON',
+              modificationTime: 1490397889,
+              name: 'foo.bar',
+              size: 1000
+            }],
+            selected: [],
+            sortedBy: '-date'
           }
         }
-      },
-      files: {
-        byTabId: {
-          '0': [{
-            fileType: 'REGULAR',
-            icon: 'some gio icon',
-            iconType: 'GICON',
-            modificationTime: 1490397889,
-            name: 'foo.bar',
-            size: 1000
-          }]
-        },
-        sortedBy: { '0': '-date' },
-        showHidSys: false
       },
       panels: {
         activeId: 0,
         activeTabId: { '0': 0 }
-      }
+      },
+      showHidSys: false
     }, { panelId: 0 })
   )))
 })

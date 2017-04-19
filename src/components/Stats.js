@@ -20,8 +20,8 @@ function mapStateToProps (state, { panelId }) {
   const tabId = state.panels.activeTabId[panelId]
 
   const files = getVisibleFiles({
-    files: state.files.byTabId[tabId],
-    showHidSys: state.files.showHidSys
+    files: state.entities.tabs[tabId].files,
+    showHidSys: state.showHidSys
   })
 
   const selected = state.entities.tabs[tabId].selected

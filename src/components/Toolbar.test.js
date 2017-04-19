@@ -11,7 +11,7 @@ it('dispatches action without payload', () => {
   const tree = shallow(h(Toolbar, assign(
     {},
     mapStateToProps({
-      files: { showHidSys: true }
+      showHidSys: true
     }),
     mapDispatchToProps(dispatch)
   )))

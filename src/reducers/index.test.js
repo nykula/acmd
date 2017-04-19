@@ -8,22 +8,16 @@ it('clones active tab when creating a new one', () => {
       tabs: {
         '0': {
           cursor: 1,
-          selected: []
+          files: [{ name: 'foo' }, { name: 'bar' }],
+          selected: [],
+          sortedBy: '-date',
         },
         '1': {
           cursor: 0,
-          selected: []
+          files: [{ name: 'foo' }, { name: 'bar' }],
+          selected: [],
+          sortedBy: 'name'
         }
-      }
-    },
-    files: {
-      byTabId: {
-        '0': [{ name: 'foo' }, { name: 'bar' }],
-        '1': [{ name: 'foo' }, { name: 'bar' }]
-      },
-      sortedBy: {
-        '0': '-date',
-        '1': 'name'
       }
     },
     locations: {
@@ -45,28 +39,22 @@ it('clones active tab when creating a new one', () => {
       tabs: {
         '0': {
           cursor: 1,
-          selected: []
+          files: [{ name: 'foo' }, { name: 'bar' }],
+          selected: [],
+          sortedBy: '-date'
         },
         '1': {
           cursor: 0,
-          selected: []
+          files: [{ name: 'foo' }, { name: 'bar' }],
+          selected: [],
+          sortedBy: 'name',
         },
         '2': {
           cursor: 0,
-          selected: []
+          files: [{ name: 'foo' }, { name: 'bar' }],
+          selected: [],
+          sortedBy: '-date'
         }
-      }
-    },
-    files: {
-      byTabId: {
-        '0': [{ name: 'foo' }, { name: 'bar' }],
-        '1': [{ name: 'foo' }, { name: 'bar' }],
-        '2': [{ name: 'foo' }, { name: 'bar' }]
-      },
-      sortedBy: {
-        '0': '-date',
-        '1': 'name',
-        '2': '-date'
       }
     },
     locations: {
