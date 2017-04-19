@@ -3,6 +3,7 @@ const actions = require('../actions')
 const { connect } = require('inferno-redux')
 const { GICON, TEXT } = require('../utils/ListStore')
 const formatSize = require('../utils/formatSize').default
+const getActiveMountUri = require('../selectors/getActiveMountUri').default
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const minLength = require('../utils/minLength').default
@@ -56,7 +57,10 @@ function Mount ({ free, mounts, name, onLevelUp, onMountChanged, size }) {
 
 exports.mapStateToProps = mapStateToProps
 function mapStateToProps (state, { panelId }) {
-  const activeMount = state.mounts.entities[state.mounts.active[panelId]]
+  const activeUri = getActiveMountUri(state, panelId)
+  const activeMount = state.mounts.names.map(x => state.mounts.entities[x])
+    .filter(mount => mount.rootUri === activeUri)[0]
+
   return {
     free: activeMount.attributes['filesystem::free'],
     name: activeMount.name,

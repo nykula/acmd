@@ -2,10 +2,6 @@ const actions = require('../actions')
 const assign = require('lodash/assign')
 
 const initialState = {
-  active: {
-    0: '/',
-    1: '/'
-  },
   names: ['/'],
   entities: {
     '/': {

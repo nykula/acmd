@@ -217,6 +217,7 @@ exports.default = new Lang.Class({
     const handleSelf = selfInfo => {
       const selfFile = mapGFileInfoToFile(selfInfo)
       selfFile.displayName = '.'
+      selfFile.mountUri = this.getMountUri(dir)
       selfFile.name = '.'
       selfFile.uri = dir.get_uri()
       files = [selfFile]
@@ -345,6 +346,21 @@ exports.default = new Lang.Class({
     }
 
     handleRequest()
+  },
+
+  /**
+   * Returns root uri of the mount enclosing a given file.
+   */
+  getMountUri: function (gFile) {
+    let mount = null
+
+    try {
+      mount = gFile.find_enclosing_mount(null)
+    } catch (err) {
+      return 'file:///'
+    }
+
+    return mount.get_root().get_uri()
   },
 
   /**

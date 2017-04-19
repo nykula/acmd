@@ -7,20 +7,33 @@ const { shallow } = require('../utils/Test')
 
 it('renders without crashing', () => {
   shallow(h(Mount, assign(
-        { panelId: 0 },
-        mapStateToProps({
-          mounts: {
-            active: { 0: 'System' },
-            names: ['System'],
-            entities: {
-              System: {
-                name: 'System',
-                attributes: { 'filesystem::size': 1 }
-              }
-            }
+    { panelId: 0 },
+    mapStateToProps({
+      entities: {
+        tabs: {
+          '0': {
+            files: [{
+              name: '.',
+              mountUri: 'file:///media/System'
+            }]
           }
-        }, { panelId: 0 })
-    )))
+        }
+      },
+      mounts: {
+        names: ['System'],
+        entities: {
+          System: {
+            name: 'System',
+            attributes: { 'filesystem::size': 1 },
+            rootUri: 'file:///media/System'
+          }
+        }
+      },
+      panels: {
+        activeTabId: { '0': 0 }
+      }
+    }, { panelId: 0 })
+  )))
 })
 
 it('dispatches levelUp', () => {

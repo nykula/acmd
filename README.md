@@ -56,9 +56,9 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Format size as 1 M, 23 k, 456 B
 
-- [ ] Show free space on active volume
+- [x] Show free space on active mount
 
-- [ ] Go to root of volume
+- [ ] Go to root of mount
 
 - [ ] Return focus to tab after button press
 

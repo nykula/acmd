@@ -59,10 +59,6 @@ it('saves mounts when ready', () => {
   state = reducer(state, action)
 
   expect(state).toMatch({
-    active: {
-      0: '/',
-      1: '/'
-    },
     names: ['/', 'System', 'abc'],
     entities: {
       '/': {

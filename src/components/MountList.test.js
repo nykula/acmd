@@ -10,11 +10,16 @@ it('renders without crashing', () => {
     mapStateToProps({
       entities: {
         tabs: {
-          '0': { location: 'file;///' }
+          '0': {
+            location: 'file:///media/System/tmp',
+            files: [{
+              name: '.',
+              rootUri: 'file:///media/System'
+            }]
+          }
         }
       },
       mounts: {
-        active: { '0': 'Music', '1': 'System' },
         names: ['System', 'Music'],
         entities: {
           System: {
@@ -30,6 +35,9 @@ it('renders without crashing', () => {
             rootUri: 'file:///media/Music'
           }
         }
+      },
+      panels: {
+        activeTabId: { '0': 0 }
       }
     }, { panelId: 0 })
   )))
@@ -61,7 +69,7 @@ it('renders item without crashing', () => {
 
 it('does not show context menu on active item click', () => {
   new Mount({
-    activeUri: 'file:///',
+    location: 'file:///',
     mount: {
       name: '/',
       icon: 'computer',

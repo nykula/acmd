@@ -2,31 +2,32 @@
 const actions = require('../actions')
 const Component = require('inferno-component')
 const { connect } = require('inferno-redux')
+const getActiveMountUri = require('../selectors/getActiveMountUri').default
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const Icon = require('../utils/Icon').default
 const minLength = require('../utils/minLength').default
 
-exports.Mount = function (props) {
+exports.Mount = Mount
+function Mount (props) {
   Component.call(this, props)
   this.handleClicked = this.handleClicked.bind(this)
 }
 
-exports.Mount.prototype = Object.create(Component.prototype)
+Mount.prototype = Object.create(Component.prototype)
 
-exports.Mount.prototype.handleClicked = function () {
-  const { activeUri, dispatch, mount } = this.props
-  const uri = mount.rootUri
-  const isActive = mount.rootUri && activeUri.indexOf(uri) === 0
+Mount.prototype.handleClicked = function () {
+  const { activeUri, dispatch, location, mount } = this.props
+  const isActive = mount.rootUri === activeUri
 
   const menu = new Gtk.Menu()
   let item
 
-  if (mount.rootUri && uri !== activeUri) {
+  if (mount.rootUri && mount.rootUri !== location) {
     item = new Gtk.MenuItem()
     item.label = 'Open'
     item.connect('activate', () => {
-      dispatch(actions.ls(this.props.panelId, uri))
+      dispatch(actions.ls(this.props.panelId, mount.rootUri))
     })
     menu.add(item)
   }
@@ -57,7 +58,7 @@ exports.Mount.prototype.handleClicked = function () {
   menu.popup(null, null, null, null, null)
 }
 
-exports.Mount.prototype.render = function () {
+Mount.prototype.render = function () {
   const { mount, isActive, short } = this.props
   const { icon, iconType, name } = mount
   return (
@@ -78,24 +79,31 @@ exports.Mount.prototype.render = function () {
   )
 }
 
-exports.MountList = ({ activeUri, dispatch, panelId, mounts }) => (
-  h('box', [
-    mounts.names.map(x => mounts.entities[x]).map(mount => {
-      return h(exports.Mount, {
-        activeUri: activeUri,
-        dispatch: dispatch,
-        mount: mount,
-        panelId: panelId,
-        isActive: mounts.active[panelId] === mount.name,
-        short: minLength(mounts.names, mount.name)
+exports.MountList = MountList
+function MountList ({ activeUri, dispatch, location, panelId, mounts }) {
+  return (
+    h('box', [
+      mounts.names.map(x => mounts.entities[x]).map(mount => {
+        return h(Mount, {
+          dispatch: dispatch,
+          location: location,
+          mount: mount,
+          panelId: panelId,
+          isActive: activeUri === mount.rootUri,
+          short: minLength(mounts.names, mount.name)
+        })
       })
-    })
-  ])
-)
+    ])
+  )
+}
 
-exports.mapStateToProps = (state, { panelId }) => ({
-  activeUri: state.entities.tabs[panelId].location,
-  mounts: state.mounts
-})
+exports.mapStateToProps = mapStateToProps
+function mapStateToProps (state, { panelId }) {
+  return {
+    activeUri: getActiveMountUri(state, panelId),
+    location: state.entities.tabs[panelId].location,
+    mounts: state.mounts
+  }
+}
 
-exports.default = connect(exports.mapStateToProps)(exports.MountList)
+exports.default = connect(mapStateToProps)(MountList)
