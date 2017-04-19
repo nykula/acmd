@@ -181,6 +181,10 @@ it('lists files in a directory', () => {
         }),
         get_size: () => 1
       }]
+    }),
+
+    get_child: name => ({
+      get_uri: () => 'file:///' + name
     })
   }
 

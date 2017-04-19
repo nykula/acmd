@@ -192,9 +192,9 @@ exports.default = new Lang.Class({
     const handleError = props.onError
     const handleSuccess = props.onSuccess
     const uri = props.uri
+    const dir = this.Gio.file_new_for_uri(uri)
 
     const handleRequest = () => {
-      const dir = this.Gio.file_new_for_uri(uri)
       dir.enumerate_children_async(
         'standard::*,access::*,owner::*,time::*,unix::*',
         this.Gio.FileQueryInfoFlags.NONE,
@@ -264,17 +264,19 @@ exports.default = new Lang.Class({
             return true
           })
 
+        const name = gFileInfo.get_name()
         const file = {
           contentType: contentType,
           displayName: gFileInfo.get_display_name(),
           fileType: Object.keys(this.Gio.FileType)[gFileInfo.get_file_type()],
           icon: gFileInfo.get_icon().to_string(),
           iconType: 'GICON',
-          name: gFileInfo.get_name(),
+          name: name,
           modificationTime: gFileInfo.get_modification_time().tv_sec,
           size: gFileInfo.get_size(),
           attributes: attributes,
-          handlers: handlers
+          handlers: handlers,
+          uri: dir.get_child(name).get_uri()
         }
 
         return file
