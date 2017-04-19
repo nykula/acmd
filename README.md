@@ -52,7 +52,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Run command in current directory
 
-- [ ] Count total size of selected files
+- [x] Count total size of selected files
 
 - [ ] Format size as 1 M, 23 k, 456 B
 

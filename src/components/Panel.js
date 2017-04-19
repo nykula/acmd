@@ -4,16 +4,8 @@ const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const Location = require('./Location').default
 const Mount = require('./Mount').default
+const Stats = require('./Stats').default
 const TabList = require('./TabList').default
-
-exports.Stats = Stats
-function Stats () {
-  return (
-    h('box', { border_width: 4 }, [
-      h('label', { label: '0 k / 43 k in 0 / 12 file(s)' })
-    ])
-  )
-}
 
 exports.default = Panel
 function Panel ({ id }) {
@@ -37,8 +29,9 @@ function Panel ({ id }) {
         key: 'DIRECTORY',
         panelId: id
       }),
-      Stats({
-        key: 'STATS'
+      h(Stats, {
+        key: 'STATS',
+        panelId: id
       })
     ])
   )
