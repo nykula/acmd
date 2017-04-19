@@ -70,7 +70,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [ ] Keep cursor if no search matches
 
-- [ ] Dot dot if not root
+- [x] Dot dot if not root
 
 - [ ] Click tab to switch
 

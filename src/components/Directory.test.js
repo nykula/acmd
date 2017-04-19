@@ -47,6 +47,8 @@ it('maps files to table rows', () => {
 
   file = {
     fileType: 'DIRECTORY',
+    icon: 'go-up',
+    iconType: 'ICON_NAME',
     modificationTime: 1490397889,
     name: '..'
   }

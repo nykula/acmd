@@ -1,6 +1,7 @@
 exports.ACTIVATED = 'ACTIVATED'
-exports.activated = ({ tabId, index }) => ({
+exports.activated = ({ panelId, tabId, index }) => ({
   type: exports.ACTIVATED,
+  panelId: panelId,
   tabId: tabId,
   index: index
 })

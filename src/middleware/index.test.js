@@ -185,6 +185,30 @@ it('lists files in a directory', () => {
 
     get_child: name => ({
       get_uri: () => 'file:///' + name
+    }),
+
+    get_parent: () => null,
+
+    get_uri: () => 'file:///',
+
+    query_info_async: () => {
+      arguments[arguments.length - 1]()
+    },
+
+    query_info_finish: () => ({
+      list_attributes: () => ['someNamespace::someKey'],
+      get_attribute_as_string: () => 'someValue',
+      get_content_type: () => 'inode/directory',
+      get_display_name: () => '/',
+      get_file_type: () => 1,
+      get_icon: () => ({
+        to_string: () => 'some gio icon'
+      }),
+      get_name: () => '/',
+      get_modification_time: () => ({
+        tv_sec: 0
+      }),
+      get_size: () => 1
     })
   }
 
@@ -255,6 +279,36 @@ it('lists files in a directory', () => {
     tabId: 0,
     result: {
       files: [
+        {
+          contentType: 'inode/directory',
+          displayName: '.',
+          fileType: 'typeB',
+          icon: 'some gio icon',
+          iconType: 'GICON',
+          name: '.',
+          modificationTime: 0,
+          size: 1,
+          attributes: {
+            'someNamespace::someKey': 'someValue'
+          },
+          handlers: [
+            {
+              commandline: '/usr/bin/gedit %U',
+              displayName: 'Text Editor',
+              icon: 'gedit'
+            },
+            {
+              commandline: '/usr/share/code/code --unity-launch %U',
+              displayName: 'Visual Studio Code',
+              icon: 'code'
+            },
+            {
+              commandline: '/usr/bin/foobar %U',
+              displayName: 'Foobar',
+              icon: null
+            }
+          ]
+        },
         {
           contentType: 'text/plain',
           displayName: 'file.txt',
@@ -402,7 +456,7 @@ it('opens a terminal in the current directory', () => {
       },
       panels: {
         activeId: 0,
-        activeTabId: {0: 0}
+        activeTabId: { 0: 0 }
       }
     }),
     Gio: {

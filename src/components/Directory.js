@@ -34,6 +34,7 @@ Directory.prototype.componentDidUpdate = function (prevProps) {
 Directory.prototype.handleActivated = function (index) {
   this.props.actions.files.activated({
     index: index,
+    panelId: this.props.panelId,
     tabId: this.props.tabId
   })
 }
@@ -141,11 +142,6 @@ function mapFileToRow (file) {
 
   if (file.fileType === 'DIRECTORY') {
     filename = '[' + file.name + ']'
-  }
-
-  if (file.name === '..') {
-    icon = 'go-up'
-    iconType = 'ICON_NAME'
   }
 
   const mtime = ((time) => {

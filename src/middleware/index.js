@@ -94,9 +94,10 @@ exports.handleActivated = action => (dispatch, getState, extra) => {
     return
   }
 
-  // if (file.name === '..') {
-  //   return this.handleLevelUp()
-  // }
+  if (file.name === '..') {
+    exports.handleLevelUp(action)(dispatch, getState, extra)
+    return
+  }
 
   dispatch(actions.ls(action.tabId, uri))
 }

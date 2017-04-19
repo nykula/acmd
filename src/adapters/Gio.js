@@ -192,9 +192,67 @@ exports.default = new Lang.Class({
     const handleError = props.onError
     const handleSuccess = props.onSuccess
     const uri = props.uri
+
+    let files = []
     const dir = this.Gio.file_new_for_uri(uri)
+    const parent = dir.get_parent()
 
     const handleRequest = () => {
+      dir.query_info_async(
+        'standard::*,access::*,owner::*,time::*,unix::*',
+        this.Gio.FileQueryInfoFlags.NONE,
+        this.GLib.PRIORITY_DEFAULT,
+        null,
+        (_, result) => {
+          try {
+            const info = dir.query_info_finish(result)
+            handleSelf(info)
+          } catch (err) {
+            handleError(err)
+          }
+        }
+      )
+    }
+
+    const handleSelf = selfInfo => {
+      const selfFile = mapGFileInfoToFile(selfInfo)
+      selfFile.displayName = '.'
+      selfFile.name = '.'
+      selfFile.uri = dir.get_uri()
+      files = [selfFile]
+
+      if (!parent) {
+        handleParent(null)
+        return
+      }
+
+      parent.query_info_async(
+        'standard::*,access::*,owner::*,time::*,unix::*',
+        this.Gio.FileQueryInfoFlags.NONE,
+        this.GLib.PRIORITY_DEFAULT,
+        null,
+        (_, result) => {
+          try {
+            const info = parent.query_info_finish(result)
+            handleParent(info)
+          } catch (err) {
+            handleError(err)
+          }
+        }
+      )
+    }
+
+    const handleParent = parentInfo => {
+      if (parentInfo) {
+        const parentFile = mapGFileInfoToFile(parentInfo)
+        parentFile.displayName = '..'
+        parentFile.name = '..'
+        parentFile.icon = 'go-up'
+        parentFile.iconType = 'ICON_NAME'
+        parentFile.uri = parent.get_uri()
+        files = files.concat(parentFile)
+      }
+
       dir.enumerate_children_async(
         'standard::*,access::*,owner::*,time::*,unix::*',
         this.Gio.FileQueryInfoFlags.NONE,
@@ -228,61 +286,62 @@ exports.default = new Lang.Class({
     }
 
     const handleInfos = (list) => {
-      const files = list.map(gFileInfo => {
-        const attributes = []
-          .concat(gFileInfo.list_attributes('access'))
-          .concat(gFileInfo.list_attributes('owner'))
-          .concat(gFileInfo.list_attributes('unix'))
-          .reduce((prev, key) => {
-            prev[key] = gFileInfo.get_attribute_as_string(key)
-            return prev
-          }, {})
-
-        const contentType = gFileInfo.get_content_type()
-        const gAppInfos = this.Gio.AppInfo.get_all_for_type(contentType)
-
-        const def = this.Gio.AppInfo.get_default_for_type(contentType, false)
-        if (def) {
-          gAppInfos.unshift(def)
-        }
-
-        const handlers = gAppInfos
-          .map(gAppInfo => {
-            const icon = gAppInfo.get_icon()
-            return {
-              commandline: gAppInfo.get_commandline(),
-              displayName: gAppInfo.get_display_name(),
-              icon: icon ? icon.to_string() : null
-            }
-          })
-          .filter((x, i, xs) => {
-            for (let j = 0; j < i; j++) {
-              if (xs[j].commandline === x.commandline) {
-                return false
-              }
-            }
-            return true
-          })
-
-        const name = gFileInfo.get_name()
-        const file = {
-          contentType: contentType,
-          displayName: gFileInfo.get_display_name(),
-          fileType: Object.keys(this.Gio.FileType)[gFileInfo.get_file_type()],
-          icon: gFileInfo.get_icon().to_string(),
-          iconType: 'GICON',
-          name: name,
-          modificationTime: gFileInfo.get_modification_time().tv_sec,
-          size: gFileInfo.get_size(),
-          attributes: attributes,
-          handlers: handlers,
-          uri: dir.get_child(name).get_uri()
-        }
-
-        return file
-      })
-
+      files = files.concat(list.map(mapGFileInfoToFile))
       handleSuccess(files)
+    }
+
+    const mapGFileInfoToFile = gFileInfo => {
+      const attributes = []
+        .concat(gFileInfo.list_attributes('access'))
+        .concat(gFileInfo.list_attributes('owner'))
+        .concat(gFileInfo.list_attributes('unix'))
+        .reduce((prev, key) => {
+          prev[key] = gFileInfo.get_attribute_as_string(key)
+          return prev
+        }, {})
+
+      const contentType = gFileInfo.get_content_type()
+      const gAppInfos = this.Gio.AppInfo.get_all_for_type(contentType)
+
+      const def = this.Gio.AppInfo.get_default_for_type(contentType, false)
+      if (def) {
+        gAppInfos.unshift(def)
+      }
+
+      const handlers = gAppInfos
+        .map(gAppInfo => {
+          const icon = gAppInfo.get_icon()
+          return {
+            commandline: gAppInfo.get_commandline(),
+            displayName: gAppInfo.get_display_name(),
+            icon: icon ? icon.to_string() : null
+          }
+        })
+        .filter((x, i, xs) => {
+          for (let j = 0; j < i; j++) {
+            if (xs[j].commandline === x.commandline) {
+              return false
+            }
+          }
+          return true
+        })
+
+      const name = gFileInfo.get_name()
+      const file = {
+        contentType: contentType,
+        displayName: gFileInfo.get_display_name(),
+        fileType: Object.keys(this.Gio.FileType)[gFileInfo.get_file_type()],
+        icon: gFileInfo.get_icon().to_string(),
+        iconType: 'GICON',
+        name: name,
+        modificationTime: gFileInfo.get_modification_time().tv_sec,
+        size: gFileInfo.get_size(),
+        attributes: attributes,
+        handlers: handlers,
+        uri: dir.get_child(name).get_uri()
+      }
+
+      return file
     }
 
     handleRequest()
