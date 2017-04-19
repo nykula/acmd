@@ -4,6 +4,7 @@ const { bindActionCreators } = require('redux')
 const Component = require('inferno-component')
 const { connect } = require('inferno-redux')
 const filesActions = require('../actions/files')
+const formatSize = require('../utils/formatSize').default
 const getVisibleFiles = require('../selectors/getVisibleFiles').default
 const { GICON, TEXT } = require('../utils/ListStore')
 const Gtk = imports.gi.Gtk
@@ -167,7 +168,7 @@ function mapFileToRow (file) {
     icon: { icon: icon, iconType: iconType },
     filename: filename,
     ext: ext,
-    size: file.fileType === 'DIRECTORY' ? '<DIR>' : file.size,
+    size: file.fileType === 'DIRECTORY' ? '<DIR>' : formatSize(file.size),
     mtime: mtime,
     mode: mode
   }

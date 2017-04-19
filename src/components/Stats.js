@@ -1,4 +1,5 @@
 const { connect } = require('inferno-redux')
+const formatSize = require('../utils/formatSize').default
 const getVisibleFiles = require('../selectors/getVisibleFiles').default
 const h = require('inferno-hyperscript')
 
@@ -34,11 +35,6 @@ function mapStateToProps (state, { panelId }) {
 }
 
 exports.default = connect(mapStateToProps)(Stats)
-
-exports.formatSize = formatSize
-function formatSize (size) {
-  return Math.ceil(size / 1000) + ' k'
-}
 
 exports.totalSize = totalSize
 function totalSize (files) {

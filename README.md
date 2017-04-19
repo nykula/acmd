@@ -54,7 +54,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Count total size of selected files
 
-- [ ] Format size as 1 M, 23 k, 456 B
+- [x] Format size as 1 M, 23 k, 456 B
 
 - [ ] Show free space on active volume
 

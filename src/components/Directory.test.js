@@ -89,7 +89,7 @@ it('maps files to table rows', () => {
     icon: { icon: 'some gio icon', iconType: 'GICON' },
     filename: 'foo',
     ext: 'bar',
-    size: 1000
+    size: '1 k'
   }
   expect(mapFileToRow(file)).toMatch(row)
 })

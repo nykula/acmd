@@ -2,6 +2,7 @@
 const actions = require('../actions')
 const { connect } = require('inferno-redux')
 const { GICON, TEXT } = require('../utils/ListStore')
+const formatSize = require('../utils/formatSize').default
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const minLength = require('../utils/minLength').default
@@ -11,8 +12,8 @@ const Select = require('../widgets/Select').default
 exports.Mount = Mount
 function Mount ({ free, mounts, name, onLevelUp, onMountChanged, size }) {
   const status = '[' + name + '] ' +
-    Math.floor(free / 1000 || 0).toLocaleString() + ' of ' +
-    Math.floor(size / 1000 || 0).toLocaleString() + ' k free'
+    formatSize(free) + ' of ' +
+    formatSize(size) + ' free'
 
   return (
     h('box', { expand: false }, [
