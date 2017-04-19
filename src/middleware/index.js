@@ -2,6 +2,7 @@ const actions = require('../actions')
 const filesActions = require('../actions/files')
 const Fun = require('../utils/Fun').default
 const getActiveFiles = require('../selectors/getActiveFiles').default
+const getActiveMountUri = require('../selectors/getActiveMountUri').default
 const getActiveTabId = require('../selectors/getActiveTabId').default
 const getCursor = require('../selectors/getCursor').default
 const getDest = require('../selectors/getDest').default
@@ -60,6 +61,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
 
     case actions.RM:
       exports.handleRm(action)(dispatch, getState, extra)
+      break
+
+    case actions.ROOT:
+      exports.handleRoot(action)(dispatch, getState, extra)
       break
 
     case actions.TERMINAL:
@@ -385,6 +390,13 @@ exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   } else if (isResponse(action)) {
     dispatch(actions.refresh())
   }
+}
+
+exports.handleRoot = action => (dispatch, getState) => {
+  const state = getState()
+  const tabId = state.panels.activeTabId[action.panelId]
+  const nextLocation = getActiveMountUri(state, action.panelId)
+  dispatch(actions.ls(tabId, nextLocation))
 }
 
 exports.handleTerminal = action => (dispatch, getState, { Dialog, gioAdapter }) => {

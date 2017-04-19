@@ -11,7 +11,7 @@ const noop = require('lodash/noop')
 const Select = require('../widgets/Select').default
 
 exports.Mount = Mount
-function Mount ({ free, mounts, name, onLevelUp, onMountChanged, size }) {
+function Mount ({ free, mounts, name, onLevelUp, onMountChanged, onRoot, size }) {
   const status = '[' + name + '] ' +
     formatSize(free) + ' of ' +
     formatSize(size) + ' free'
@@ -41,7 +41,10 @@ function Mount ({ free, mounts, name, onLevelUp, onMountChanged, size }) {
       ]),
       h('v-separator'),
       h('box', [
-        h('button', { relief: Gtk.ReliefStyle.NONE }, [
+        h('button', {
+          on_clicked: onRoot,
+          relief: Gtk.ReliefStyle.NONE
+        }, [
           h('label', { label: '\\' })
         ]),
         h('button', {
@@ -76,7 +79,8 @@ exports.mapDispatchToProps = mapDispatchToProps
 function mapDispatchToProps (dispatch, { panelId }) {
   return {
     onLevelUp: () => dispatch(actions.levelUp({ panelId: panelId })),
-    onMountChanged: noop
+    onMountChanged: noop,
+    onRoot: () => dispatch(actions.root({ panelId: panelId }))
   }
 }
 

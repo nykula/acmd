@@ -58,7 +58,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Show free space on active mount
 
-- [ ] Go to root of mount
+- [x] Go to root of mount
 
 - [ ] Return focus to tab after button press
 

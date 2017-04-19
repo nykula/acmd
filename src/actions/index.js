@@ -163,6 +163,14 @@ exports.rm = uris => {
   }
 }
 
+exports.ROOT = 'ROOT'
+exports.root = ({ panelId }) => {
+  return {
+    type: exports.ROOT,
+    panelId: panelId
+  }
+}
+
 exports.SHOW_HID_SYS = 'SHOW_HID_SYS'
 
 exports.TERMINAL = 'TERMINAL'
