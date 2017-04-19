@@ -39,7 +39,7 @@ function mapStateToProps (state, { panelId }) {
     activeTabId: state.panels.activeTabId[panelId],
     tabs: ids.map(id => ({
       id: id,
-      location: state.locations[id]
+      location: state.entities.tabs[id].location
     }))
   }
 }

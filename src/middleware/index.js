@@ -86,7 +86,7 @@ exports.handleActivated = action => (dispatch, getState, extra) => {
     showHidSys: state.showHidSys
   })[action.index]
 
-  const location = state.locations[action.tabId]
+  const location = state.entities.tabs[action.tabId].location
   const uri = location.replace(/\/?$/, '') + '/' + file.name
 
   if (file.fileType !== 'DIRECTORY') {
@@ -197,7 +197,7 @@ exports.handleExec = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   }
 
   const state = getState()
-  const location = state.locations[getActiveTabId(state)]
+  const location = state.entities.tabs[getActiveTabId(state)].location
 
   if (location.indexOf('file:///') !== 0) {
     Dialog.alert('Operation not supported.', noop)
@@ -214,7 +214,7 @@ exports.handleLevelUp = action => (dispatch, getState) => {
   const state = getState()
 
   const tabId = state.panels.activeTabId[action.panelId]
-  const location = state.locations[tabId]
+  const location = state.entities.tabs[tabId].location
   let nextLocation = location.replace(/\/[^/]+$/, '')
 
   if (nextLocation === 'file://') {
@@ -278,7 +278,7 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
     })
   } else if (isError(action)) {
     Dialog.alert(action.error.message, () => {
-      if (state.locations[action.tabId] !== 'file:///') {
+      if (state.entities.tabs[action.tabId].location !== 'file:///') {
         dispatch(actions.ls(action.tabId, 'file:///'))
       }
     })
@@ -288,7 +288,7 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 exports.handleMkdir = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   if (isTrigger(action)) {
     const state = getState()
-    const location = state.locations[getActiveTabId(state)]
+    const location = state.entities.tabs[getActiveTabId(state)].location
 
     Dialog.prompt('Name of the new dir:', '', name => {
       if (name) {
@@ -363,8 +363,8 @@ exports.handleMv = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 
 exports.handleRefresh = action => (dispatch, getState) => {
   const state = getState()
-  dispatch(actions.ls(0, state.locations[0]))
-  dispatch(actions.ls(1, state.locations[1]))
+  dispatch(actions.ls(0, state.entities.tabs[0].location))
+  dispatch(actions.ls(1, state.entities.tabs[1].location))
   dispatch(actions.drives(Date.now()))
 }
 
@@ -388,7 +388,7 @@ exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 
 exports.handleTerminal = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   const state = getState()
-  const location = state.locations[getActiveTabId(state)]
+  const location = state.entities.tabs[getActiveTabId(state)].location
 
   if (location.indexOf('file:///') !== 0) {
     Dialog.alert('Operation not supported.', noop)

@@ -40,8 +40,12 @@ it('unselects row when isActive becomes false', () => {
 
 it('maps state to expected props', () => {
   const state = {
-    locations: {
-      '1': 'file:///'
+    entities: {
+      tabs: {
+        '1': {
+          location: 'file:///'
+        }
+      }
     },
     panels: {
       activeId: 0,

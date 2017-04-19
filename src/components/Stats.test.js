@@ -22,7 +22,7 @@ it('counts total size of selected files', () => {
   })
 })
 
-function setup() {
+function setup () {
   const state = {
     entities: {
       tabs: {

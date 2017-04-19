@@ -6,29 +6,33 @@ const { shallow } = require('../utils/Test')
 
 it('renders without crashing', () => {
   shallow(h(MountList, assign(
-        { panelId: 0 },
-        mapStateToProps({
-          locations: { 0: 'file:///' },
-          mounts: {
-            active: { 0: 'Music', 1: 'System' },
-            names: ['System', 'Music'],
-            entities: {
-              System: {
-                name: 'System',
-                icon: 'drive-harddisk',
-                iconType: 'ICON_NAME',
-                rootUri: 'file:///media/System'
-              },
-              Music: {
-                name: 'Music',
-                icon: 'media-optical',
-                iconType: 'ICON_NAME',
-                rootUri: 'file:///media/Music'
-              }
-            }
+    { panelId: 0 },
+    mapStateToProps({
+      entities: {
+        tabs: {
+          '0': { location: 'file;///' }
+        }
+      },
+      mounts: {
+        active: { '0': 'Music', '1': 'System' },
+        names: ['System', 'Music'],
+        entities: {
+          System: {
+            name: 'System',
+            icon: 'drive-harddisk',
+            iconType: 'ICON_NAME',
+            rootUri: 'file:///media/System'
+          },
+          Music: {
+            name: 'Music',
+            icon: 'media-optical',
+            iconType: 'ICON_NAME',
+            rootUri: 'file:///media/Music'
           }
-        }, { panelId: 0 })
-    )))
+        }
+      }
+    }, { panelId: 0 })
+  )))
 })
 
 it('renders item without crashing', () => {

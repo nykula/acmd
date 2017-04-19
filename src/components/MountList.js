@@ -94,7 +94,7 @@ exports.MountList = ({ activeUri, dispatch, panelId, mounts }) => (
 )
 
 exports.mapStateToProps = (state, { panelId }) => ({
-  activeUri: state.locations[panelId],
+  activeUri: state.entities.tabs[panelId].location,
   mounts: state.mounts
 })
 

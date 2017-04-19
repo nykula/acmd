@@ -27,12 +27,14 @@ const initialState = {
   0: {
     cursor: 0,
     files: sampleFiles,
+    location: 'file:///',
     selected: [],
     sortedBy: 'ext'
   },
   1: {
     cursor: 0,
     files: sampleFiles,
+    location: 'file:///',
     selected: [],
     sortedBy: 'ext'
   }
@@ -80,7 +82,8 @@ exports.default = (state, payload) => {
         files = sortFiles(by, payload.result.files)
 
         return setTab(state, payload.tabId, {
-          files: files
+          files: files,
+          location: payload.uri
         })
       } else {
         return state
@@ -93,7 +96,7 @@ exports.default = (state, payload) => {
 }
 
 exports.nextSort = nextSort
-function nextSort(prevBy, by) {
+function nextSort (prevBy, by) {
   if (by === 'filename' && prevBy !== 'filename') {
     return 'filename'
   }
@@ -116,7 +119,7 @@ function nextSort(prevBy, by) {
 }
 
 exports.sortFiles = sortFiles
-function sortFiles(by, files) {
+function sortFiles (by, files) {
   switch (by) {
     case 'filename':
       return orderBy(
@@ -194,7 +197,7 @@ function sortFiles(by, files) {
 }
 
 exports.setTab = setTab
-function setTab(state, tabId, data) {
+function setTab (state, tabId, data) {
   state = assign({}, state)
   state[tabId] = assign({}, state[tabId], data)
 

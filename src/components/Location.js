@@ -52,7 +52,7 @@ exports.mapStateToProps = mapStateToProps
 function mapStateToProps (state, { panelId }) {
   return {
     isActive: state.panels.activeId === panelId,
-    location: state.locations[state.panels.activeTabId[panelId]]
+    location: state.entities.tabs[state.panels.activeTabId[panelId]].location
   }
 }
 

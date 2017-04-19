@@ -391,7 +391,11 @@ it('unmounts a volume', () => {
 it('opens a terminal in the current directory', () => {
   const props = {
     getState: () => ({
-      locations: { 0: 'file:///' },
+      entities: {
+        tabs: {
+          '0': { location: 'file:///' }
+        }
+      },
       panels: {
         activeId: 0,
         activeTabId: {0: 0}

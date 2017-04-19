@@ -9,20 +9,18 @@ it('clones active tab when creating a new one', () => {
         '0': {
           cursor: 1,
           files: [{ name: 'foo' }, { name: 'bar' }],
+          location: 'file:///',
           selected: [],
-          sortedBy: '-date',
+          sortedBy: '-date'
         },
         '1': {
           cursor: 0,
           files: [{ name: 'foo' }, { name: 'bar' }],
+          location: 'file:///',
           selected: [],
           sortedBy: 'name'
         }
       }
-    },
-    locations: {
-      '0': 'file:///',
-      '1': 'file:///'
     },
     panels: {
       activeTabId: { '0': 0, '1': 1 },
@@ -40,27 +38,25 @@ it('clones active tab when creating a new one', () => {
         '0': {
           cursor: 1,
           files: [{ name: 'foo' }, { name: 'bar' }],
+          location: 'file:///',
           selected: [],
           sortedBy: '-date'
         },
         '1': {
           cursor: 0,
           files: [{ name: 'foo' }, { name: 'bar' }],
+          location: 'file:///',
           selected: [],
-          sortedBy: 'name',
+          sortedBy: 'name'
         },
         '2': {
           cursor: 0,
           files: [{ name: 'foo' }, { name: 'bar' }],
+          location: 'file:///',
           selected: [],
           sortedBy: '-date'
         }
       }
-    },
-    locations: {
-      '0': 'file:///',
-      '1': 'file:///',
-      '2': 'file:///'
     },
     panels: {
       activeTabId: { '0': 2, '1': 1 },

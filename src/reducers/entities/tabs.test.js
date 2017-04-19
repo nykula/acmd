@@ -122,11 +122,12 @@ it('sorts files in tab', () => {
   ])
 })
 
-it('saves files list on ls success', () => {
+it('saves location and files list on ls success', () => {
   let action
   let state = {
     '0': {
       files: [],
+      location: 'file:///media/System',
       sortedBy: 'ext'
     }
   }
@@ -136,6 +137,7 @@ it('saves files list on ls success', () => {
 
   action = actions.lsSuccess({
     tabId: 0,
+    uri: 'file:///',
     result: {
       files: [
         ['config.sub', 2],
@@ -160,4 +162,5 @@ it('saves files list on ls success', () => {
     'magic.mgc',
     'config.sub'
   ])
+  expect(state[0].location).toBe('file:///')
 })

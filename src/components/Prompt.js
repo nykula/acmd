@@ -20,7 +20,7 @@ exports.Prompt = ({ handleActivate, location }) => {
 }
 
 exports.mapStateToProps = state => ({
-  location: state.locations[getActiveTabId(state)]
+  location: state.entities.tabs[getActiveTabId(state)].location
 })
 
 exports.mapDispatchToProps = dispatch => ({
