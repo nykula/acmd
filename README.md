@@ -54,4 +54,4 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Open terminal in current directory
 
-- [ ] Run command in current directory
+- [x] Run command in current directory

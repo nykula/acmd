@@ -1,5 +1,6 @@
 const actions = require('../actions')
 const filesActions = require('../actions/files')
+const Fun = require('../utils/Fun').default
 const getActiveFiles = require('../selectors/getActiveFiles').default
 const getActiveTabId = require('../selectors/getActiveTabId').default
 const getCursor = require('../selectors/getCursor').default
@@ -27,6 +28,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
 
     case actions.EDITOR:
       exports.handleEditor(action)(dispatch, getState, extra)
+      break
+
+    case actions.EXEC:
+      exports.handleExec(action)(dispatch, getState, extra)
       break
 
     case actions.LEVEL_UP:
@@ -178,6 +183,31 @@ exports.handleEditor = action => (dispatch, getState, { Dialog }) => {
 
   const file = getCursor(state)
   Dialog.alert('Editing ' + file.uri, noop)
+}
+
+exports.handleExec = action => (dispatch, getState, { Dialog, gioAdapter }) => {
+  if (action.cmd.indexOf('javascript:') === 0) {
+    Fun(action.cmd.slice('javascript:'.length))()
+    return
+  }
+
+  if (action.cmd.indexOf('redux:') === 0) {
+    dispatch(Fun('return ' + action.cmd.slice('redux:'.length))())
+    return
+  }
+
+  const state = getState()
+  const location = state.locations[getActiveTabId(state)]
+
+  if (location.indexOf('file:///') !== 0) {
+    Dialog.alert('Operation not supported.', noop)
+    return
+  }
+
+  gioAdapter.spawn({
+    cwd: location.replace(/^file:\/\//, ''),
+    argv: gioAdapter.GLib.shell_parse_argv(action.cmd)[1]
+  })
 }
 
 exports.handleLevelUp = action => (dispatch, getState) => {

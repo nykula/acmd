@@ -29,6 +29,12 @@ exports.drivesReady = ({ requestId, result }) => {
   }
 }
 
+exports.EXEC = 'EXEC'
+exports.exec = cmd => ({
+  type: exports.EXEC,
+  cmd: cmd
+})
+
 exports.EDITOR = 'EDITOR'
 exports.editor = () => ({
   type: exports.EDITOR

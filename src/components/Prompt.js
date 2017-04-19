@@ -1,6 +1,6 @@
 /* global imports */
 const { connect } = require('inferno-redux')
-const Fun = require('../utils/Fun').default
+const { exec } = require('../actions')
 const h = require('inferno-hyperscript')
 const getActiveTabId = require('../selectors/getActiveTabId').default
 const Pango = imports.gi.Pango
@@ -26,7 +26,7 @@ exports.mapStateToProps = state => ({
 exports.mapDispatchToProps = dispatch => ({
   handleActivate: node => {
     if (node.text) {
-      dispatch(Fun('return ' + node.text)())
+      dispatch(exec(node.text))
     }
   }
 })
