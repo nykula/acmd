@@ -20,17 +20,13 @@ yarn run coverage && xdg-open coverage/index.html
 
 ## Todo
 
-- [x] Two-panel user interface as close to Total Commander as possible
+- [x] Two-panel user interface
 
 - [x] Toggle active panel on tab press and navigate files using arrow keys
 
-- [x] Mock back-end: List, view, edit, copy, move, mkdir, touch and delete
-
 - [x] Multiple tabs on each panel
 
-- [x] Local back-end
-
-- [x] Gvfs back-end
+- [x] Gio back-end: Ls, cp, mv, mkdir and rm
 
 - [x] Sort files by name, ext or date
 
@@ -55,3 +51,41 @@ yarn run coverage && xdg-open coverage/index.html
 - [x] Open terminal in current directory
 
 - [x] Run command in current directory
+
+- [ ] Count total size of selected files
+
+- [ ] Format size as 1 M, 23 k, 456 B
+
+- [ ] Show free space on active volume
+
+- [ ] Go to root of volume
+
+- [ ] Return focus to tab after button press
+
+- [ ] Only handle backspace when tab focused
+
+- [ ] Go back and forward in panel history
+
+- [ ] Create empty file in active dir
+
+- [ ] Keep cursor if no search matches
+
+- [ ] Dot dot if not root
+
+- [ ] Click tab to switch
+
+- [ ] Switch to previous tab on close
+
+- [ ] Ignore dots in dir names when sorting
+
+- [ ] Hotkey for active panel volume list
+
+- [ ] Actions in menus
+
+- [ ] Disable list view button
+
+- [ ] Get viewer and editor from env
+
+- [ ] Remove extra slash when copying to root
+
+- [ ] Equal panel label height
