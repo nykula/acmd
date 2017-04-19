@@ -4,11 +4,19 @@ const tabsActions = require('../actions/tabs')
 
 it('clones active tab when creating a new one', () => {
   let state = {
+    entities: {
+      tabs: {
+        '0': {
+          cursor: 1,
+          selected: []
+        },
+        '1': {
+          cursor: 0,
+          selected: []
+        }
+      }
+    },
     files: {
-      active: {
-        '0': 1,
-        '1': 0
-      },
       byTabId: {
         '0': [{ name: 'foo' }, { name: 'bar' }],
         '1': [{ name: 'foo' }, { name: 'bar' }]
@@ -33,12 +41,23 @@ it('clones active tab when creating a new one', () => {
   state = reducer(state, action)
 
   expect(state).toMatch({
+    entities: {
+      tabs: {
+        '0': {
+          cursor: 1,
+          selected: []
+        },
+        '1': {
+          cursor: 0,
+          selected: []
+        },
+        '2': {
+          cursor: 0,
+          selected: []
+        }
+      }
+    },
     files: {
-      active: {
-        '0': 1,
-        '1': 0,
-        '2': 1
-      },
       byTabId: {
         '0': [{ name: 'foo' }, { name: 'bar' }],
         '1': [{ name: 'foo' }, { name: 'bar' }],

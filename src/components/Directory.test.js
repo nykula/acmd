@@ -2,40 +2,47 @@
 const assign = require('lodash/assign')
 const { createSpy } = require('expect')
 const {
-    Directory,
-    handleSearch,
-    mapDispatchToProps,
-    mapFileToRow,
-    mapStateToProps
+  Directory,
+  handleSearch,
+  mapDispatchToProps,
+  mapFileToRow,
+  mapStateToProps
 } = require('./Directory')
 const h = require('inferno-hyperscript')
 const { shallow } = require('../utils/Test')
 
 it('renders without crashing', () => {
   shallow(h(Directory, assign(
-        { panelId: 0 },
-        mapStateToProps({
-          files: {
-            active: { '0': 0 },
-            byTabId: {
-              '0': [{
-                fileType: 'REGULAR',
-                icon: 'some gio icon',
-                iconType: 'GICON',
-                modificationTime: 1490397889,
-                name: 'foo.bar',
-                size: 1000
-              }]
-            },
-            sortedBy: { '0': '-date' },
-            showHidSys: false
-          },
-          panels: {
-            activeId: 0,
-            activeTabId: { '0': 0 }
+    { panelId: 0 },
+    mapStateToProps({
+      entities: {
+        tabs: {
+          '0': {
+            cursor: 0,
+            selected: []
           }
-        }, { panelId: 0 })
-    )))
+        }
+      },
+      files: {
+        byTabId: {
+          '0': [{
+            fileType: 'REGULAR',
+            icon: 'some gio icon',
+            iconType: 'GICON',
+            modificationTime: 1490397889,
+            name: 'foo.bar',
+            size: 1000
+          }]
+        },
+        sortedBy: { '0': '-date' },
+        showHidSys: false
+      },
+      panels: {
+        activeId: 0,
+        activeTabId: { '0': 0 }
+      }
+    }, { panelId: 0 })
+  )))
 })
 
 it('maps files to table rows', () => {

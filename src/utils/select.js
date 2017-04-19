@@ -1,12 +1,9 @@
 /* global imports */
 const assign = require('lodash/assign')
-const flowRight = require('lodash/flowRight')
 const Gdk = imports.gi.Gdk
-const identity = require('lodash/identity')
 const range = require('lodash/range')
-const sortBy = require('lodash/sortBy')
 const uniq = require('uniq')
-const uniqSort = flowRight(uniq, array => sortBy(array, identity))
+const uniqSort = xs => uniq(xs.sort((a, b) => a - b), null, true)
 
 exports.default = function (state, ev) {
   const { limit, indices, cursor, selected, top } = state
