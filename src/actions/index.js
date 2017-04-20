@@ -55,6 +55,11 @@ exports.levelUp = ({ panelId }) => {
 
 exports.LS = 'LS'
 exports.ls = (tabId, uri) => {
+  if (typeof tabId === 'undefined') {
+    return {
+      type: exports.LS
+    }
+  }
   return {
     type: exports.LS,
     requestId: Date.now(),
@@ -85,6 +90,11 @@ exports.lsSuccess = ({ tabId, uri, requestId, result }) => {
 
 exports.MKDIR = 'MKDIR'
 exports.mkdir = uri => {
+  if (!uri) {
+    return {
+      type: exports.MKDIR
+    }
+  }
   return {
     type: exports.MKDIR,
     requestId: Date.now(),
@@ -172,6 +182,11 @@ exports.root = ({ panelId }) => {
 }
 
 exports.SHOW_HID_SYS = 'SHOW_HID_SYS'
+exports.showHidSys = () => {
+  return {
+    type: exports.SHOW_HID_SYS
+  }
+}
 
 exports.TERMINAL = 'TERMINAL'
 

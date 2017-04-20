@@ -5,10 +5,14 @@ const Component = require('inferno-component')
 const { connect } = require('inferno-redux')
 const filesActions = require('../actions/files')
 const formatSize = require('../utils/formatSize').default
+const indexActions = require('../actions')
 const getVisibleFiles = require('../selectors/getVisibleFiles').default
 const { GICON, TEXT } = require('../utils/ListStore')
+const Gdk = imports.gi.Gdk
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
+const panelsActions = require('../actions/panels')
+const tabsActions = require('../actions/tabs')
 const TreeView = require('../widgets/TreeView').default
 
 exports.Directory = Directory
@@ -18,6 +22,7 @@ function Directory (props) {
   this.handleActivated = this.handleActivated.bind(this)
   this.handleClicked = this.handleClicked.bind(this)
   this.handleCursor = this.handleCursor.bind(this)
+  this.handleKeyPressEvent = this.handleKeyPressEvent.bind(this)
   this.handleLayout = this.handleLayout.bind(this)
   this.handleSelected = this.handleSelected.bind(this)
   this.prefixSort = this.prefixSort.bind(this)
@@ -60,6 +65,81 @@ Directory.prototype.handleCursor = function (cursor) {
     panelId: this.props.panelId,
     tabId: this.props.tabId
   })
+}
+
+Directory.prototype.handleKeyPressEvent = function (ev) {
+  const { actions, panelId, tabId } = this.props
+
+  switch (ev.which) {
+    case Gdk.KEY_BackSpace:
+      actions.index.levelUp({ panelId: panelId })
+      break
+
+    case Gdk.KEY_ISO_Left_Tab:
+    case Gdk.KEY_Tab:
+      if (ev.ctrlKey && ev.shiftKey) {
+        actions.tabs.prev(panelId)
+      } else if (ev.ctrlKey) {
+        actions.tabs.next(panelId)
+      } else {
+        actions.panels.toggledActive()
+      }
+      return true
+
+    case Gdk.KEY_F2:
+      actions.index.refresh()
+      break
+
+    case Gdk.KEY_F3:
+      actions.index.view()
+      break
+
+    case Gdk.KEY_F4:
+      actions.index.editor()
+      break
+
+    case Gdk.KEY_F5:
+      actions.index.cp()
+      break
+
+    case Gdk.KEY_F6:
+      actions.index.mv()
+      break
+
+    case Gdk.KEY_F7:
+      actions.index.mkdir()
+      break
+
+    case Gdk.KEY_F8:
+      actions.index.rm()
+      break
+
+    case Gdk.KEY_b:
+      if (ev.ctrlKey) {
+        actions.index.showHidSys()
+      }
+      break
+
+    case Gdk.KEY_l:
+      if (ev.ctrlKey) {
+        actions.index.ls()
+      }
+      break
+
+    case Gdk.KEY_t:
+      if (ev.ctrlKey) {
+        actions.tabs.create(panelId)
+      }
+      break
+
+    case Gdk.KEY_w:
+      if (ev.ctrlKey) {
+        actions.tabs.remove(tabId)
+      }
+      break
+  }
+
+  return false
 }
 
 Directory.prototype.handleLayout = function (node) {
@@ -112,6 +192,7 @@ Directory.prototype.render = function () {
         on_activated: this.handleActivated,
         on_clicked: this.handleClicked,
         on_cursor: this.handleCursor,
+        on_key_press_event: this.handleKeyPressEvent,
         on_layout: this.handleLayout,
         on_selected: this.handleSelected,
         on_search: handleSearch,
@@ -210,7 +291,10 @@ exports.mapDispatchToProps = mapDispatchToProps
 function mapDispatchToProps (dispatch) {
   return {
     actions: {
-      files: bindActionCreators(filesActions, dispatch)
+      files: bindActionCreators(filesActions, dispatch),
+      index: bindActionCreators(indexActions, dispatch),
+      panels: bindActionCreators(panelsActions, dispatch),
+      tabs: bindActionCreators(tabsActions, dispatch)
     }
   }
 }

@@ -138,7 +138,7 @@ TreeView.prototype.handleKeyPressEvent = function (ev) {
     return true
   }
 
-  return false
+  return this.props.on_key_press_event(ev)
 }
 
 TreeView.prototype.handleRowActivated = function (_, row) {

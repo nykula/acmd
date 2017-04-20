@@ -62,7 +62,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Return focus to tab after button press
 
-- [ ] Only handle backspace when tab focused
+- [x] Only handle backspace when tab focused
 
 - [ ] Go back and forward in panel history
 
