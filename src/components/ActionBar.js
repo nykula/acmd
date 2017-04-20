@@ -19,6 +19,7 @@ exports.ActionBar = ({ handlePressed }) => {
     h('box', { expand: false }, [
       actions.map(action => [
         h('button', {
+          can_focus: false,
           expand: true,
           key: action.type,
           label: action.shortcut + ' ' + action.text,

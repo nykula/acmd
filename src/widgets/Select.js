@@ -43,7 +43,9 @@ Select.prototype.updateActive = function () {
 
 Select.prototype.render = function () {
   return h('combo-box', {
+    focus_on_click: false,
     on_changed: this.props.on_changed,
+    on_focus: this.props.on_focus,
     ref: this.init
   })
 }

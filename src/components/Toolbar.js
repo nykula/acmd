@@ -35,6 +35,7 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
         return (
           h(item.control === 'TOGGLE' ? 'toggle-button' : 'button', {
             active: !!item.active,
+            can_focus: false,
             key: item.icon_name,
             relief: Gtk.ReliefStyle.NONE,
             on_pressed: handlePressed(item.type),

@@ -14,9 +14,11 @@ const TreeView = require('../widgets/TreeView').default
 exports.Directory = Directory
 function Directory (props) {
   Component.call(this, props)
+  this.focusIfActive = this.focusIfActive.bind(this)
   this.handleActivated = this.handleActivated.bind(this)
   this.handleClicked = this.handleClicked.bind(this)
   this.handleCursor = this.handleCursor.bind(this)
+  this.handleLayout = this.handleLayout.bind(this)
   this.handleSelected = this.handleSelected.bind(this)
   this.prefixSort = this.prefixSort.bind(this)
   this.refContainer = this.refContainer.bind(this)
@@ -25,7 +27,13 @@ function Directory (props) {
 Directory.prototype = Object.create(Component.prototype)
 
 Directory.prototype.componentDidUpdate = function (prevProps) {
-  if (prevProps.isActive !== this.props.isActive && this.props.isActive) {
+  if (prevProps.isActive !== this.props.isActive) {
+    this.focusIfActive()
+  }
+}
+
+Directory.prototype.focusIfActive = function () {
+  if (this.props.isActive) {
     const children = this.container.get_children()
     children[0].grab_focus()
   }
@@ -52,6 +60,11 @@ Directory.prototype.handleCursor = function (cursor) {
     panelId: this.props.panelId,
     tabId: this.props.tabId
   })
+}
+
+Directory.prototype.handleLayout = function (node) {
+  this.props.refstore.set('panel' + this.props.panelId)(node)
+  this.focusIfActive()
 }
 
 Directory.prototype.handleSelected = function (selected) {
@@ -88,17 +101,18 @@ Directory.prototype.render = function () {
     }, [
       h(TreeView, {
         cols: [
-          { title: null, name: 'icon', type: GICON },
-          { title: 'Name', name: 'filename', type: TEXT, expand: true },
-          { title: 'Ext', name: 'ext', type: TEXT, min_width: 50 },
-          { title: 'Size', name: 'size', type: TEXT, min_width: 55 },
-          { title: 'Date', name: 'mtime', type: TEXT, min_width: 125 },
-          { title: 'Attr', name: 'mode', type: TEXT, min_width: 45 }
+            { title: null, name: 'icon', type: GICON },
+            { title: 'Name', name: 'filename', type: TEXT, expand: true },
+            { title: 'Ext', name: 'ext', type: TEXT, min_width: 50 },
+            { title: 'Size', name: 'size', type: TEXT, min_width: 55 },
+            { title: 'Date', name: 'mtime', type: TEXT, min_width: 125 },
+            { title: 'Attr', name: 'mode', type: TEXT, min_width: 45 }
         ].map(this.prefixSort),
         cursor: cursor,
         on_activated: this.handleActivated,
         on_clicked: this.handleClicked,
         on_cursor: this.handleCursor,
+        on_layout: this.handleLayout,
         on_selected: this.handleSelected,
         on_search: handleSearch,
         rows: rows,

@@ -12,7 +12,7 @@ exports.default = extra => {
       isListening = true
 
       new KeyListener(extra.win).on('key-press-event', ev => {
-        exports.handleReleased(ev)(dispatch, getState, extra)
+        return exports.handleReleased(ev)(dispatch, getState, extra)
       })
     }
 
@@ -24,7 +24,7 @@ exports.handleReleased = ev => (dispatch, getState, { Gdk }) => {
   switch (ev.which) {
     case Gdk.KEY_BackSpace:
       dispatch(indexActions.levelUp({ panelId: getState().panels.activeId }))
-      return
+      break
 
     case Gdk.KEY_ISO_Left_Tab:
     case Gdk.KEY_Tab:
@@ -35,58 +35,60 @@ exports.handleReleased = ev => (dispatch, getState, { Gdk }) => {
       } else {
         dispatch(panelsActions.toggledActive())
       }
-      return
+      return true
 
     case Gdk.KEY_F2:
       dispatch(indexActions.refresh())
-      return
+      break
 
     case Gdk.KEY_F3:
       dispatch(indexActions.view())
-      return
+      break
 
     case Gdk.KEY_F4:
       dispatch(indexActions.editor())
-      return
+      break
 
     case Gdk.KEY_F5:
       dispatch(indexActions.cp())
-      return
+      break
 
     case Gdk.KEY_F6:
       dispatch(indexActions.mv())
-      return
+      break
 
     case Gdk.KEY_F7:
       dispatch({ type: indexActions.MKDIR })
-      return
+      break
 
     case Gdk.KEY_F8:
       dispatch(indexActions.rm())
-      return
+      break
 
     case Gdk.KEY_b:
       if (ev.ctrlKey) {
         dispatch({ type: indexActions.SHOW_HID_SYS })
       }
-      return
+      break
 
     case Gdk.KEY_l:
       if (ev.ctrlKey) {
         dispatch({ type: indexActions.LS })
       }
-      return
+      break
 
     case Gdk.KEY_t:
       if (ev.ctrlKey) {
         dispatch(tabsActions.create(getState().panels.activeId))
       }
-      return
+      break
 
     case Gdk.KEY_w:
       if (ev.ctrlKey) {
         dispatch(tabsActions.remove(getActiveTabId(getState())))
       }
-      return
+      break
   }
+
+  return false
 }

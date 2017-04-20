@@ -64,6 +64,7 @@ Mount.prototype.render = function () {
   return (
     h(isActive ? 'toggle-button' : 'button', {
       active: isActive,
+      can_focus: false,
       relief: Gtk.ReliefStyle.NONE,
       on_clicked: this.handleClicked,
       tooltip_text: name

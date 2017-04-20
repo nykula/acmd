@@ -8,12 +8,13 @@ const Stats = require('./Stats').default
 const TabList = require('./TabList').default
 
 exports.default = Panel
-function Panel ({ id }) {
+function Panel ({ id, refstore }) {
   return (
     h('box', { orientation: Gtk.Orientation.VERTICAL }, [
       h(Mount, {
         key: 'MOUNT',
-        panelId: id
+        panelId: id,
+        refstore: refstore
       }),
       h(TabList, {
         key: 'TAB_LIST',
@@ -27,7 +28,8 @@ function Panel ({ id }) {
       h('h-separator'),
       h(Directory, {
         key: 'DIRECTORY',
-        panelId: id
+        panelId: id,
+        refstore: refstore
       }),
       h(Stats, {
         key: 'STATS',

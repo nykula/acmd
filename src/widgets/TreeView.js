@@ -151,6 +151,7 @@ TreeView.prototype.handleSizeAllocate = function (_) {
   const rowHeight = node.get_background_area(Gtk.TreePath.new_from_string('0'), null).height
   const height = node.get_visible_rect().height
   this.limit = (height / rowHeight).toFixed(2)
+  this.props.on_layout(node)
 }
 
 TreeView.prototype.handleToggled = function (value) {

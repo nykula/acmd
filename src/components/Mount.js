@@ -4,6 +4,7 @@ const { connect } = require('inferno-redux')
 const { GICON, TEXT } = require('../utils/ListStore')
 const formatSize = require('../utils/formatSize').default
 const getActiveMountUri = require('../selectors/getActiveMountUri').default
+const GLib = imports.gi.GLib
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const minLength = require('../utils/minLength').default
@@ -11,7 +12,7 @@ const noop = require('lodash/noop')
 const Select = require('../widgets/Select').default
 
 exports.Mount = Mount
-function Mount ({ free, mounts, name, onLevelUp, onMountChanged, onRoot, size }) {
+function Mount ({ free, mounts, name, onChanged, onFocus, onLevelUp, onRoot, size }) {
   const status = '[' + name + '] ' +
     formatSize(free) + ' of ' +
     formatSize(size) + ' free'
@@ -32,7 +33,8 @@ function Mount ({ free, mounts, name, onLevelUp, onMountChanged, onRoot, size })
             text: minLength(mounts.names, mount.name),
             value: mount.name
           })),
-          on_changed: onMountChanged,
+          on_changed: onChanged,
+          on_focus: onFocus,
           value: name
         })
       ]),
@@ -76,12 +78,26 @@ function mapStateToProps (state, { panelId }) {
 }
 
 exports.mapDispatchToProps = mapDispatchToProps
-function mapDispatchToProps (dispatch, { panelId }) {
+function mapDispatchToProps (dispatch, { panelId, refstore }) {
   return {
+    onChanged: noop,
+    onFocus: () => {
+      setTimeout(() => {
+        const node = refstore.get('panel' + panelId)
+
+        if (node) {
+          node.grab_focus()
+        }
+      }, 0)
+    },
     onLevelUp: () => dispatch(actions.levelUp({ panelId: panelId })),
-    onMountChanged: noop,
     onRoot: () => dispatch(actions.root({ panelId: panelId }))
   }
 }
 
 exports.default = connect(mapStateToProps, mapDispatchToProps)(Mount)
+
+exports.setTimeout = setTimeout
+function setTimeout (callback, duration) {
+  GLib.timeout_add(GLib.PRIORITY_DEFAULT, duration, callback, null)
+}

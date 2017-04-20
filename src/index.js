@@ -11,23 +11,25 @@ const Dialog = require('./utils/Dialog').default
 const GioAdapter = require('./adapters/Gio').default
 const h = require('inferno-hyperscript')
 const { Provider } = require('inferno-redux')
+const Refstore = require('./utils/Refstore').default
 const { render } = require('inferno')
 const Store = require('./Store').default
 
 function View (props) {
   Component.call(this, props)
+  this.refstore = new Refstore()
   this.state = { render: this.props.render }
 }
 
 View.prototype = Object.create(Component.prototype)
 
 View.prototype.render = function () {
-  return this.state.render()
+  return this.state.render({ refstore: this.refstore })
 }
 
 require('./utils/GtkDom').app({
   on_activate: ({ win }) => {
-    win.set_keep_above(true)
+    win.set_keep_above(false)
   },
 
   on_startup: ({ win }) => {

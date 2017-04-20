@@ -60,7 +60,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Go to root of mount
 
-- [ ] Return focus to tab after button press
+- [x] Return focus to tab after button press
 
 - [ ] Only handle backspace when tab focused
 
