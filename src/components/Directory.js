@@ -267,12 +267,12 @@ function mapFileToRow (file) {
 
 exports.mapStateToProps = mapStateToProps
 function mapStateToProps (state, { panelId }) {
-  const tabId = state.panels.activeTabId[panelId]
+  const tabId = state.entities.panels[panelId].activeTabId
 
   return {
     cursor: state.entities.tabs[tabId].cursor,
 
-    isActive: state.panels.activeId === panelId,
+    isActive: state.activePanelId === panelId,
 
     rows: getVisibleFiles({
       files: state.entities.tabs[tabId].files,

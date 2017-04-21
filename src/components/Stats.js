@@ -17,7 +17,7 @@ function Stats ({ selectedCount, selectedSize, totalCount, totalSize }) {
 
 exports.mapStateToProps = mapStateToProps
 function mapStateToProps (state, { panelId }) {
-  const tabId = state.panels.activeTabId[panelId]
+  const tabId = state.entities.panels[panelId].activeTabId
 
   const files = getVisibleFiles({
     files: state.entities.tabs[tabId].files,

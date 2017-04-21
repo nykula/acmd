@@ -40,16 +40,14 @@ it('unselects row when isActive becomes false', () => {
 
 it('maps state to expected props', () => {
   const state = {
+    activePanelId: 0,
     entities: {
+      panels: {
+        '0': { activeTabId: 1 }
+      },
       tabs: {
-        '1': {
-          location: 'file:///'
-        }
+        '1': { location: 'file:///' }
       }
-    },
-    panels: {
-      activeId: 0,
-      activeTabId: { '0': 1 }
     }
   }
   const ownProps = { panelId: 0 }

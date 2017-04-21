@@ -9,14 +9,16 @@ it('renders without crashing', () => {
     { panelId: 0 },
     mapStateToProps({
       entities: {
+        panels: {
+          '0': {
+            activeTabId: 0,
+            tabIds: [0, 1]
+          }
+        },
         tabs: {
           '0': { location: 'file:///' },
           '1': { location: 'sftp:///test@example.com/foo/bar' }
         }
-      },
-      panels: {
-        tabIds: { '0': [0, 1] },
-        activeTabId: { '0': 0 }
       }
     }, { panelId: 0 })
   )))

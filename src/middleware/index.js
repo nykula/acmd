@@ -219,7 +219,7 @@ exports.handleExec = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 exports.handleLevelUp = action => (dispatch, getState) => {
   const state = getState()
 
-  const tabId = state.panels.activeTabId[action.panelId]
+  const tabId = state.entities.panels[action.panelId].activeTabId
   const location = state.entities.tabs[tabId].location
   let nextLocation = location.replace(/\/[^/]+$/, '')
 
@@ -394,7 +394,7 @@ exports.handleRm = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 
 exports.handleRoot = action => (dispatch, getState) => {
   const state = getState()
-  const tabId = state.panels.activeTabId[action.panelId]
+  const tabId = state.entities.panels[action.panelId].activeTabId
   const nextLocation = getActiveMountUri(state, action.panelId)
   dispatch(actions.ls(tabId, nextLocation))
 }

@@ -34,9 +34,9 @@ function TabList ({ activeTabId, tabs }) {
 
 exports.mapStateToProps = mapStateToProps
 function mapStateToProps (state, { panelId }) {
-  const ids = state.panels.tabIds[panelId]
+  const ids = state.entities.panels[panelId].tabIds
   return {
-    activeTabId: state.panels.activeTabId[panelId],
+    activeTabId: state.entities.panels[panelId].activeTabId,
     tabs: ids.map(id => ({
       id: id,
       location: state.entities.tabs[id].location

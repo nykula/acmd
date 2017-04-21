@@ -9,6 +9,9 @@ it('renders without crashing', () => {
     { panelId: 0 },
     mapStateToProps({
       entities: {
+        panels: {
+          '0': { activeTabId: 0 }
+        },
         tabs: {
           '0': {
             location: 'file:///media/System/tmp',
@@ -35,9 +38,6 @@ it('renders without crashing', () => {
             rootUri: 'file:///media/Music'
           }
         }
-      },
-      panels: {
-        activeTabId: { '0': 0 }
       }
     }, { panelId: 0 })
   )))

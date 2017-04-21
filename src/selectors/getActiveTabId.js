@@ -1,5 +1,5 @@
 exports.default = function getActiveTabId (state) {
-  const activePanelId = state.panels.activeId
-  const activeTabId = state.panels.activeTabId[activePanelId]
+  const activePanelId = state.activePanelId
+  const activeTabId = state.entities.panels[activePanelId].activeTabId
   return activeTabId
 }

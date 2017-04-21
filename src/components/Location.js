@@ -59,9 +59,11 @@ Location.prototype.render = function ({ location }) {
 
 exports.mapStateToProps = mapStateToProps
 function mapStateToProps (state, { panelId }) {
+  const tabId = state.entities.panels[panelId].activeTabId
+
   return {
-    isActive: state.panels.activeId === panelId,
-    location: state.entities.tabs[state.panels.activeTabId[panelId]].location
+    isActive: state.activePanelId === panelId,
+    location: state.entities.tabs[tabId].location
   }
 }
 

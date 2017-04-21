@@ -5,6 +5,16 @@ const tabsActions = require('../actions/tabs')
 it('clones active tab when creating a new one', () => {
   let state = {
     entities: {
+      panels: {
+        '0': {
+          activeTabId: 0,
+          tabIds: [0]
+        },
+        '1': {
+          activeTabId: 1,
+          tabIds: [1]
+        }
+      },
       tabs: {
         '0': {
           cursor: 1,
@@ -21,10 +31,6 @@ it('clones active tab when creating a new one', () => {
           sortedBy: 'name'
         }
       }
-    },
-    panels: {
-      activeTabId: { '0': 0, '1': 1 },
-      tabIds: { '0': [0], '1': [1] }
     }
   }
 
@@ -34,6 +40,16 @@ it('clones active tab when creating a new one', () => {
 
   expect(state).toMatch({
     entities: {
+      panels: {
+        '0': {
+          activeTabId: 2,
+          tabIds: [0, 2]
+        },
+        '1': {
+          activeTabId: 1,
+          tabIds: [1]
+        }
+      },
       tabs: {
         '0': {
           cursor: 1,
@@ -57,10 +73,6 @@ it('clones active tab when creating a new one', () => {
           sortedBy: '-date'
         }
       }
-    },
-    panels: {
-      activeTabId: { '0': 2, '1': 1 },
-      tabIds: { '0': [0, 2], '1': [1] }
     }
   })
 })

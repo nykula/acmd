@@ -15,7 +15,11 @@ it('renders without crashing', () => {
   shallow(h(Directory, assign(
     { panelId: 0 },
     mapStateToProps({
+      activePanelId: 0,
       entities: {
+        panels: {
+          '0': { activeTabId: 0 }
+        },
         tabs: {
           '0': {
             cursor: 0,
@@ -31,10 +35,6 @@ it('renders without crashing', () => {
             sortedBy: '-date'
           }
         }
-      },
-      panels: {
-        activeId: 0,
-        activeTabId: { '0': 0 }
       },
       showHidSys: false
     }, { panelId: 0 })

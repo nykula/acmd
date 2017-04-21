@@ -449,14 +449,14 @@ it('unmounts a volume', () => {
 it('opens a terminal in the current directory', () => {
   const props = {
     getState: () => ({
+      activePanelId: 0,
       entities: {
+        panels: {
+          '0': { activeTabId: 0 }
+        },
         tabs: {
           '0': { location: 'file:///' }
         }
-      },
-      panels: {
-        activeId: 0,
-        activeTabId: { 0: 0 }
       }
     }),
     Gio: {

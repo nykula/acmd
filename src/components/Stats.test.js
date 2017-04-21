@@ -25,6 +25,9 @@ it('counts total size of selected files', () => {
 function setup () {
   const state = {
     entities: {
+      panels: {
+        '0': { activeTabId: 0 }
+      },
       tabs: {
         '0': {
           files: [
@@ -47,11 +50,6 @@ function setup () {
           ],
           selected: [0, 2]
         }
-      }
-    },
-    panels: {
-      activeTabId: {
-        '0': 0
       }
     }
   }
