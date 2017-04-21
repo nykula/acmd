@@ -15,7 +15,7 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
     { type: indexActions.FORWARD, icon_name: 'go-next', tooltip_text: 'Forward' },
     'MISC',
     { type: indexActions.LS, icon_name: 'go-jump', tooltip_text: 'Go to URI' },
-    { icon_name: 'document-new', tooltip_text: 'Create file' },
+    { type: indexActions.TOUCH, icon_name: 'document-new', tooltip_text: 'Create file' },
     { type: indexActions.TERMINAL, icon_name: 'utilities-terminal', tooltip_text: 'Terminal' },
     {
       active: showHidSys,

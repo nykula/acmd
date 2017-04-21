@@ -28,6 +28,7 @@ exports.default = new Lang.Class({
     this.mkdir = this.mkdir.bind(this)
     this.mount = this.mount.bind(this)
     this.spawn = this.spawn.bind(this)
+    this.touch = this.touch.bind(this)
     this.unmount = this.unmount.bind(this)
 
     this.gVolMon = this.Gio.VolumeMonitor.get()
@@ -382,6 +383,33 @@ exports.default = new Lang.Class({
         } catch (err) {
           handleError(err)
         }
+      }
+    )
+  },
+
+  /**
+   * Creates a file.
+   */
+  touch: function (props) {
+    const handleError = props.onError
+    const handleSuccess = props.onSuccess
+    const uri = props.uri
+
+    const gFile = this.Gio.file_new_for_uri(uri)
+
+    gFile.create_async(
+      this.Gio.FileCreateFlags.NONE,
+      this.GLib.PRIORITY_DEFAULT,
+      null,
+      (_, result) => {
+        try {
+          gFile.create_finish(result)
+        } catch (err) {
+          handleError(err)
+          return
+        }
+
+        handleSuccess()
       }
     )
   },

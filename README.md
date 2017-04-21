@@ -66,7 +66,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Go back and forward in panel history
 
-- [ ] Create empty file in active dir
+- [x] Create empty file in active dir
 
 - [ ] Keep cursor if no search matches
 

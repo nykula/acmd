@@ -80,6 +80,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
       exports.handleTerminal(action)(dispatch, getState, extra)
       break
 
+    case actions.TOUCH:
+      exports.handleTouch(action)(dispatch, getState, extra)
+      break
+
     case actions.UNMOUNT:
       exports.handleUnmount(action)(dispatch, getState, extra)
       break
@@ -447,6 +451,45 @@ exports.handleTerminal = action => (dispatch, getState, { Dialog, gioAdapter }) 
     cwd: location.replace(/^file:\/\//, ''),
     argv: ['x-terminal-emulator']
   })
+}
+
+exports.handleTouch = action => (dispatch, getState, { Dialog, gioAdapter }) => {
+  if (isTrigger(action)) {
+    const state = getState()
+    const location = state.entities.tabs[getActiveTabId(state)].location
+
+    Dialog.prompt('Name of the new file:', '', name => {
+      if (name) {
+        dispatch(actions.touch(location + '/' + name.replace(/\//g, '_')))
+      }
+    })
+  } else if (isRequest(action)) {
+    const { uri, requestId } = action
+
+    gioAdapter.touch({
+      uri: uri,
+
+      onError: (err) => {
+        dispatch(actions.touchError({
+          uri: uri,
+          requestId: requestId,
+          error: { message: err.message }
+        }))
+      },
+
+      onSuccess: () => {
+        dispatch(actions.touchSuccess({
+          uri: uri,
+          requestId: requestId,
+          result: { ok: true }
+        }))
+      }
+    })
+  } else if (isResponse(action)) {
+    dispatch(actions.refresh())
+  } else if (isError(action)) {
+    Dialog.alert(action.error.message, noop)
+  }
 }
 
 exports.handleUnmount = action => (dispatch, getState, { gioAdapter }) => {

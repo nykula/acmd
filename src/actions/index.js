@@ -197,6 +197,38 @@ exports.showHidSys = () => {
 
 exports.TERMINAL = 'TERMINAL'
 
+exports.TOUCH = 'TOUCH'
+exports.touch = uri => {
+  if (!uri) {
+    return {
+      type: exports.TOUCH
+    }
+  }
+  return {
+    type: exports.TOUCH,
+    requestId: Date.now(),
+    uri: uri
+  }
+}
+exports.touchError = ({ uri, requestId, error }) => {
+  return {
+    type: exports.TOUCH,
+    uri: uri,
+    requestId: requestId,
+    ready: true,
+    error: error
+  }
+}
+exports.touchSuccess = ({ uri, requestId, result }) => {
+  return {
+    type: exports.TOUCH,
+    uri: uri,
+    requestId: requestId,
+    ready: true,
+    result: result
+  }
+}
+
 exports.UNMOUNT = 'UNMOUNT'
 exports.unmount = uri => {
   return {
