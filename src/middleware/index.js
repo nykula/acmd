@@ -6,6 +6,7 @@ const getActiveMountUri = require('../selectors/getActiveMountUri').default
 const getActiveTabId = require('../selectors/getActiveTabId').default
 const getCursor = require('../selectors/getCursor').default
 const getDest = require('../selectors/getDest').default
+const getHistoryItem = require('../selectors/getHistoryItem').default
 const getVisibleFiles = require('../selectors/getVisibleFiles').default
 const isError = action => !!action.error
 const isRequest = a => !!a.requestId && !a.error && !a.progress && !a.ready
@@ -17,6 +18,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
   switch (action.type) {
     case filesActions.ACTIVATED:
       exports.handleActivated(action)(dispatch, getState, extra)
+      break
+
+    case actions.BACK:
+      exports.handleBack(action)(dispatch, getState, extra)
       break
 
     case actions.CP:
@@ -33,6 +38,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
 
     case actions.EXEC:
       exports.handleExec(action)(dispatch, getState, extra)
+      break
+
+    case actions.FORWARD:
+      exports.handleForward(action)(dispatch, getState, extra)
       break
 
     case actions.LEVEL_UP:
@@ -105,6 +114,16 @@ exports.handleActivated = action => (dispatch, getState, extra) => {
   }
 
   dispatch(actions.ls(action.tabId, uri))
+}
+
+exports.handleBack = action => (dispatch, getState) => {
+  const state = getState()
+  const tabId = getActiveTabId(state)
+  const uri = getHistoryItem(state, tabId, -1)
+
+  if (uri) {
+    dispatch(actions.ls(tabId, uri, -1))
+  }
 }
 
 exports.handleCp = action => (dispatch, getState, { Dialog, gioAdapter }) => {
@@ -216,6 +235,16 @@ exports.handleExec = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   })
 }
 
+exports.handleForward = action => (dispatch, getState) => {
+  const state = getState()
+  const tabId = getActiveTabId(state)
+  const uri = getHistoryItem(state, tabId, 1)
+
+  if (uri) {
+    dispatch(actions.ls(tabId, uri, 1))
+  }
+}
+
 exports.handleLevelUp = action => (dispatch, getState) => {
   const state = getState()
 
@@ -259,17 +288,20 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
       })
     })
   } else if (isRequest(action)) {
-    const { tabId, uri, requestId } = action
+    const { tabId, uri, requestId, delta } = action
 
     gioAdapter.ls({
       uri: uri,
+
+      delta: delta,
 
       onError: (err) => {
         dispatch(actions.lsError({
           tabId: tabId,
           uri: uri,
           requestId: requestId,
-          error: { message: err.message }
+          error: { message: err.message },
+          delta: delta
         }))
       },
 
@@ -278,7 +310,8 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
           tabId: tabId,
           uri: uri,
           requestId: requestId,
-          result: { files: files }
+          result: { files: files },
+          delta: delta
         }))
       }
     })
@@ -369,8 +402,10 @@ exports.handleMv = action => (dispatch, getState, { Dialog, gioAdapter }) => {
 
 exports.handleRefresh = action => (dispatch, getState) => {
   const state = getState()
-  dispatch(actions.ls(0, state.entities.tabs[0].location))
-  dispatch(actions.ls(1, state.entities.tabs[1].location))
+  const panel0TabId = state.entities.panels[0].activeTabId
+  const panel1TabId = state.entities.panels[1].activeTabId
+  dispatch(actions.ls(panel0TabId, state.entities.tabs[panel0TabId].location))
+  dispatch(actions.ls(panel1TabId, state.entities.tabs[panel1TabId].location))
   dispatch(actions.drives(Date.now()))
 }
 

@@ -1,3 +1,5 @@
+exports.BACK = 'BACK'
+
 exports.CP = 'CP'
 exports.cp = (srcUris, destUri) => {
   if (!srcUris) {
@@ -45,6 +47,8 @@ exports.exit = () => ({
   type: exports.EXIT
 })
 
+exports.FORWARD = 'FORWARD'
+
 exports.LEVEL_UP = 'LEVEL_UP'
 exports.levelUp = ({ panelId }) => {
   return {
@@ -54,7 +58,7 @@ exports.levelUp = ({ panelId }) => {
 }
 
 exports.LS = 'LS'
-exports.ls = (tabId, uri) => {
+exports.ls = (tabId, uri, delta) => {
   if (typeof tabId === 'undefined') {
     return {
       type: exports.LS
@@ -64,27 +68,30 @@ exports.ls = (tabId, uri) => {
     type: exports.LS,
     requestId: Date.now(),
     tabId: tabId,
-    uri: uri
+    uri: uri,
+    delta: delta || 0
   }
 }
-exports.lsError = ({ tabId, uri, requestId, error }) => {
+exports.lsError = ({ tabId, uri, requestId, error, delta }) => {
   return {
     type: exports.LS,
     tabId: tabId,
     uri: uri,
     requestId: requestId,
     ready: true,
-    error: { message: error.message }
+    error: { message: error.message },
+    delta: delta
   }
 }
-exports.lsSuccess = ({ tabId, uri, requestId, result }) => {
+exports.lsSuccess = ({ tabId, uri, requestId, result, delta }) => {
   return {
     type: exports.LS,
     tabId: tabId,
     uri: uri,
     requestId: requestId,
     ready: true,
-    result: result
+    result: result,
+    delta: delta
   }
 }
 

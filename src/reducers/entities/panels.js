@@ -1,14 +1,20 @@
 const assign = require('lodash/assign')
 const getNextTabId = require('../../selectors/getNextTabId').default
+const getPanelIdByTabId = require('../../selectors/getPanelIdByTabId').default
+const indexActions = require('../../actions')
 const tabsActions = require('../../actions/tabs')
 
 const initialState = {
   '0': {
     activeTabId: 0,
+    history: ['file:///'],
+    now: 0,
     tabIds: [0]
   },
   '1': {
     activeTabId: 1,
+    history: ['file:///'],
+    now: 0,
     tabIds: [1]
   }
 }
@@ -16,11 +22,26 @@ const initialState = {
 exports.default = panels
 function panels (state, action) {
   let index
+  let panel
   let panelId
   state = state || initialState
   let tabIds
 
   switch (action.type) {
+    case indexActions.LS: {
+      if (action.result) {
+        panelId = getPanelIdByTabId(state, action.tabId)
+        panel = state[panelId]
+
+        return set(state, panelId, {
+          history: action.delta ? panel.history : panel.history.slice(0, panel.now + 1).concat(action.uri),
+          now: action.delta ? panel.now + action.delta : panel.now + 1
+        })
+      } else {
+        return state
+      }
+    }
+
     case tabsActions.CREATE:
       const tabId = getNextTabId(state)
 
@@ -56,7 +77,7 @@ function panels (state, action) {
       })
 
     case tabsActions.REMOVE:
-      panelId = state[0].tabIds.indexOf(action.id) > -1 ? 0 : 1
+      panelId = getPanelIdByTabId(state, action.id)
       const isActive = state[panelId].activeTabId === action.id
       const isOnly = state[panelId].tabIds.length === 1
       tabIds = isOnly ? state[panelId].tabIds : state[panelId].tabIds.filter(x => x !== action.id)

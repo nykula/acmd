@@ -64,7 +64,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Only handle backspace when tab focused
 
-- [ ] Go back and forward in panel history
+- [x] Go back and forward in panel history
 
 - [ ] Create empty file in active dir
 
