@@ -68,7 +68,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Create empty file in active dir
 
-- [ ] Keep cursor if no search matches
+- [x] Keep cursor if no search matches
 
 - [x] Dot dot if not root
 

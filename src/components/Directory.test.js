@@ -3,7 +3,6 @@ const assign = require('lodash/assign')
 const { createSpy } = require('expect')
 const {
   Directory,
-  handleSearch,
   mapDispatchToProps,
   mapFileToRow,
   mapStateToProps
@@ -107,32 +106,37 @@ it('prepends arrow to sorting column title', () => {
 })
 
 it('selects matching file as user types', () => {
-  const store = {}
+  const { handleSearch } = new Directory({
+    cursor: 1,
+    rows: [
+      {
+        filename: '[system32]',
+        ext: '',
+        size: '<DIR>'
+      },
+      {
+        filename: 'Some File Name',
+        ext: 'jpeg',
+        size: '1048576'
+      }
+    ]
+  })
+
+  const store = {
+    get_string_from_iter: x => x
+  }
+
   let skip
 
-  store.get_value = function (_, col) {
-    return {
-      '1': '[system32]',
-      '2': '',
-      '3': '<DIR>'
-    }[col]
-  }
-  skip = handleSearch(store, 1, 'syst')
+  skip = handleSearch(store, null, 'syst', 0)
   expect(skip).toBe(false)
-  skip = handleSearch(store, 1, 'systt')
+  skip = handleSearch(store, null, 'systt', 0)
   expect(skip).toBe(true)
 
-  store.get_value = function (_, col) {
-    return {
-      '1': 'Some File Name',
-      '2': 'jpeg',
-      '3': '1048576'
-    }[col]
-  }
-  skip = handleSearch(store, 1, 'some fi')
+  skip = handleSearch(store, null, 'some fi', 1)
   expect(skip).toBe(false)
-  skip = handleSearch(store, 1, 'some fir')
-  expect(skip).toBe(true)
+  skip = handleSearch(store, null, 'some fir', 1)
+  expect(skip).toBe(false) // Because cursor.
 })
 
 it('grabs child focus when isActive becomes true', () => {

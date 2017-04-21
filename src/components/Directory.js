@@ -24,6 +24,7 @@ function Directory (props) {
   this.handleCursor = this.handleCursor.bind(this)
   this.handleKeyPressEvent = this.handleKeyPressEvent.bind(this)
   this.handleLayout = this.handleLayout.bind(this)
+  this.handleSearch = this.handleSearch.bind(this)
   this.handleSelected = this.handleSelected.bind(this)
   this.prefixSort = this.prefixSort.bind(this)
   this.refContainer = this.refContainer.bind(this)
@@ -147,6 +148,31 @@ Directory.prototype.handleLayout = function (node) {
   this.focusIfActive()
 }
 
+Directory.prototype.handleSearch = function (store, col, input, iter) {
+  const skip = this.props.rows.map(({ filename, ext, size }) => {
+    const isDir = size === '<DIR>'
+    let name = filename
+
+    if (isDir) {
+      name = name.slice(1, -1)
+    }
+
+    if (ext) {
+      name += '.' + ext
+    }
+
+    return name.toLowerCase().indexOf(input.toLowerCase()) !== 0
+  })
+
+  const index = Number(store.get_string_from_iter(iter))
+
+  if (skip.indexOf(false) === -1 && index === this.props.cursor) {
+    return false
+  }
+
+  return skip[index]
+}
+
 Directory.prototype.handleSelected = function (selected) {
   this.props.actions.files.selected({
     panelId: this.props.panelId,
@@ -195,30 +221,12 @@ Directory.prototype.render = function () {
         on_key_press_event: this.handleKeyPressEvent,
         on_layout: this.handleLayout,
         on_selected: this.handleSelected,
-        on_search: handleSearch,
+        on_search: this.handleSearch,
         rows: rows,
         selected: selected
       })
     ])
   )
-}
-
-exports.handleSearch = handleSearch
-function handleSearch (store, col, input, iter) {
-  const filename = store.get_value(iter, col)
-  const ext = store.get_value(iter, col + 1)
-  const isDir = store.get_value(iter, col + 2) === '<DIR>'
-  let name = filename
-
-  if (isDir) {
-    name = name.slice(1, -1)
-  }
-
-  if (ext) {
-    name += '.' + ext
-  }
-
-  return name.toLowerCase().indexOf(input.toLowerCase()) !== 0
 }
 
 exports.mapFileToRow = mapFileToRow
