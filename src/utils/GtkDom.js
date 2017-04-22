@@ -1,11 +1,10 @@
 /* global imports */
 /* eslint-disable camelcase */
-const camelCase = require('lodash/camelCase')
 const noop = require('lodash/noop')
-const upperFirst = require('lodash/upperFirst')
 
 function getFirstChild () {
-  return this.get_children()[0]
+  const children = this.get_children()
+  return children.length ? children[0] : null
 }
 
 function getNextSibling () {
@@ -142,7 +141,8 @@ exports.domify = function (document, node) {
  * for it to be compatible with Inferno.
  */
 exports.createElement = function (Gtk, domify, tagName) {
-  return domify(new Gtk[upperFirst(camelCase(tagName))]())
+  tagName = tagName.replace(/(?:^|-)(.)/g, (_, x) => x.toUpperCase())
+  return domify(new Gtk[tagName]())
 }
 
 /**

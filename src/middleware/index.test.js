@@ -251,7 +251,7 @@ it('lists files in a directory', () => {
           })
         })
       },
-      FileQueryInfoFlags: {},
+      FileQueryInfoFlags: { NONE: 0 },
       FileType: {
         'typeA': 0,
         'typeB': 0,
@@ -260,7 +260,10 @@ it('lists files in a directory', () => {
       VolumeMonitor: { get: () => null },
       file_new_for_uri: () => dirGFile
     },
-    GLib: {}
+    GLib: {
+      MAXINT32: 2147483647,
+      PRIORITY_DEFAULT: 0
+    }
   }
 
   const { dispatchRequest, responses } = setup(props)
@@ -354,7 +357,7 @@ it('creates a directory', () => {
         }
       })
     },
-    GLib: {}
+    GLib: { PRIORITY_DEFAULT: 0 }
   }
 
   const { dispatchRequest, responses } = setup(props)
@@ -388,7 +391,7 @@ it('mounts a volume', () => {
 
   const props = {
     Gio: {
-      MountMountFlags: {},
+      MountMountFlags: { NONE: 0 },
       VolumeMonitor: { get: () => gVolMon }
     },
     Gtk: {
@@ -426,7 +429,7 @@ it('unmounts a volume', () => {
           })
         })
       },
-      MountUnmountFlags: {},
+      MountUnmountFlags: { NONE: 0 },
       VolumeMonitor: { get: noop }
     }
   }
@@ -460,7 +463,7 @@ it('opens a terminal in the current directory', () => {
       }
     }),
     Gio: {
-      SubprocessFlags: {},
+      SubprocessFlags: { NONE: 0 },
       SubprocessLauncher: function () {
         this.set_cwd = noop
         this.set_flags = noop

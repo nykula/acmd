@@ -15,6 +15,7 @@ const sampleFiles = [
   },
   {
     name: 'clan in da front.txt',
+    fileType: 'REGULAR',
     icon: 'text-x-generic',
     iconType: 'ICON_NAME',
     size: 4110,

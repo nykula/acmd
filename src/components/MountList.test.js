@@ -17,7 +17,7 @@ it('renders without crashing', () => {
             location: 'file:///media/System/tmp',
             files: [{
               name: '.',
-              rootUri: 'file:///media/System'
+              mountUri: 'file:///media/System'
             }]
           }
         }

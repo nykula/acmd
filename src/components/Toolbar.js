@@ -33,12 +33,12 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
           return h('v-separator', { key: item })
         }
         return (
-          h(item.control === 'TOGGLE' ? 'toggle-button' : 'button', {
+          h('control' in item && item.control === 'TOGGLE' ? 'toggle-button' : 'button', {
             active: !!item.active,
             can_focus: false,
             key: item.icon_name,
             relief: Gtk.ReliefStyle.NONE,
-            on_pressed: handlePressed(item.type),
+            on_pressed: 'type' in item ? handlePressed(item.type) : null,
             tooltip_text: item.tooltip_text
           }, [
             h('image', {

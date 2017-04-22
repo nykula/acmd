@@ -31,6 +31,11 @@ self.HMR_INTERVAL = 1000
 self.HMR_TIMEOUT = 1000
 
 /**
+ * Regular expression to get current module path from error stack.
+ */
+self.RE = /\n.*?@(.*?):/
+
+/**
  * Invalidates cache and calls a function when a module file is changed.
  */
 self.accept = function (parentFilename, path, callback) {
@@ -145,7 +150,7 @@ self.require = function () {
      * Returns the full path to the module that requested it.
      */
     get: () => {
-      const path = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      const path = self.RE.exec(new Error().stack)[1]
       return Gio.File.new_for_path(path).get_path()
     }
   })
@@ -155,7 +160,7 @@ self.require = function () {
      * Returns the full path to the parent dir of the module that requested it.
      */
     get: () => {
-      const path = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      const path = self.RE.exec(new Error().stack)[1]
       return Gio.File.new_for_path(path).get_path().replace(/.[^/]+$/, '')
     }
   })
@@ -167,7 +172,7 @@ self.require = function () {
      * like CommonJS would.
      */
     get: () => {
-      const path = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      const path = self.RE.exec(new Error().stack)[1]
       const module = self.getOrCreate(path)
       return module.exports
     }
@@ -179,7 +184,7 @@ self.require = function () {
      * replace the default exported object if you really need to.
      */
     get: () => {
-      const path = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      const path = self.RE.exec(new Error().stack)[1]
       const module = self.getOrCreate(path)
       return module
     }
@@ -191,7 +196,7 @@ self.require = function () {
      * requested it.
      */
     get: () => {
-      const parentPath = /\n.*?@(.*):/.exec(new Error().stack)[1]
+      const parentPath = self.RE.exec(new Error().stack)[1]
       const parentFilename = Gio.File.new_for_path(parentPath).get_path()
 
       const require = self.requireModule.bind(null, parentFilename)
