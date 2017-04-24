@@ -122,6 +122,40 @@ it('sorts files in tab', () => {
   ])
 })
 
+it('ignores dots in dir names when sorting by ext', () => {
+  let action
+  let state = {
+    '0': {
+      files: [
+        'n.w.a',
+        'run-d.m.c',
+        'b.g knocc out & dresta'
+      ].map(name => ({
+        name: name,
+        modificationTime: 0,
+        fileType: 'DIRECTORY'
+      })),
+      sortedBy: undefined
+    }
+  }
+
+  action = filesActions.sorted({ tabId: 0, by: 'ext' })
+  state = reducer(state, action)
+  expect(state[0].files.map(x => x.name)).toEqual([
+    'b.g knocc out & dresta',
+    'n.w.a',
+    'run-d.m.c'
+  ])
+
+  action = filesActions.sorted({ tabId: 0, by: 'ext' })
+  state = reducer(state, action)
+  expect(state[0].files.map(x => x.name)).toEqual([
+    'run-d.m.c',
+    'n.w.a',
+    'b.g knocc out & dresta'
+  ])
+})
+
 it('saves location and files list on ls success', () => {
   let action
   let state = {

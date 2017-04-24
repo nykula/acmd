@@ -149,7 +149,7 @@ function sortFiles (by, files) {
           x => x.fileType === 'DIRECTORY',
           x => {
             const matches = /^(.+)\.(.*?)$/.exec(x.name)
-            return matches ? matches[2].toLowerCase() : ''
+            return matches && x.fileType !== 'DIRECTORY' ? matches[2].toLowerCase() : ''
           },
           x => x.name.toLowerCase()
         ],
@@ -163,7 +163,7 @@ function sortFiles (by, files) {
           x => x.fileType === 'DIRECTORY',
           x => {
             const matches = /^(.+)\.(.*?)$/.exec(x.name)
-            return matches ? matches[2].toLowerCase() : ''
+            return matches && x.fileType !== 'DIRECTORY' ? matches[2].toLowerCase() : ''
           },
           x => x.name.toLowerCase()
         ],

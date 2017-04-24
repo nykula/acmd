@@ -76,7 +76,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Switch to next tab on close
 
-- [ ] Ignore dots in dir names when sorting
+- [x] Ignore dots in dir names when sorting by ext
 
 - [ ] Hotkey for active panel volume list
 
