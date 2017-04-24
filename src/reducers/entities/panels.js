@@ -84,12 +84,14 @@ function panels (state, action) {
 
     case tabsActions.REMOVE:
       panelId = getPanelIdByTabId(state, action.id)
+      index = state[panelId].tabIds.indexOf(action.id)
       const isActive = state[panelId].activeTabId === action.id
       const isOnly = state[panelId].tabIds.length === 1
       tabIds = isOnly ? state[panelId].tabIds : state[panelId].tabIds.filter(x => x !== action.id)
+      index = Math.min(index, tabIds.length - 1)
 
       return set(state, panelId, {
-        activeTabId: isActive ? tabIds[0] : state[panelId].activeTabId,
+        activeTabId: isActive ? tabIds[index] : state[panelId].activeTabId,
         tabIds: tabIds
       })
 

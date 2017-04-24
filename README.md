@@ -74,7 +74,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Click tab to switch
 
-- [ ] Switch to previous tab on close
+- [x] Switch to next tab on close
 
 - [ ] Ignore dots in dir names when sorting
 
