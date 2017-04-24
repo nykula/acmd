@@ -15,6 +15,6 @@ it('dispatches action without payload', () => {
     }),
     mapDispatchToProps(dispatch)
   )))
-  tree.children.filter(x => x.type === 'button')[0].events.on_pressed()
+  tree.children[0].props.on_pressed()
   expect(actions).toContain({ type: REFRESH })
 })

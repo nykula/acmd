@@ -1,6 +1,24 @@
 /* global expect, it */
+const panelsActions = require('../../actions/panels')
 const reducer = require('./panels').default
 const tabsActions = require('../../actions/tabs')
+
+it('switches active tab in panel', () => {
+  let state = {
+    '0': { activeTabId: 0 }
+  }
+
+  const action = panelsActions.activeTabId({
+    panelId: 0,
+    tabId: 1
+  })
+
+  state = reducer(state, action)
+
+  expect(state).toMatch({
+    '0': { activeTabId: 1 }
+  })
+})
 
 it('creates tab in panel', () => {
   let state = {

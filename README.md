@@ -72,7 +72,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [x] Dot dot if not root
 
-- [ ] Click tab to switch
+- [x] Click tab to switch
 
 - [ ] Switch to previous tab on close
 

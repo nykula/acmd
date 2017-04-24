@@ -3,13 +3,14 @@ const { connect } = require('inferno-redux')
 const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const indexActions = require('../actions')
+const ToggleButton = require('./ToggleButton').default
 
 exports.Toolbar = ({ handlePressed, showHidSys }) => {
   const items = [
     { type: indexActions.REFRESH, icon_name: 'view-refresh', tooltip_text: 'Refresh' },
     'MODE',
-    { control: 'TOGGLE', icon_name: 'format-justify-left', tooltip_text: 'List' },
-    { control: 'TOGGLE', active: true, icon_name: 'format-justify-fill', tooltip_text: 'Table' },
+    { icon_name: 'format-justify-left', tooltip_text: 'List' },
+    { active: true, icon_name: 'format-justify-fill', tooltip_text: 'Table' },
     'HISTORY',
     { type: indexActions.BACK, icon_name: 'go-previous', tooltip_text: 'Back' },
     { type: indexActions.FORWARD, icon_name: 'go-next', tooltip_text: 'Forward' },
@@ -19,7 +20,6 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
     { type: indexActions.TERMINAL, icon_name: 'utilities-terminal', tooltip_text: 'Terminal' },
     {
       active: showHidSys,
-      control: 'TOGGLE',
       icon_name: 'dialog-warning',
       tooltip_text: 'Hidden files',
       type: indexActions.SHOW_HID_SYS
@@ -33,7 +33,7 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
           return h('v-separator', { key: item })
         }
         return (
-          h('control' in item && item.control === 'TOGGLE' ? 'toggle-button' : 'button', {
+          h(ToggleButton, {
             active: !!item.active,
             can_focus: false,
             key: item.icon_name,

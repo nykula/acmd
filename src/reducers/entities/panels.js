@@ -2,6 +2,7 @@ const assign = require('lodash/assign')
 const getNextTabId = require('../../selectors/getNextTabId').default
 const getPanelIdByTabId = require('../../selectors/getPanelIdByTabId').default
 const indexActions = require('../../actions')
+const panelsActions = require('../../actions/panels')
 const tabsActions = require('../../actions/tabs')
 
 const initialState = {
@@ -41,6 +42,11 @@ function panels (state, action) {
         return state
       }
     }
+
+    case panelsActions.ACTIVE_TAB_ID:
+      return set(state, action.panelId, {
+        activeTabId: action.tabId
+      })
 
     case tabsActions.CREATE:
       const tabId = getNextTabId(state)

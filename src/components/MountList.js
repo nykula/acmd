@@ -7,6 +7,7 @@ const Gtk = imports.gi.Gtk
 const h = require('inferno-hyperscript')
 const Icon = require('../utils/Icon').default
 const minLength = require('../utils/minLength').default
+const ToggleButton = require('./ToggleButton').default
 
 exports.Mount = Mount
 function Mount (props) {
@@ -62,7 +63,7 @@ Mount.prototype.render = function () {
   const { mount, isActive, short } = this.props
   const { icon, iconType, name } = mount
   return (
-    h(isActive ? 'toggle-button' : 'button', {
+    h(ToggleButton, {
       active: isActive,
       can_focus: false,
       relief: Gtk.ReliefStyle.NONE,
