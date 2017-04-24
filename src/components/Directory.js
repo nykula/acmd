@@ -87,6 +87,20 @@ Directory.prototype.handleKeyPressEvent = function (ev) {
       }
       return true
 
+    case Gdk.KEY_1:
+      if (ev.altKey) {
+        actions.index.mounts(0)
+        return true
+      }
+      break
+
+    case Gdk.KEY_2:
+      if (ev.altKey) {
+        actions.index.mounts(1)
+        return true
+      }
+      break
+
     case Gdk.KEY_F2:
       actions.index.refresh()
       break

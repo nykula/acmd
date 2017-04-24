@@ -1,7 +1,6 @@
 /* global imports, ARGV */
 // Runs the application.
 
-const Gdk = imports.gi.Gdk
 const Gio = imports.gi.Gio
 const GLib = imports.gi.GLib
 const Gtk = imports.gi.Gtk
@@ -17,14 +16,13 @@ const Store = require('./Store').default
 
 function View (props) {
   Component.call(this, props)
-  this.refstore = new Refstore()
   this.state = { render: this.props.render }
 }
 
 View.prototype = Object.create(Component.prototype)
 
 View.prototype.render = function () {
-  return this.state.render({ refstore: this.refstore })
+  return this.state.render({ refstore: this.props.refstore })
 }
 
 require('./utils/GtkDom').app({
@@ -37,23 +35,27 @@ require('./utils/GtkDom').app({
     win.default_height = 600
     win.window_position = Gtk.WindowPosition.CENTER
 
-    const store = Store(undefined, {
-      Dialog: Dialog({ Gtk: Gtk, win: win }),
-      Gdk: Gdk,
-      gioAdapter: new GioAdapter({
-        GLib: GLib,
-        Gio: Gio,
-        Gtk: Gtk
-      }),
+    // Dependency injection container.
+    const extra = {
+      Dialog: null,
+      GLib: GLib,
+      Gio: Gio,
+      gioAdapter: null,
       Gtk: Gtk,
+      refstore: new Refstore(),
       win: win
-    })
+    }
+    extra.Dialog = Dialog(extra)
+    extra.gioAdapter = new GioAdapter(extra)
+
+    const store = Store(undefined, extra)
 
     let view
     render(
       h(Provider, { store: store },
         h(View, {
           ref: instance => { view = instance },
+          refstore: extra.refstore,
           render: require('./App').render
         })
       ),

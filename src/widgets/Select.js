@@ -21,6 +21,7 @@ Select.prototype.init = function (node) {
   node.set_model(ListStore.fromProps(this.props))
   this.props.cols.forEach((col, i) => ListStore.configureColumn(node, col, i))
   this.updateActive()
+  this.props.on_layout(node)
 }
 
 Select.prototype.shouldComponentUpdate = function (nextProps) {

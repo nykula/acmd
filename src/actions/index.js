@@ -146,6 +146,14 @@ exports.mountReady = requestId => {
   }
 }
 
+exports.MOUNTS = 'MOUNTS'
+exports.mounts = panelId => {
+  return {
+    type: exports.MOUNTS,
+    panelId: panelId
+  }
+}
+
 exports.MV = 'MV'
 exports.mv = (srcUris, destUri) => {
   if (!srcUris) {

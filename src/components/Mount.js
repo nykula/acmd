@@ -12,7 +12,7 @@ const noop = require('lodash/noop')
 const Select = require('../widgets/Select').default
 
 exports.Mount = Mount
-function Mount ({ free, mounts, name, onChanged, onFocus, onLevelUp, onRoot, size }) {
+function Mount ({ free, mounts, name, onChanged, onFocus, onLayout, onLevelUp, onRoot, size }) {
   const status = '[' + name + '] ' +
     formatSize(free) + ' of ' +
     formatSize(size) + ' free'
@@ -34,6 +34,7 @@ function Mount ({ free, mounts, name, onChanged, onFocus, onLevelUp, onRoot, siz
             value: mount.name
           })),
           on_changed: onChanged,
+          on_layout: onLayout,
           on_focus: onFocus,
           value: name
         })
@@ -89,6 +90,9 @@ function mapDispatchToProps (dispatch, { panelId, refstore }) {
           node.grab_focus()
         }
       }, 0)
+    },
+    onLayout: node => {
+      refstore.set('mounts' + panelId)(node)
     },
     onLevelUp: () => dispatch(actions.levelUp({ panelId: panelId })),
     onRoot: () => dispatch(actions.root({ panelId: panelId }))

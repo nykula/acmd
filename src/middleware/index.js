@@ -60,6 +60,10 @@ exports.default = extra => ({ dispatch, getState }) => next => action => {
       exports.handleMount(action)(dispatch, getState, extra)
       break
 
+    case actions.MOUNTS:
+      exports.handleMounts(action)(dispatch, getState, extra)
+      break
+
     case actions.MV:
       exports.handleMv(action)(dispatch, getState, extra)
       break
@@ -379,6 +383,10 @@ exports.handleMount = action => (dispatch, getState, { gioAdapter }) => {
   } else if (isResponse(action)) {
     dispatch(actions.refresh())
   }
+}
+
+exports.handleMounts = action => (dispatch, getState, { refstore }) => {
+  refstore.get('mounts' + action.panelId).popup()
 }
 
 exports.handleMv = action => (dispatch, getState, { Dialog, gioAdapter }) => {
