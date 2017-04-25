@@ -354,7 +354,8 @@ it('creates a directory', () => {
       file_new_for_uri: () => ({
         make_directory_async: () => {
           arguments[arguments.length - 1]()
-        }
+        },
+        make_directory_finish: noop
       })
     },
     GLib: { PRIORITY_DEFAULT: 0 }

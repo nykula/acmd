@@ -200,13 +200,11 @@ exports.handleDrives = action => (dispatch, getState, { gioAdapter }) => {
   const { requestId } = action
 
   if (isRequest(action)) {
-    gioAdapter.drives({
-      onSuccess: result => {
-        dispatch(actions.drivesReady({
-          requestId: requestId,
-          result: result
-        }))
-      }
+    gioAdapter.drives((_, result) => {
+      dispatch(actions.drivesReady({
+        requestId: requestId,
+        result: result
+      }))
     })
   }
 }
@@ -284,12 +282,10 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
         return
       }
 
-      gioAdapter.mount({
-        uri: input,
-        onError: error => {
+      gioAdapter.mount({ uri: input }, (error, uri) => {
+        if (error) {
           Dialog.alert(error.message, noop)
-        },
-        onSuccess: uri => {
+        } else {
           dispatch(actions.ls(activeTabId, uri))
           dispatch(actions.drives(Date.now()))
         }
@@ -298,22 +294,16 @@ exports.handleLs = action => (dispatch, getState, { Dialog, gioAdapter }) => {
   } else if (isRequest(action)) {
     const { tabId, uri, requestId, delta } = action
 
-    gioAdapter.ls({
-      uri: uri,
-
-      delta: delta,
-
-      onError: (err) => {
+    gioAdapter.ls(uri, (error, files) => {
+      if (error) {
         dispatch(actions.lsError({
           tabId: tabId,
           uri: uri,
           requestId: requestId,
-          error: { message: err.message },
+          error: { message: error.message },
           delta: delta
         }))
-      },
-
-      onSuccess: (files) => {
+      } else {
         dispatch(actions.lsSuccess({
           tabId: tabId,
           uri: uri,
@@ -345,18 +335,14 @@ exports.handleMkdir = action => (dispatch, getState, { Dialog, gioAdapter }) => 
   } else if (isRequest(action)) {
     const { uri, requestId } = action
 
-    gioAdapter.mkdir({
-      uri: uri,
-
-      onError: (err) => {
+    gioAdapter.mkdir(uri, error => {
+      if (error) {
         dispatch(actions.mkdirError({
           uri: uri,
           requestId: requestId,
-          error: { message: err.message }
+          error: { message: error.message }
         }))
-      },
-
-      onSuccess: () => {
+      } else {
         dispatch(actions.mkdirSuccess({
           uri: uri,
           requestId: requestId,
@@ -373,12 +359,8 @@ exports.handleMount = action => (dispatch, getState, { gioAdapter }) => {
   if (isRequest(action)) {
     const { identifier, requestId } = action
 
-    gioAdapter.mount({
-      identifier: identifier,
-
-      onSuccess: () => {
-        dispatch(actions.mountReady(requestId))
-      }
+    gioAdapter.mount({ identifier: identifier }, () => {
+      dispatch(actions.mountReady(requestId))
     })
   } else if (isResponse(action)) {
     dispatch(actions.refresh())
@@ -474,18 +456,14 @@ exports.handleTouch = action => (dispatch, getState, { Dialog, gioAdapter }) => 
   } else if (isRequest(action)) {
     const { uri, requestId } = action
 
-    gioAdapter.touch({
-      uri: uri,
-
-      onError: (err) => {
+    gioAdapter.touch(uri, error => {
+      if (error) {
         dispatch(actions.touchError({
           uri: uri,
           requestId: requestId,
-          error: { message: err.message }
+          error: { message: error.message }
         }))
-      },
-
-      onSuccess: () => {
+      } else {
         dispatch(actions.touchSuccess({
           uri: uri,
           requestId: requestId,
@@ -504,12 +482,8 @@ exports.handleUnmount = action => (dispatch, getState, { gioAdapter }) => {
   if (isRequest(action)) {
     const { requestId, uri } = action
 
-    gioAdapter.unmount({
-      uri: uri,
-
-      onSuccess: () => {
-        dispatch(actions.unmountReady(requestId))
-      }
+    gioAdapter.unmount(uri, () => {
+      dispatch(actions.unmountReady(requestId))
     })
   } else if (isResponse(action)) {
     dispatch(actions.refresh())

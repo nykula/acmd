@@ -1,7 +1,9 @@
 /* global imports */
 const find = require('lodash/find')
+const gioAsync = require('../utils/gioAsync').default
 const Lang = imports.lang
 const Uri = require('url-parse')
+const waterfall = require('async/waterfall')
 const WorkerRunner = require('./WorkerRunner').default
 
 /**
@@ -38,9 +40,7 @@ exports.default = new Lang.Class({
   /**
    * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Drive.html
    */
-  drives: function (props) {
-    const handleSuccess = props.onSuccess
-
+  drives: function (callback) {
     const gDrives = this.gVolMon.get_connected_drives()
     const drives = gDrives.map(this._serializeDrive)
     const rootInfo = this.Gio.File.new_for_uri('file:///').query_filesystem_info('*', null)
@@ -56,7 +56,7 @@ exports.default = new Lang.Class({
         }, {})
     }].concat(this.gVolMon.get_mounts().map(this._serializeMount))
 
-    handleSuccess({
+    callback(null, {
       drives: drives,
       mounts: mounts
     })
@@ -75,7 +75,7 @@ exports.default = new Lang.Class({
   /**
    * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Volume.html
    */
-  mount: function (props) {
+  mount: function (props, callback) {
     let mountOperation
 
     if (props.identifier) {
@@ -88,7 +88,7 @@ exports.default = new Lang.Class({
       mountOperation = new this.Gtk.MountOperation()
 
       gVolume.mount(this.Gio.MountMountFlags.NONE, mountOperation, null, () => {
-        props.onSuccess()
+        callback()
       })
     } else {
       const uri = new Uri(props.uri)
@@ -118,10 +118,10 @@ exports.default = new Lang.Class({
         try {
           gFile.mount_enclosing_volume_finish(result)
         } catch (error) {
-          props.onError(error)
+          callback(error)
           return
         }
-        props.onSuccess(uri.toString())
+        callback(null, uri.toString())
       })
     }
   },
@@ -140,15 +140,12 @@ exports.default = new Lang.Class({
   /**
    * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Mount.html
    */
-  unmount: function (props) {
-    const handleSuccess = props.onSuccess
-    const uri = props.uri
-
+  unmount: function (uri, callback) {
     const gFile = this.Gio.File.new_for_uri(uri)
     const gMount = gFile.find_enclosing_mount(null)
 
     gMount.unmount(this.Gio.MountUnmountFlags.NONE, null, () => {
-      handleSuccess()
+      callback()
     })
   },
 
@@ -189,33 +186,22 @@ exports.default = new Lang.Class({
    * modification time and size. Also lists standard, access and ownership
    * attributes as strings.
    */
-  ls: function (props) {
-    const handleError = props.onError
-    const handleSuccess = props.onSuccess
-    const uri = props.uri
-
+  ls: function (uri, callback) {
     let files = []
     const dir = this.Gio.file_new_for_uri(uri)
     const parent = dir.get_parent()
 
-    const handleRequest = () => {
-      dir.query_info_async(
+    const handleRequest = callback => {
+      gioAsync(dir, 'query_info',
         'standard::*,access::*,owner::*,time::*,unix::*',
         this.Gio.FileQueryInfoFlags.NONE,
         this.GLib.PRIORITY_DEFAULT,
         null,
-        (_, result) => {
-          try {
-            const info = dir.query_info_finish(result)
-            handleSelf(info)
-          } catch (err) {
-            handleError(err)
-          }
-        }
+        callback
       )
     }
 
-    const handleSelf = selfInfo => {
+    const handleSelf = (selfInfo, callback) => {
       const selfFile = mapGFileInfoToFile(selfInfo)
       selfFile.displayName = '.'
       selfFile.mountUri = this.getMountUri(dir)
@@ -224,27 +210,20 @@ exports.default = new Lang.Class({
       files = [selfFile]
 
       if (!parent) {
-        handleParent(null)
+        callback(null, null)
         return
       }
 
-      parent.query_info_async(
+      gioAsync(parent, 'query_info',
         'standard::*,access::*,owner::*,time::*,unix::*',
         this.Gio.FileQueryInfoFlags.NONE,
         this.GLib.PRIORITY_DEFAULT,
         null,
-        (_, result) => {
-          try {
-            const info = parent.query_info_finish(result)
-            handleParent(info)
-          } catch (err) {
-            handleError(err)
-          }
-        }
+        callback
       )
     }
 
-    const handleParent = parentInfo => {
+    const handleParent = (parentInfo, callback) => {
       if (parentInfo) {
         const parentFile = mapGFileInfoToFile(parentInfo)
         parentFile.displayName = '..'
@@ -255,41 +234,27 @@ exports.default = new Lang.Class({
         files = files.concat(parentFile)
       }
 
-      dir.enumerate_children_async(
+      gioAsync(dir, 'enumerate_children',
         'standard::*,access::*,owner::*,time::*,unix::*',
         this.Gio.FileQueryInfoFlags.NONE,
         this.GLib.PRIORITY_DEFAULT,
         null,
-        (_, result) => {
-          try {
-            const enumerator = dir.enumerate_children_finish(result)
-            handleChildren(enumerator)
-          } catch (err) {
-            handleError(err)
-          }
-        }
+        callback
       )
     }
 
-    const handleChildren = (enumerator) => {
-      enumerator.next_files_async(
+    const handleChildren = (enumerator, callback) => {
+      gioAsync(enumerator, 'next_files',
         this.GLib.MAXINT32,
         this.GLib.PRIORITY_DEFAULT,
         null,
-        (_, result) => {
-          try {
-            const list = enumerator.next_files_finish(result)
-            handleInfos(list)
-          } catch (err) {
-            handleError(err)
-          }
-        }
+        callback
       )
     }
 
-    const handleInfos = (list) => {
+    const handleInfos = (list, callback) => {
       files = files.concat(list.map(mapGFileInfoToFile))
-      handleSuccess(files)
+      callback(null, files)
     }
 
     const mapGFileInfoToFile = gFileInfo => {
@@ -346,7 +311,13 @@ exports.default = new Lang.Class({
       return file
     }
 
-    handleRequest()
+    waterfall([
+      handleRequest,
+      handleSelf,
+      handleParent,
+      handleChildren,
+      handleInfos
+    ], callback)
   },
 
   /**
@@ -367,50 +338,23 @@ exports.default = new Lang.Class({
   /**
    * Creates a directory.
    */
-  mkdir: function (props) {
-    const handleError = props.onError
-    const handleSuccess = props.onSuccess
-    const uri = props.uri
-
-    const dir = this.Gio.file_new_for_uri(uri)
-
-    dir.make_directory_async(
+  mkdir: function (uri, callback) {
+    gioAsync(this.Gio.file_new_for_uri(uri), 'make_directory',
       this.GLib.PRIORITY_DEFAULT,
       null,
-      (_, result) => {
-        try {
-          handleSuccess()
-        } catch (err) {
-          handleError(err)
-        }
-      }
+      callback
     )
   },
 
   /**
    * Creates a file.
    */
-  touch: function (props) {
-    const handleError = props.onError
-    const handleSuccess = props.onSuccess
-    const uri = props.uri
-
-    const gFile = this.Gio.file_new_for_uri(uri)
-
-    gFile.create_async(
+  touch: function (uri, callback) {
+    gioAsync(this.Gio.File.new_for_uri(uri), 'create',
       this.Gio.FileCreateFlags.NONE,
       this.GLib.PRIORITY_DEFAULT,
       null,
-      (_, result) => {
-        try {
-          gFile.create_finish(result)
-        } catch (err) {
-          handleError(err)
-          return
-        }
-
-        handleSuccess()
-      }
+      callback
     )
   },
 
