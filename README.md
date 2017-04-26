@@ -82,7 +82,7 @@ yarn run coverage && xdg-open coverage/index.html
 
 - [ ] Actions in menus
 
-- [ ] Disable list view button
+- [x] Disable list view button
 
 - [ ] Get viewer and editor from env
 

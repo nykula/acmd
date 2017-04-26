@@ -9,7 +9,7 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
   const items = [
     { type: indexActions.REFRESH, icon_name: 'view-refresh', tooltip_text: 'Refresh' },
     'MODE',
-    { icon_name: 'format-justify-left', tooltip_text: 'List' },
+    { sensitive: false, icon_name: 'format-justify-left', tooltip_text: 'List' },
     { active: true, icon_name: 'format-justify-fill', tooltip_text: 'Table' },
     'HISTORY',
     { type: indexActions.BACK, icon_name: 'go-previous', tooltip_text: 'Back' },
@@ -39,6 +39,7 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
             key: item.icon_name,
             relief: Gtk.ReliefStyle.NONE,
             on_pressed: 'type' in item ? handlePressed(item.type) : null,
+            sensitive: 'sensitive' in item ? item.sensitive : null,
             tooltip_text: item.tooltip_text
           }, [
             h('image', {
