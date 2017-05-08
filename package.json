@@ -24,6 +24,7 @@
     "test": "gjs bin/test.js 2>&1 | grep -v 'Message.*node_modules'",
     "coverage": "bash bin/coverage.sh 2>&1 | grep -v 'Message.*node_modules'",
     "lint": "standard 'bin/**/*.js' 'src/**/*.js'",
-    "lint-fix": "standard --fix 'bin/**/*.js' 'src/**/*.js'"
+    "lint-fix": "standard --fix 'bin/**/*.js' 'src/**/*.js'",
+    "repl": "gjs bin/repl.js"
   }
 }
