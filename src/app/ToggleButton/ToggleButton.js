@@ -1,23 +1,44 @@
 /* global imports */
-const assign = require('lodash/assign')
-const Component = require('inferno-component')
 const Gtk = imports.gi.Gtk
-const h = require('inferno-hyperscript')
+const assign = require('lodash/assign')
+const Component = require('inferno-component').default
+const h = require('inferno-hyperscript').default
+const autoBind = require('../Gjs/autoBind').default
 
-exports.default = ToggleButton
+/**
+ * @typedef INode
+ * @property {(flags: number, clear: boolean) => void} set_state_flags
+ * @property {(flags: number) => void} unset_state_flags
+ *
+ * @typedef IProps
+ * @property {boolean} active
+ *
+ * @param {IProps} props
+ */
 function ToggleButton (props) {
   Component.call(this, props)
-  this.ref = this.ref.bind(this)
-  this.resetActive = this.resetActive.bind(this)
-  this.node = null
+  autoBind(this, ToggleButton.prototype)
 }
 
 ToggleButton.prototype = Object.create(Component.prototype)
+
+/**
+ * @type {INode}
+ */
+ToggleButton.prototype.node = undefined
+
+/**
+ * @type {IProps}
+ */
+ToggleButton.prototype.props = undefined
 
 ToggleButton.prototype.componentDidUpdate = function () {
   this.resetActive()
 }
 
+/**
+ * @param {INode} node
+ */
 ToggleButton.prototype.ref = function (node) {
   this.node = node
   this.resetActive()
@@ -38,3 +59,5 @@ ToggleButton.prototype.render = function () {
     }))
   )
 }
+
+exports.default = ToggleButton

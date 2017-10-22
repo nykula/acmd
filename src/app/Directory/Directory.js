@@ -1,166 +1,189 @@
 /* global imports */
-const assign = require('lodash/assign')
-const autoBind = require('../Gjs/autoBind').default
-/** @type {*} */ const bindActionCreators = require('redux').bindActionCreators
-const Component = require('inferno-component')
-const { connect } = require('inferno-redux')
-const FileAction = require('../File/FileAction')
-const formatSize = require('../Size/formatSize').default
-const Action = require('../Action/Action')
-const getVisibleFiles = require('../Action/getVisibleFiles').default
-const { GICON, TEXT } = require('../ListStore/ListStore')
 const Gdk = imports.gi.Gdk
 const Gtk = imports.gi.Gtk
-const h = require('inferno-hyperscript')
+const Component = require('inferno-component').default
+const h = require('inferno-hyperscript').default
+const { connect } = require('inferno-mobx')
+const assign = require('lodash/assign')
+const { autorun, extendObservable } = require('mobx')
+const { ActionService } = require('../Action/ActionService')
+const getVisibleFiles = require('../Action/getVisibleFiles').default
+const { FileService } = require('../File/FileService')
+const autoBind = require('../Gjs/autoBind').default
+const { GICON, TEXT } = require('../ListStore/ListStore')
 const PanelAction = require('../Panel/PanelAction')
-const TabAction = require('../Tab/TabAction')
+const { PanelService } = require('../Panel/PanelService')
+const Refstore = require('../Refstore/Refstore').default
+const { ShowHidSysService } = require('../ShowHidSys/ShowHidSysService')
+const formatSize = require('../Size/formatSize').default
+const { TabService } = require('../Tab/TabService')
 const TreeView = require('../TreeView/TreeView').default
 
 /**
- * @typedef {Object} IProps
- * @property {any=} actions
- * @property {number=} cursor
- * @property {boolean=} isActive
- * @property {number=} panelId
- * @property {any=} refstore
- * @property {any=} rows
- * @property {number=} selected
- * @property {string=} sortedBy
- * @property {number=} tabId
+ * @typedef IProps
+ * @property {ActionService} actionService
+ * @property {FileService} fileService
+ * @property {number} panelId
+ * @property {PanelService} panelService
+ * @property {Refstore} refstore
+ * @property {ShowHidSysService} showHidSysService
+ * @property {TabService} tabService
  *
  * @param {IProps} props
  */
 function Directory (props) {
   Component.call(this, props)
   autoBind(this, Directory.prototype)
+
+  extendObservable(this, {
+    container: this.container
+  })
+
+  this.unsubscribeUpdate = autorun(this.focusIfActive)
 }
 
 Directory.prototype = Object.create(Component.prototype)
 
-/** @type {*} */
+/** @type {{ get_children(): { grab_focus(): void }[] }} */
 Directory.prototype.container = undefined
 
 /** @type {IProps} */
 Directory.prototype.props = undefined
 
-Directory.prototype.componentDidUpdate = function (prevProps) {
-  if (prevProps.isActive !== this.props.isActive) {
-    this.focusIfActive()
-  }
+Directory.prototype.componentWillUnmount = function () {
+  this.unsubscribeUpdate()
+}
+
+Directory.prototype.tabId = function () {
+  return this.props.panelService.entities[this.props.panelId].activeTabId
+}
+
+Directory.prototype.tab = function () {
+  return this.props.tabService.entities[this.tabId()]
+}
+
+/**
+ * @param {IProps=} props
+ */
+Directory.prototype.isActive = function (props = this.props) {
+  return props.panelService.activeId === props.panelId
 }
 
 Directory.prototype.focusIfActive = function () {
-  if (this.props.isActive) {
+  if (this.container && this.isActive()) {
     const children = this.container.get_children()
     children[0].grab_focus()
   }
 }
 
 Directory.prototype.handleActivated = function (index) {
-  this.props.actions.files.activated({
+  this.props.actionService.activated({
     index: index,
-    panelId: this.props.panelId,
-    tabId: this.props.tabId
+    panelId: this.props.panelId
   })
 }
 
 Directory.prototype.handleClicked = function (colName) {
-  this.props.actions.files.sorted({
+  this.props.tabService.sorted({
     by: colName,
-    tabId: this.props.tabId
+    tabId: this.tabId()
   })
 }
 
+/**
+ * @param {number} cursor
+ */
 Directory.prototype.handleCursor = function (cursor) {
-  this.props.actions.files.cursor({
+  this.props.fileService.cursor({
     cursor: cursor,
     panelId: this.props.panelId,
-    tabId: this.props.tabId
+    tabId: this.tabId()
   })
 }
 
 Directory.prototype.handleKeyPressEvent = function (ev) {
-  const { actions, panelId, tabId } = this.props
+  const { actionService, panelService, panelId } = this.props
+  const tabId = this.tabId()
 
   switch (ev.which) {
     case Gdk.KEY_BackSpace:
-      actions.index.levelUp({ panelId: panelId })
+      actionService.levelUp(panelId)
       break
 
     case Gdk.KEY_ISO_Left_Tab:
     case Gdk.KEY_Tab:
       if (ev.ctrlKey && ev.shiftKey) {
-        actions.tabs.prev(panelId)
+        panelService.prevTab(panelId)
       } else if (ev.ctrlKey) {
-        actions.tabs.next(panelId)
+        panelService.nextTab(panelId)
       } else {
-        actions.panels.toggledActive()
+        panelService.toggleActive()
       }
       return true
 
     case Gdk.KEY_1:
       if (ev.altKey) {
-        actions.index.mounts(0)
+        actionService.mounts(0)
         return true
       }
       break
 
     case Gdk.KEY_2:
       if (ev.altKey) {
-        actions.index.mounts(1)
+        actionService.mounts(1)
         return true
       }
       break
 
     case Gdk.KEY_F2:
-      actions.index.refresh()
+      actionService.refresh()
       break
 
     case Gdk.KEY_F3:
-      actions.index.view()
+      actionService.view()
       break
 
     case Gdk.KEY_F4:
-      actions.index.editor()
+      actionService.editor()
       break
 
     case Gdk.KEY_F5:
-      actions.index.cp()
+      actionService.cp()
       break
 
     case Gdk.KEY_F6:
-      actions.index.mv()
+      actionService.mv()
       break
 
     case Gdk.KEY_F7:
-      actions.index.mkdir()
+      actionService.mkdir()
       break
 
     case Gdk.KEY_F8:
-      actions.index.rm()
+      actionService.rm()
       break
 
     case Gdk.KEY_b:
       if (ev.ctrlKey) {
-        actions.index.showHidSys()
+        this.props.showHidSysService.toggle()
       }
       break
 
     case Gdk.KEY_l:
       if (ev.ctrlKey) {
-        actions.index.ls()
+        actionService.ls()
       }
       break
 
     case Gdk.KEY_t:
       if (ev.ctrlKey) {
-        actions.tabs.create(panelId)
+        actionService.createTab(panelId)
       }
       break
 
     case Gdk.KEY_w:
       if (ev.ctrlKey) {
-        actions.tabs.remove(tabId)
+        panelService.removeTab(tabId)
       }
       break
   }
@@ -174,7 +197,9 @@ Directory.prototype.handleLayout = function (node) {
 }
 
 Directory.prototype.handleSearch = function (store, _col, input, iter) {
-  const skip = this.props.rows.map(({ filename, ext, size }) => {
+  const { cursor, rows } = this.tab()
+
+  const skip = rows.map(({ filename, ext, size }) => {
     const isDir = size === '<DIR>'
     let name = filename
 
@@ -191,29 +216,35 @@ Directory.prototype.handleSearch = function (store, _col, input, iter) {
 
   const index = Number(store.get_string_from_iter(iter))
 
-  if (skip.indexOf(false) === -1 && index === this.props.cursor) {
+  if (skip.indexOf(false) === -1 && index === cursor) {
     return false
   }
 
   return skip[index]
 }
 
+/**
+ * @param {number[]} selected
+ */
 Directory.prototype.handleSelected = function (selected) {
-  this.props.actions.files.selected({
+  this.props.fileService.selected({
     panelId: this.props.panelId,
     selected: selected,
-    tabId: this.props.tabId
+    tabId: this.tabId()
   })
 }
 
 Directory.prototype.prefixSort = function (col) {
-  const sortedBy = this.props.sortedBy
+  const { sortedBy } = this.tab()
+
   if (col.name === sortedBy) {
     return assign({}, col, { title: '↑' + col.title })
   }
+
   if ('-' + col.name === sortedBy) {
     return assign({}, col, { title: '↓' + col.title })
   }
+
   return col
 }
 
@@ -222,7 +253,16 @@ Directory.prototype.refContainer = function (node) {
 }
 
 Directory.prototype.render = function () {
-  const { cursor, rows, selected } = this.props
+  const panelId = this.props.panelId
+  const tabId = this.props.panelService.entities[panelId].activeTabId
+  const { files } = this.props.tabService.entities[tabId]
+
+  const rows = getVisibleFiles({
+    files: files,
+    showHidSys: this.props.showHidSysService.state
+  }).map(mapFileToRow)
+
+  const { cursor, selected } = this.tab()
 
   return (
     h('scrolled-window', {
@@ -253,7 +293,6 @@ Directory.prototype.render = function () {
     ])
   )
 }
-exports.Directory = Directory
 
 exports.mapFileToRow = mapFileToRow
 function mapFileToRow (file) {
@@ -299,38 +338,11 @@ function mapFileToRow (file) {
   }
 }
 
-exports.mapStateToProps = mapStateToProps
-function mapStateToProps (state, { panelId }) {
-  const tabId = state.panels[panelId].activeTabId
-
-  return {
-    cursor: state.tabs[tabId].cursor,
-
-    isActive: state.activePanelId === panelId,
-
-    rows: getVisibleFiles({
-      files: state.tabs[tabId].files,
-      showHidSys: state.showHidSys
-    }).map(mapFileToRow),
-
-    selected: state.tabs[tabId].selected,
-
-    sortedBy: state.tabs[tabId].sortedBy,
-
-    tabId: tabId
-  }
-}
-
-exports.mapDispatchToProps = mapDispatchToProps
-function mapDispatchToProps (dispatch) {
-  return {
-    actions: {
-      files: bindActionCreators(FileAction, dispatch),
-      index: bindActionCreators(Action, dispatch),
-      panels: bindActionCreators(PanelAction, dispatch),
-      tabs: bindActionCreators(TabAction, dispatch)
-    }
-  }
-}
-
-exports.default = connect(mapStateToProps, mapDispatchToProps)(Directory)
+exports.default = connect([
+  'actionService',
+  'fileService',
+  'panelService',
+  'refstore',
+  'showHidSysService',
+  'tabService'
+])(Directory)

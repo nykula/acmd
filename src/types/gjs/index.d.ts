@@ -1,4 +1,10 @@
+declare const ARGV: string[];
+
 declare namespace imports {
+    const console: {
+        interact(): void
+    };
+
     const gi: any;
 
     const lang: {
@@ -11,6 +17,10 @@ declare namespace imports {
         },
     };
 
+    const searchPath: string[];
+
+    const src: any;
+
     interface Class {
         Name: string;
 
@@ -19,3 +29,5 @@ declare namespace imports {
         _init: Function;
     }
 }
+
+declare function print(message: string): void;

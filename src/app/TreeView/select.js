@@ -2,7 +2,7 @@
 const assign = require('lodash/assign')
 const Gdk = imports.gi.Gdk
 const range = require('lodash/range')
-const uniq = require('uniq')
+/** @type {any} */ const uniq = require('uniq')
 const uniqSort = xs => uniq(xs.sort((a, b) => a - b), null, true)
 
 exports.default = function (state, ev) {

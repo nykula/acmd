@@ -8,7 +8,7 @@ const {
   mapFileToRow,
   mapStateToProps
 } = require('./Directory')
-const h = require('inferno-hyperscript')
+const h = require('inferno-hyperscript').default
 const { shallow } = require('../Test/Test')
 
 it('renders without crashing', () => {

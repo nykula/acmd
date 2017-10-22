@@ -1,25 +1,31 @@
 /* global imports, ARGV */
 // Runs the application.
 
-const Gio = imports.gi.Gio
-const GLib = imports.gi.GLib
 const Gtk = imports.gi.Gtk
-const actions = require('./Action/Action')
-const Component = require('inferno-component')
-const Dialog = require('./Dialog/Dialog').default
-const GioAdapter = require('./Gio/Gio').default
-const h = require('inferno-hyperscript')
-const { Provider } = require('inferno-redux')
-const Refstore = require('./Refstore/Refstore').default
 const { render } = require('inferno')
-const Store = require('./Store').default
+const Component = require('inferno-component').default
+const h = require('inferno-hyperscript').default
+const { Provider } = require('inferno-mobx')
+const Refstore = require('./Refstore/Refstore').default
+const { Services } = require('./Services')
 
+/**
+ * @typedef IProps
+ * @property {Refstore} refstore
+ *
+ * @param {IProps} props
+ */
 function View (props) {
   Component.call(this, props)
   this.state = { render: this.props.render }
 }
 
 View.prototype = Object.create(Component.prototype)
+
+/**
+ * @type {IProps}
+ */
+View.prototype.props = undefined
 
 View.prototype.render = function () {
   return this.state.render({ refstore: this.props.refstore })
@@ -36,33 +42,19 @@ require('./Gjs/GtkDom').app({
     win.window_position = Gtk.WindowPosition.CENTER
 
     // Dependency injection container.
-    const extra = {
-      Dialog: null,
-      GLib: GLib,
-      Gio: Gio,
-      gioAdapter: null,
-      Gtk: Gtk,
-      refstore: new Refstore(),
-      win: win
-    }
-    extra.Dialog = Dialog(extra)
-    extra.gioAdapter = new GioAdapter(extra)
-
-    const store = Store(undefined, extra)
+    const services = new Services(win)
 
     let view
     render(
-      h(Provider, { store: store },
-        h(View, {
-          ref: instance => { view = instance },
-          refstore: extra.refstore,
-          render: require('./App').render
-        })
-      ),
+      h(Provider, services, h(View, {
+        ref: instance => { view = instance },
+        refstore: services.refstore,
+        render: require('./App').render
+      })),
       win
     )
 
-    store.dispatch(actions.refresh())
+    services.actionService.refresh()
 
     if (module.hot) {
       module.hot.accept('./App', () => {

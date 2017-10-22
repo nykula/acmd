@@ -1,8 +1,8 @@
 /* global imports */
 
 const Gtk = imports.gi.Gtk
-const h = require('inferno-hyperscript')
-const ActionBar = require('./ActionBar/ActionBar').default
+const h = require('inferno-hyperscript').default
+const ActionBar = require('./Action/ActionBar').default
 const MenuBar = require('./MenuBar/MenuBar').default
 const MountList = require('./Mount/MountList').default
 const Panel = require('./Panel/Panel').default

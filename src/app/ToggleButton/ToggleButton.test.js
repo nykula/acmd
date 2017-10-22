@@ -1,6 +1,6 @@
 /* global it */
 const expect = require('expect')
-const h = require('inferno-hyperscript')
+const h = require('inferno-hyperscript').default
 const noop = require('lodash/noop')
 const { shallow } = require('../Test/Test')
 const ToggleButton = require('./ToggleButton').default

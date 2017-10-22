@@ -2,7 +2,7 @@
 const assign = require('lodash/assign')
 const expect = require('expect')
 const { createSpy } = require('expect')
-const h = require('inferno-hyperscript')
+const h = require('inferno-hyperscript').default
 const { Mount, mapStateToProps, mapDispatchToProps } = require('./Mount')
 const { shallow } = require('../Test/Test')
 

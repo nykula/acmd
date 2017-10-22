@@ -1,28 +1,54 @@
 /* global imports */
-const { connect } = require('inferno-redux')
 const Gtk = imports.gi.Gtk
-const h = require('inferno-hyperscript')
-const indexActions = require('../Action/Action')
+const Component = require('inferno-component').default
+const h = require('inferno-hyperscript').default
+const { connect } = require('inferno-mobx')
+const { ActionService } = require('../Action/ActionService')
+const autoBind = require('../Gjs/autoBind').default
+const { ShowHidSysService } = require('../ShowHidSys/ShowHidSysService')
 const ToggleButton = require('../ToggleButton/ToggleButton').default
 
-exports.Toolbar = ({ handlePressed, showHidSys }) => {
+/**
+ * @typedef IProps
+ * @property {ActionService} actionService
+ * @property {ShowHidSysService} showHidSysService
+ *
+ * @param {IProps} props
+ */
+function Toolbar (props) {
+  Component.call(this, props)
+  autoBind(this, Toolbar.prototype)
+}
+
+Toolbar.prototype = Object.create(Component.prototype)
+
+/**
+ * @type {IProps}
+ */
+Toolbar.prototype.props = undefined
+
+Toolbar.prototype.handlePressed = function (type) {
+  return () => this.props.actionService[type]()
+}
+
+Toolbar.prototype.render = function () {
   const items = [
-    { type: indexActions.REFRESH, icon_name: 'view-refresh', tooltip_text: 'Refresh' },
-    'MODE',
+    { type: 'refresh', icon_name: 'view-refresh', tooltip_text: 'Refresh' },
+    'mode',
     { sensitive: false, icon_name: 'format-justify-left', tooltip_text: 'List' },
     { active: true, icon_name: 'format-justify-fill', tooltip_text: 'Table' },
-    'HISTORY',
-    { type: indexActions.BACK, icon_name: 'go-previous', tooltip_text: 'Back' },
-    { type: indexActions.FORWARD, icon_name: 'go-next', tooltip_text: 'Forward' },
-    'MISC',
-    { type: indexActions.LS, icon_name: 'go-jump', tooltip_text: 'Go to URI' },
-    { type: indexActions.TOUCH, icon_name: 'document-new', tooltip_text: 'Create file' },
-    { type: indexActions.TERMINAL, icon_name: 'utilities-terminal', tooltip_text: 'Terminal' },
+    'history',
+    { type: 'back', icon_name: 'go-previous', tooltip_text: 'Back' },
+    { type: 'forward', icon_name: 'go-next', tooltip_text: 'Forward' },
+    'misc',
+    { type: 'ls', icon_name: 'go-jump', tooltip_text: 'Go to URI' },
+    { type: 'touch', icon_name: 'document-new', tooltip_text: 'Create file' },
+    { type: 'terminal', icon_name: 'utilities-terminal', tooltip_text: 'Terminal' },
     {
-      active: showHidSys,
+      active: this.props.showHidSysService.state,
       icon_name: 'dialog-warning',
       tooltip_text: 'Hidden files',
-      type: indexActions.SHOW_HID_SYS
+      type: 'showHidSys'
     }
   ]
 
@@ -38,7 +64,7 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
             can_focus: false,
             key: item.icon_name,
             relief: Gtk.ReliefStyle.NONE,
-            on_pressed: 'type' in item ? handlePressed(item.type) : null,
+            on_pressed: 'type' in item ? this.handlePressed(item.type) : null,
             sensitive: 'sensitive' in item ? item.sensitive : null,
             tooltip_text: item.tooltip_text
           }, [
@@ -53,14 +79,4 @@ exports.Toolbar = ({ handlePressed, showHidSys }) => {
   )
 }
 
-exports.mapStateToProps = state => ({
-  showHidSys: state.showHidSys
-})
-
-exports.mapDispatchToProps = dispatch => ({
-  handlePressed: type => () => {
-    dispatch({ type: type })
-  }
-})
-
-exports.default = connect(exports.mapStateToProps, exports.mapDispatchToProps)(exports.Toolbar)
+exports.default = connect(['actionService', 'showHidSysService'])(Toolbar)

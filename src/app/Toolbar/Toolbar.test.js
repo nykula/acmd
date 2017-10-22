@@ -2,7 +2,7 @@
 const assign = require('lodash/assign')
 const expect = require('expect')
 const { Toolbar, mapStateToProps, mapDispatchToProps } = require('./Toolbar')
-const h = require('inferno-hyperscript')
+const h = require('inferno-hyperscript').default
 const { REFRESH } = require('../Action/Action')
 const { shallow } = require('../Test/Test')
 

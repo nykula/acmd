@@ -4,9 +4,9 @@
   "description": "Twin-panel file manager",
   "license": "MIT",
   "devDependencies": {
-    "buffer": "4",
-    "expect": "^1.20.2",
-    "standard": "^8.6.0"
+    "buffer": "5.0.8",
+    "expect": "^21.2.1",
+    "standard": "^10.0.3"
   },
   "dependencies": {
     "@types/async": "^2.0.44",
@@ -16,15 +16,16 @@
     "@types/node": "^8.0.46",
     "@types/uniq": "^0.0.27",
     "@types/url-parse": "^1.1.0",
-    "async": "^2.3.0",
-    "inferno": "^1.3.0-rc.10",
-    "inferno-component": "^1.3.0-rc.10",
-    "inferno-hyperscript": "^1.3.0-rc.10",
-    "inferno-redux": "^1.3.1",
+    "@types/webpack-env": "^1.13.2",
+    "async": "^2.5.0",
+    "inferno": "^3.10.1",
+    "inferno-component": "^3.10.1",
+    "inferno-hyperscript": "^3.10.1",
+    "inferno-mobx": "^3.10.1",
     "lodash": "^4.17.4",
-    "redux": "^3.6.0",
+    "mobx": "^3.3.1",
     "uniq": "^1.0.1",
-    "url-parse": "^1.1.8"
+    "url-parse": "^1.1.9"
   },
   "scripts": {
     "start": "gjs bin/start.js 2>&1 | grep -v 'Message.*node_modules'",

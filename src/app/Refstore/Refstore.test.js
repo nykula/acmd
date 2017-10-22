@@ -1,8 +1,8 @@
 /* global it */
 const { app } = require('../Gjs/GtkDom')
 const expect = require('expect')
-const Component = require('inferno-component')
-const h = require('inferno-hyperscript')
+const Component = require('inferno-component').default
+const h = require('inferno-hyperscript').default
 const Refstore = require('./Refstore').default
 const { render } = require('inferno')
 

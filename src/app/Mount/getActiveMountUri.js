@@ -1,9 +1,19 @@
-exports.default = getActiveMountUri
-function getActiveMountUri (state, panelId) {
-  const tabId = state.panels[panelId].activeTabId
-  const files = state.tabs[tabId].files
+const { PanelService } = require('../Panel/PanelService')
+const { TabService } = require('../Tab/TabService')
 
-  for (var i = 0; i < files.length; i++) {
+exports.default = getActiveMountUri
+
+/**
+ * @param {{ panelService: PanelService, tabService: TabService }} services
+ * @param {number} panelId
+ */
+function getActiveMountUri (services, panelId) {
+  const { panelService, tabService } = services
+
+  const tabId = panelService.entities[panelId].activeTabId
+  const files = tabService.entities[tabId].files
+
+  for (let i = 0; i < files.length; i++) {
     if (files[i].name === '.') {
       return files[i].mountUri
     }

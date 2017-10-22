@@ -1,17 +1,44 @@
-const Component = require('inferno-component')
-const h = require('inferno-hyperscript')
+const Component = require('inferno-component').default
+const h = require('inferno-hyperscript').default
 const isEqual = require('lodash/isEqual')
+const autoBind = require('../Gjs/autoBind').default
 const ListStore = require('../ListStore/ListStore')
 
-const Select = exports.default = function Select (props) {
+/**
+ * @typedef IProps
+ * @property {any[]} cols
+ * @property {Function} on_changed
+ * @property {Function} on_focus
+ * @property {Function} on_layout
+ * @property {any[]} rows
+ * @property {string} value
+ *
+ * @typedef INode
+ * @property {Function} set_active
+ * @property {Function} set_model
+ *
+ * @param {IProps} props
+ */
+function Select (props) {
   Component.call(this, props)
-
-  this.init = this.init.bind(this)
-  this.updateActive = this.updateActive.bind(this)
+  autoBind(this, Select.prototype)
 }
 
 Select.prototype = Object.create(Component.prototype)
 
+/**
+ * @type {INode}
+ */
+Select.prototype.node = undefined
+
+/**
+ * @type {IProps}
+ */
+Select.prototype.props = undefined
+
+/**
+ * @param {INode} node
+ */
 Select.prototype.init = function (node) {
   if (!node || this.node) {
     return
@@ -24,6 +51,9 @@ Select.prototype.init = function (node) {
   this.props.on_layout(node)
 }
 
+/**
+ * @param {IProps} nextProps
+ */
 Select.prototype.shouldComponentUpdate = function (nextProps) {
   return !isEqual(this.props, nextProps)
 }
@@ -50,3 +80,5 @@ Select.prototype.render = function () {
     ref: this.init
   })
 }
+
+exports.default = Select

@@ -1,31 +1,62 @@
 /* global imports */
 const assign = require('lodash/assign')
-const Component = require('inferno-component')
+const Component = require('inferno-component').default
 const Gtk = imports.gi.Gtk
-const h = require('inferno-hyperscript')
+const h = require('inferno-hyperscript').default
 const isEqual = require('lodash/isEqual')
+const autoBind = require('../Gjs/autoBind').default
 const KeyListener = require('../Gjs/KeyListener').default
 const ListStore = require('../ListStore/ListStore')
 const range = require('lodash/range')
 const select = require('./select').default
 
-const TreeView = exports.default = function TreeView (props) {
+/**
+ * @typedef {object} IProps
+ * @property {any} cols
+ * @property {number} cursor
+ * @property {Function} on_activated
+ * @property {Function} on_clicked
+ * @property {Function} on_cursor
+ * @property {Function} on_key_press_event
+ * @property {Function} on_layout
+ * @property {Function} on_search
+ * @property {Function} on_selected
+ * @property {any} rows
+ * @property {number[]} selected
+ *
+ * @param {IProps} props
+ */
+function TreeView (props) {
   Component.call(this, props)
-
-  this.getCols = this.getCols.bind(this)
-  this.handleCursorChanged = this.handleCursorChanged.bind(this)
-  this.handleKeyPressEvent = this.handleKeyPressEvent.bind(this)
-  this.handleRowActivated = this.handleRowActivated.bind(this)
-  this.handleSizeAllocate = this.handleSizeAllocate.bind(this)
-  this.handleToggled = this.handleToggled.bind(this)
-  this.init = this.init.bind(this)
-  this.updateSelect = this.updateSelect.bind(this)
-  this.updateStore = this.updateStore.bind(this)
-
-  this.limit = 1
+  autoBind(this, TreeView.prototype)
 }
 
 TreeView.prototype = Object.create(Component.prototype)
+
+/**
+ * @type {number}
+ */
+TreeView.prototype.limit = 1
+
+/**
+ * @type {any}
+ */
+TreeView.prototype.node = undefined
+
+/**
+ * @type {IProps}
+ */
+TreeView.prototype.props = undefined
+
+/**
+ * @type {any}
+ */
+TreeView.prototype.sel = undefined
+
+/**
+ * @type {any}
+ */
+TreeView.prototype.store = undefined
 
 TreeView.prototype.init = function (node) {
   if (!node || this.node) {
@@ -150,7 +181,7 @@ TreeView.prototype.handleSizeAllocate = function (_) {
   const node = this.node
   const rowHeight = node.get_background_area(Gtk.TreePath.new_from_string('0'), null).height
   const height = node.get_visible_rect().height
-  this.limit = (height / rowHeight).toFixed(2)
+  this.limit = Number((height / rowHeight).toFixed(2))
   this.props.on_layout(node)
 }
 
@@ -203,3 +234,5 @@ TreeView.prototype.render = function () {
     ref: this.init
   })
 }
+
+exports.default = TreeView

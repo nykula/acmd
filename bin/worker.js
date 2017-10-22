@@ -7,7 +7,7 @@ const dirname = imports.gi.Gio.File.new_for_path(path).get_parent().get_parent()
 imports.searchPath.push(dirname)
 imports.src.app.Gjs.require.require()
 
-const Worker = require('../src/app/Gio/Worker').default
+const { Worker } = require('../src/app/Gio/Worker')
 const worker = new Worker()
 
 worker.run(

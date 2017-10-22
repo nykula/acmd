@@ -1,5 +1,5 @@
 /* global it */
-const h = require('inferno-hyperscript')
+const h = require('inferno-hyperscript').default
 const Panel = require('./Panel').default
 const { shallow } = require('../Test/Test')
 

@@ -1,7 +1,11 @@
-const actions = require('../Action/Action')
-const assign = require('lodash/assign')
-const FileAction = require('../File/FileAction')
+const { extendObservable } = require('mobx')
 const orderBy = require('lodash/orderBy')
+
+function TabService () {
+  extendObservable(this, {
+    entities: this.entities
+  })
+}
 
 const sampleFiles = [
   {
@@ -24,7 +28,7 @@ const sampleFiles = [
   }
 ]
 
-const initialState = {
+TabService.prototype.entities = {
   0: {
     cursor: 0,
     files: sampleFiles,
@@ -41,59 +45,42 @@ const initialState = {
   }
 }
 
-exports.default = (state, payload) => {
-  state = state || initialState
-  let by
-  let files
+/**
+ * @param {{ cursor: number, tabId: number }} props
+ */
+TabService.prototype.cursor = function (props) {
+  this.entities[props.tabId].cursor = props.cursor
+}
 
-  switch (payload.type) {
-    case FileAction.CURSOR: {
-      state = assign({}, state)
+/**
+ * @param {{ selected: number[], tabId: number }} props
+ */
+TabService.prototype.selected = function (props) {
+  this.entities[props.tabId].selected = props.selected
+}
 
-      state[payload.tabId] = assign({}, state[payload.tabId], {
-        cursor: payload.cursor
-      })
+/**
+ * @param {{ files: any[], id: number, location: string, sortedBy?: string }} props
+ */
+TabService.prototype.set = function (props) {
+  const tab = this.entities[props.id]
+  const sortedBy = props.sortedBy || tab.sortedBy
 
-      return state
-    }
+  tab.files = sortFiles(sortedBy, props.files)
+  tab.location = props.location
+}
 
-    case FileAction.SELECTED: {
-      state = assign({}, state)
+/**
+ * @param {{ by: string, tabId: number }} props
+ */
+TabService.prototype.sorted = function (props) {
+  const tab = this.entities[props.tabId]
 
-      state[payload.tabId] = assign({}, state[payload.tabId], {
-        selected: payload.selected
-      })
+  const by = nextSort(tab.sortedBy, props.by)
+  const files = sortFiles(by, tab.files)
 
-      return state
-    }
-
-    case FileAction.SORTED: {
-      by = nextSort(state[payload.tabId].sortedBy, payload.by)
-      files = sortFiles(by, state[payload.tabId].files)
-
-      return setTab(state, payload.tabId, {
-        sortedBy: by,
-        files: files
-      })
-    }
-
-    case actions.LS: {
-      if (payload.result) {
-        by = state[payload.tabId].sortedBy
-        files = sortFiles(by, payload.result.files)
-
-        return setTab(state, payload.tabId, {
-          files: files,
-          location: payload.uri
-        })
-      } else {
-        return state
-      }
-    }
-
-    default:
-      return state
-  }
+  tab.sortedBy = by
+  tab.files = files
 }
 
 exports.nextSort = nextSort
@@ -197,10 +184,4 @@ function sortFiles (by, files) {
   }
 }
 
-exports.setTab = setTab
-function setTab (state, tabId, data) {
-  state = assign({}, state)
-  state[tabId] = assign({}, state[tabId], data)
-
-  return state
-}
+exports.TabService = TabService

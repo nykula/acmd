@@ -1,7 +1,7 @@
 /* global it */
 const expect = require('expect')
 const assign = require('lodash/assign')
-const h = require('inferno-hyperscript')
+const h = require('inferno-hyperscript').default
 const { mapStateToProps, Stats } = require('./Stats')
 const { shallow } = require('../Test/Test')
 

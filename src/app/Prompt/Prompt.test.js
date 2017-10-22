@@ -2,7 +2,7 @@
 const expect = require('expect')
 const assign = require('lodash/assign')
 const { Prompt, mapStateToProps, mapDispatchToProps } = require('./Prompt')
-const h = require('inferno-hyperscript')
+const h = require('inferno-hyperscript').default
 const { EXEC } = require('../Action/Action')
 
 it('dispatches action when user activates field', () => {

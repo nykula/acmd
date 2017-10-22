@@ -1,5 +1,5 @@
-const { connect } = require('inferno-redux')
-const h = require('inferno-hyperscript')
+const { connect } = require('inferno-mobx')
+const h = require('inferno-hyperscript').default
 
 const menus = [
   { label: 'Files' },
@@ -11,7 +11,7 @@ const menus = [
   { label: 'Start' }
 ]
 
-exports.MenuBar = () => (
+const MenuBar = () => (
   h('menu-bar', [
     menus.map(x => (
       h('menu-item', { key: x.label, label: x.label })
@@ -19,4 +19,4 @@ exports.MenuBar = () => (
   ])
 )
 
-exports.default = connect()(exports.MenuBar)
+exports.default = connect([])(MenuBar)

@@ -3,9 +3,9 @@
 const Buffer = require('buffer/').Buffer
 
 exports.it = function (title, callback) {
-  log(title + ' STARTED')
+  console.log(title + ' STARTED')
   callback()
-  log(title + ' SUCCESS')
+  console.log(title + ' SUCCESS')
 }
 
 exports.find = find
@@ -27,6 +27,10 @@ function shallow (tree) {
  * Sets up the environment for tests.
  */
 exports.require = () => {
-  window.Buffer = Buffer
-  window.it = exports.it
+  /**
+   * @type {any}
+   */
+  const win = window
+  win.Buffer = Buffer
+  win.it = exports.it
 }

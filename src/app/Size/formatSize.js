@@ -1,4 +1,7 @@
 exports.default = formatSize
+/**
+ * @param {number} size
+ */
 function formatSize (size) {
   if (size >= 1000 * 1000 * 1000) {
     return Math.round(size / 1000 / 1000 / 1000) + ' G'

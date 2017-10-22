@@ -1,6 +1,6 @@
 /* global it */
 const assign = require('lodash/assign')
-const h = require('inferno-hyperscript')
+const h = require('inferno-hyperscript').default
 const { shallow } = require('../Test/Test')
 const { TabList, mapStateToProps } = require('./TabList')
 
