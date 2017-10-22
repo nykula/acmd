@@ -2,6 +2,40 @@
 # yarn lockfile v1
 
 
+"@types/async@^2.0.44":
+  version "2.0.44"
+  resolved "https://registry.yarnpkg.com/@types/async/-/async-2.0.44.tgz#e846150fd1f5a3243cec7c1f5bb49f58241092ee"
+
+"@types/expect@^1.20.2":
+  version "1.20.2"
+  resolved "https://registry.yarnpkg.com/@types/expect/-/expect-1.20.2.tgz#d1326136f71c8b7a1986335498405529618ce846"
+
+"@types/lodash@^4.14.78":
+  version "4.14.78"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.78.tgz#f26a0b38a44a832c652964803c7e48be05939d3f"
+
+"@types/mocha@^2.2.43":
+  version "2.2.43"
+  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-2.2.43.tgz#03c54589c43ad048cbcbfd63999b55d0424eec27"
+
+"@types/node@^8.0.46":
+  version "8.0.46"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.46.tgz#6e1766b2d0ed06631d5b5f87bb8e72c8dbb6888e"
+
+"@types/uniq@^0.0.27":
+  version "0.0.27"
+  resolved "https://registry.yarnpkg.com/@types/uniq/-/uniq-0.0.27.tgz#b1060a7256f13d8dc82c9591e5732a6245912ea2"
+
+"@types/url-parse@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@types/url-parse/-/url-parse-1.1.0.tgz#61f8e1b52024d07fceb73fd7f8292e5ddd2b60a1"
+  dependencies:
+    "@types/url-search-params" "*"
+
+"@types/url-search-params@*":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@types/url-search-params/-/url-search-params-0.10.0.tgz#35bc203a928f309cfbe52d2ca68bac3985f2c493"
+
 acorn-jsx@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/acorn-jsx/-/acorn-jsx-3.0.1.tgz#afdf9488fb1ecefc8348f6fb22f464e32a58b36b"

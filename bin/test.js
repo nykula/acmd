@@ -5,13 +5,13 @@
 const path = /^.*?@(.*):/.exec(new Error().stack)[1]
 const dirname = imports.gi.Gio.File.new_for_path(path).get_parent().get_parent().get_path()
 imports.searchPath.push(dirname)
-imports.src.utils.require.require()
+imports.src.app.Gjs.require.require()
 
 imports.gi.Gtk.init(null)
-require('../src/utils/GtkDom').require()
-require('../src/utils/Test').require()
+require('../src/app/Gjs/GtkDom').require()
+require('../src/app/Test/Test').require()
 
-const Worker = require('../src/utils/Worker').default
+const Worker = require('../src/app/Gio/Worker').default
 const data = new Worker().flatten(imports.gi.Gio.File.new_for_path(dirname + '/src'))
 
 const scripts = data.files.map(x => x.relativePath).filter(x => (

@@ -9,6 +9,13 @@
     "standard": "^8.6.0"
   },
   "dependencies": {
+    "@types/async": "^2.0.44",
+    "@types/expect": "^1.20.2",
+    "@types/lodash": "^4.14.78",
+    "@types/mocha": "^2.2.43",
+    "@types/node": "^8.0.46",
+    "@types/uniq": "^0.0.27",
+    "@types/url-parse": "^1.1.0",
     "async": "^2.3.0",
     "inferno": "^1.3.0-rc.10",
     "inferno-component": "^1.3.0-rc.10",
@@ -23,8 +30,7 @@
     "start": "gjs bin/start.js 2>&1 | grep -v 'Message.*node_modules'",
     "test": "gjs bin/test.js 2>&1 | grep -v 'Message.*node_modules'",
     "coverage": "bash bin/coverage.sh 2>&1 | grep -v 'Message.*node_modules'",
-    "lint": "standard 'bin/**/*.js' 'src/**/*.js'",
-    "lint-fix": "standard --fix 'bin/**/*.js' 'src/**/*.js'",
+    "format": "standard --fix 'bin/**/*.js' 'src/**/*.js'",
     "repl": "gjs bin/repl.js"
   }
 }

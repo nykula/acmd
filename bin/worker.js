@@ -5,9 +5,9 @@
 const path = /^.*?@(.*):/.exec(new Error().stack)[1]
 const dirname = imports.gi.Gio.File.new_for_path(path).get_parent().get_parent().get_path()
 imports.searchPath.push(dirname)
-imports.src.utils.require.require()
+imports.src.app.Gjs.require.require()
 
-const Worker = require('../src/utils/Worker').default
+const Worker = require('../src/app/Gio/Worker').default
 const worker = new Worker()
 
 worker.run(

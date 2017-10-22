@@ -6,16 +6,16 @@
 
 ``` bash
 # install dependencies
-yarn install
+yarn
 
 # open gjs with hot reload
 yarn start
 
 # lint all JS files in `bin` and `src`
-yarn run lint-fix
+yarn format
 
 # run tests and see coverage
-yarn run coverage && xdg-open coverage/index.html
+yarn coverage && xdg-open coverage/index.html
 ```
 
 ## Todo
