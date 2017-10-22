@@ -1,8 +1,8 @@
-const h = require('inferno-hyperscript').default
-const { connect } = require('inferno-mobx')
-const minLength = require('../MinLength/minLength').default
-const MountListEntry = require('./MountListEntry').default
-const { MountService } = require('./MountService')
+const h = require("inferno-hyperscript").default;
+const { connect } = require("inferno-mobx");
+const minLength = require("../MinLength/minLength").default;
+const MountListEntry = require("./MountListEntry").default;
+const { MountService } = require("./MountService");
 
 /**
  * @typedef IProps
@@ -11,20 +11,20 @@ const { MountService } = require('./MountService')
  *
  * @param {IProps} props
  */
-function MountList (props) {
-  const { entities, names } = props.mountService
+function MountList(props) {
+  const { entities, names } = props.mountService;
 
   return (
-    h('box', [
+    h("box", [
       names.map(x => entities[x]).map(mount => {
         return h(MountListEntry, {
           mount: mount,
           panelId: this.props.panelId,
-          short: minLength(names, mount.name)
-        })
-      })
+          short: minLength(names, mount.name),
+        });
+      }),
     ])
-  )
+  );
 }
 
-exports.default = connect(['mountService'])(MountList)
+exports.default = connect(["mountService"])(MountList);

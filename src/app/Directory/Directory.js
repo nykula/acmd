@@ -1,23 +1,22 @@
-/* global imports */
-const Gdk = imports.gi.Gdk
-const Gtk = imports.gi.Gtk
-const Component = require('inferno-component').default
-const h = require('inferno-hyperscript').default
-const { connect } = require('inferno-mobx')
-const assign = require('lodash/assign')
-const { autorun, extendObservable } = require('mobx')
-const { ActionService } = require('../Action/ActionService')
-const getVisibleFiles = require('../Action/getVisibleFiles').default
-const { FileService } = require('../File/FileService')
-const autoBind = require('../Gjs/autoBind').default
-const { GICON, TEXT } = require('../ListStore/ListStore')
-const PanelAction = require('../Panel/PanelAction')
-const { PanelService } = require('../Panel/PanelService')
-const Refstore = require('../Refstore/Refstore').default
-const { ShowHidSysService } = require('../ShowHidSys/ShowHidSysService')
-const formatSize = require('../Size/formatSize').default
-const { TabService } = require('../Tab/TabService')
-const TreeView = require('../TreeView/TreeView').default
+const Gdk = imports.gi.Gdk;
+const Gtk = imports.gi.Gtk;
+const Component = require("inferno-component").default;
+const h = require("inferno-hyperscript").default;
+const { connect } = require("inferno-mobx");
+const assign = require("lodash/assign");
+const { autorun, extendObservable } = require("mobx");
+const { ActionService } = require("../Action/ActionService");
+const getVisibleFiles = require("../Action/getVisibleFiles").default;
+const { FileService } = require("../File/FileService");
+const autoBind = require("../Gjs/autoBind").default;
+const { GICON, TEXT } = require("../ListStore/ListStore");
+const PanelAction = require("../Panel/PanelAction");
+const { PanelService } = require("../Panel/PanelService");
+const Refstore = require("../Refstore/Refstore").default;
+const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
+const formatSize = require("../Size/formatSize").default;
+const { TabService } = require("../Tab/TabService");
+const TreeView = require("../TreeView/TreeView").default;
 
 /**
  * @typedef IProps
@@ -31,253 +30,253 @@ const TreeView = require('../TreeView/TreeView').default
  *
  * @param {IProps} props
  */
-function Directory (props) {
-  Component.call(this, props)
-  autoBind(this, Directory.prototype)
+function Directory(props) {
+  Component.call(this, props);
+  autoBind(this, Directory.prototype);
 
   extendObservable(this, {
-    container: this.container
-  })
+    container: this.container,
+  });
 
-  this.unsubscribeUpdate = autorun(this.focusIfActive)
+  this.unsubscribeUpdate = autorun(this.focusIfActive);
 }
 
-Directory.prototype = Object.create(Component.prototype)
+Directory.prototype = Object.create(Component.prototype);
 
 /** @type {{ get_children(): { grab_focus(): void }[] }} */
-Directory.prototype.container = undefined
+Directory.prototype.container = undefined;
 
 /** @type {IProps} */
-Directory.prototype.props = undefined
+Directory.prototype.props = undefined;
 
-Directory.prototype.componentWillUnmount = function () {
-  this.unsubscribeUpdate()
-}
+Directory.prototype.componentWillUnmount = function() {
+  this.unsubscribeUpdate();
+};
 
-Directory.prototype.tabId = function () {
-  return this.props.panelService.entities[this.props.panelId].activeTabId
-}
+Directory.prototype.tabId = function() {
+  return this.props.panelService.entities[this.props.panelId].activeTabId;
+};
 
-Directory.prototype.tab = function () {
-  return this.props.tabService.entities[this.tabId()]
-}
+Directory.prototype.tab = function() {
+  return this.props.tabService.entities[this.tabId()];
+};
 
 /**
  * @param {IProps=} props
  */
-Directory.prototype.isActive = function (props = this.props) {
-  return props.panelService.activeId === props.panelId
-}
+Directory.prototype.isActive = function(props = this.props) {
+  return props.panelService.activeId === props.panelId;
+};
 
-Directory.prototype.focusIfActive = function () {
+Directory.prototype.focusIfActive = function() {
   if (this.container && this.isActive()) {
-    const children = this.container.get_children()
-    children[0].grab_focus()
+    const children = this.container.get_children();
+    children[0].grab_focus();
   }
-}
+};
 
-Directory.prototype.handleActivated = function (index) {
+Directory.prototype.handleActivated = function(index) {
   this.props.actionService.activated({
     index: index,
-    panelId: this.props.panelId
-  })
-}
+    panelId: this.props.panelId,
+  });
+};
 
-Directory.prototype.handleClicked = function (colName) {
+Directory.prototype.handleClicked = function(colName) {
   this.props.tabService.sorted({
     by: colName,
-    tabId: this.tabId()
-  })
-}
+    tabId: this.tabId(),
+  });
+};
 
 /**
  * @param {number} cursor
  */
-Directory.prototype.handleCursor = function (cursor) {
+Directory.prototype.handleCursor = function(cursor) {
   this.props.fileService.cursor({
     cursor: cursor,
     panelId: this.props.panelId,
-    tabId: this.tabId()
-  })
-}
+    tabId: this.tabId(),
+  });
+};
 
-Directory.prototype.handleKeyPressEvent = function (ev) {
-  const { actionService, panelService, panelId } = this.props
-  const tabId = this.tabId()
+Directory.prototype.handleKeyPressEvent = function(ev) {
+  const { actionService, panelService, panelId } = this.props;
+  const tabId = this.tabId();
 
   switch (ev.which) {
     case Gdk.KEY_BackSpace:
-      actionService.levelUp(panelId)
-      break
+      actionService.levelUp(panelId);
+      break;
 
     case Gdk.KEY_ISO_Left_Tab:
     case Gdk.KEY_Tab:
       if (ev.ctrlKey && ev.shiftKey) {
-        panelService.prevTab(panelId)
+        panelService.prevTab(panelId);
       } else if (ev.ctrlKey) {
-        panelService.nextTab(panelId)
+        panelService.nextTab(panelId);
       } else {
-        panelService.toggleActive()
+        panelService.toggleActive();
       }
-      return true
+      return true;
 
     case Gdk.KEY_1:
       if (ev.altKey) {
-        actionService.mounts(0)
-        return true
+        actionService.mounts(0);
+        return true;
       }
-      break
+      break;
 
     case Gdk.KEY_2:
       if (ev.altKey) {
-        actionService.mounts(1)
-        return true
+        actionService.mounts(1);
+        return true;
       }
-      break
+      break;
 
     case Gdk.KEY_F2:
-      actionService.refresh()
-      break
+      actionService.refresh();
+      break;
 
     case Gdk.KEY_F3:
-      actionService.view()
-      break
+      actionService.view();
+      break;
 
     case Gdk.KEY_F4:
-      actionService.editor()
-      break
+      actionService.editor();
+      break;
 
     case Gdk.KEY_F5:
-      actionService.cp()
-      break
+      actionService.cp();
+      break;
 
     case Gdk.KEY_F6:
-      actionService.mv()
-      break
+      actionService.mv();
+      break;
 
     case Gdk.KEY_F7:
-      actionService.mkdir()
-      break
+      actionService.mkdir();
+      break;
 
     case Gdk.KEY_F8:
-      actionService.rm()
-      break
+      actionService.rm();
+      break;
 
     case Gdk.KEY_b:
       if (ev.ctrlKey) {
-        this.props.showHidSysService.toggle()
+        this.props.showHidSysService.toggle();
       }
-      break
+      break;
 
     case Gdk.KEY_l:
       if (ev.ctrlKey) {
-        actionService.ls()
+        actionService.ls();
       }
-      break
+      break;
 
     case Gdk.KEY_t:
       if (ev.ctrlKey) {
-        actionService.createTab(panelId)
+        actionService.createTab(panelId);
       }
-      break
+      break;
 
     case Gdk.KEY_w:
       if (ev.ctrlKey) {
-        panelService.removeTab(tabId)
+        panelService.removeTab(tabId);
       }
-      break
+      break;
   }
 
-  return false
-}
+  return false;
+};
 
-Directory.prototype.handleLayout = function (node) {
-  this.props.refstore.set('panel' + this.props.panelId)(node)
-  this.focusIfActive()
-}
+Directory.prototype.handleLayout = function(node) {
+  this.props.refstore.set("panel" + this.props.panelId)(node);
+  this.focusIfActive();
+};
 
-Directory.prototype.handleSearch = function (store, _col, input, iter) {
-  const { cursor, rows } = this.tab()
+Directory.prototype.handleSearch = function(store, _col, input, iter) {
+  const { cursor, rows } = this.tab();
 
   const skip = rows.map(({ filename, ext, size }) => {
-    const isDir = size === '<DIR>'
-    let name = filename
+    const isDir = size === "<DIR>";
+    let name = filename;
 
     if (isDir) {
-      name = name.slice(1, -1)
+      name = name.slice(1, -1);
     }
 
     if (ext) {
-      name += '.' + ext
+      name += "." + ext;
     }
 
-    return name.toLowerCase().indexOf(input.toLowerCase()) !== 0
-  })
+    return name.toLowerCase().indexOf(input.toLowerCase()) !== 0;
+  });
 
-  const index = Number(store.get_string_from_iter(iter))
+  const index = Number(store.get_string_from_iter(iter));
 
   if (skip.indexOf(false) === -1 && index === cursor) {
-    return false
+    return false;
   }
 
-  return skip[index]
-}
+  return skip[index];
+};
 
 /**
  * @param {number[]} selected
  */
-Directory.prototype.handleSelected = function (selected) {
+Directory.prototype.handleSelected = function(selected) {
   this.props.fileService.selected({
     panelId: this.props.panelId,
     selected: selected,
-    tabId: this.tabId()
-  })
-}
+    tabId: this.tabId(),
+  });
+};
 
-Directory.prototype.prefixSort = function (col) {
-  const { sortedBy } = this.tab()
+Directory.prototype.prefixSort = function(col) {
+  const { sortedBy } = this.tab();
 
   if (col.name === sortedBy) {
-    return assign({}, col, { title: '↑' + col.title })
+    return assign({}, col, { title: "↑" + col.title });
   }
 
-  if ('-' + col.name === sortedBy) {
-    return assign({}, col, { title: '↓' + col.title })
+  if ("-" + col.name === sortedBy) {
+    return assign({}, col, { title: "↓" + col.title });
   }
 
-  return col
-}
+  return col;
+};
 
-Directory.prototype.refContainer = function (node) {
-  this.container = node
-}
+Directory.prototype.refContainer = function(node) {
+  this.container = node;
+};
 
-Directory.prototype.render = function () {
-  const panelId = this.props.panelId
-  const tabId = this.props.panelService.entities[panelId].activeTabId
-  const { files } = this.props.tabService.entities[tabId]
+Directory.prototype.render = function() {
+  const panelId = this.props.panelId;
+  const tabId = this.props.panelService.entities[panelId].activeTabId;
+  const { files } = this.props.tabService.entities[tabId];
 
   const rows = getVisibleFiles({
     files: files,
-    showHidSys: this.props.showHidSysService.state
-  }).map(mapFileToRow)
+    showHidSys: this.props.showHidSysService.state,
+  }).map(mapFileToRow);
 
-  const { cursor, selected } = this.tab()
+  const { cursor, selected } = this.tab();
 
   return (
-    h('scrolled-window', {
+    h("scrolled-window", {
       expand: true,
       hscrollbar_policy: Gtk.PolicyType.NEVER,
-      ref: this.refContainer
+      ref: this.refContainer,
     }, [
       h(TreeView, {
         cols: [
-            { title: null, name: 'icon', type: GICON },
-            { title: 'Name', name: 'filename', type: TEXT, expand: true },
-            { title: 'Ext', name: 'ext', type: TEXT, min_width: 50 },
-            { title: 'Size', name: 'size', type: TEXT, min_width: 55 },
-            { title: 'Date', name: 'mtime', type: TEXT, min_width: 125 },
-            { title: 'Attr', name: 'mode', type: TEXT, min_width: 45 }
+            { title: null, name: "icon", type: GICON },
+            { title: "Name", name: "filename", type: TEXT, expand: true },
+            { title: "Ext", name: "ext", type: TEXT, min_width: 50 },
+            { title: "Size", name: "size", type: TEXT, min_width: 55 },
+            { title: "Date", name: "mtime", type: TEXT, min_width: 125 },
+            { title: "Attr", name: "mode", type: TEXT, min_width: 45 },
         ].map(this.prefixSort),
         cursor: cursor,
         on_activated: this.handleActivated,
@@ -288,61 +287,61 @@ Directory.prototype.render = function () {
         on_selected: this.handleSelected,
         on_search: this.handleSearch,
         rows: rows,
-        selected: selected
-      })
+        selected: selected,
+      }),
     ])
-  )
-}
+  );
+};
 
-exports.mapFileToRow = mapFileToRow
-function mapFileToRow (file) {
-  let { icon, iconType } = file
-  let filename = file.name
-  let ext = ''
-  let mode = ''
+exports.mapFileToRow = mapFileToRow;
+function mapFileToRow(file) {
+  let { icon, iconType } = file;
+  let filename = file.name;
+  let ext = "";
+  let mode = "";
 
-  const matches = /^(.+)\.(.*?)$/.exec(file.name)
+  const matches = /^(.+)\.(.*?)$/.exec(file.name);
 
-  if (file.fileType !== 'DIRECTORY' && file.name !== '..' && matches) {
-    filename = matches[1]
-    ext = matches[2]
+  if (file.fileType !== "DIRECTORY" && file.name !== ".." && matches) {
+    filename = matches[1];
+    ext = matches[2];
   }
 
-  if (file.fileType === 'DIRECTORY') {
-    filename = '[' + file.name + ']'
+  if (file.fileType === "DIRECTORY") {
+    filename = "[" + file.name + "]";
   }
 
   const mtime = ((time) => {
-    const date = new Date(time * 1000)
+    const date = new Date(time * 1000);
 
-    const month = ('00' + (date.getMonth() + 1)).slice(-2)
-    const day = ('00' + (date.getDate())).slice(-2)
-    const year = ('0000' + (date.getFullYear())).slice(-4)
-    const hours = ('00' + (date.getHours())).slice(-2)
-    const minutes = ('00' + (date.getMinutes())).slice(-2)
+    const month = ("00" + (date.getMonth() + 1)).slice(-2);
+    const day = ("00" + (date.getDate())).slice(-2);
+    const year = ("0000" + (date.getFullYear())).slice(-4);
+    const hours = ("00" + (date.getHours())).slice(-2);
+    const minutes = ("00" + (date.getMinutes())).slice(-2);
 
-    return [month, day, year].join('/') + ' ' + [hours, minutes].join(':')
-  })(file.modificationTime)
+    return [month, day, year].join("/") + " " + [hours, minutes].join(":");
+  })(file.modificationTime);
 
-  if (file.attributes && file.attributes['unix::mode']) {
-    mode = Number(file.attributes['unix::mode']).toString(8).slice(-4)
+  if (file.attributes && file.attributes["unix::mode"]) {
+    mode = Number(file.attributes["unix::mode"]).toString(8).slice(-4);
   }
 
   return {
     icon: { icon: icon, iconType: iconType },
     filename: filename,
     ext: ext,
-    size: file.fileType === 'DIRECTORY' ? '<DIR>' : formatSize(file.size),
+    size: file.fileType === "DIRECTORY" ? "<DIR>" : formatSize(file.size),
     mtime: mtime,
-    mode: mode
-  }
+    mode: mode,
+  };
 }
 
 exports.default = connect([
-  'actionService',
-  'fileService',
-  'panelService',
-  'refstore',
-  'showHidSysService',
-  'tabService'
-])(Directory)
+  "actionService",
+  "fileService",
+  "panelService",
+  "refstore",
+  "showHidSysService",
+  "tabService",
+])(Directory);

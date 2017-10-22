@@ -1,15 +1,15 @@
-const { extendObservable } = require('mobx')
+const { extendObservable } = require("mobx");
 
-function ShowHidSysService () {
+function ShowHidSysService() {
   extendObservable(this, {
-    state: this.state
-  })
+    state: this.state,
+  });
 }
 
-ShowHidSysService.prototype.state = false
+ShowHidSysService.prototype.state = false;
 
-ShowHidSysService.prototype.toggle = function () {
-  this.state = !this.state
-}
+ShowHidSysService.prototype.toggle = function() {
+  this.state = !this.state;
+};
 
-exports.ShowHidSysService = ShowHidSysService
+exports.ShowHidSysService = ShowHidSysService;

@@ -1,11 +1,10 @@
-/* global it */
-const actions = require('../Action/Action')
-const expect = require('expect')
-const reducer = require('./mounts').default
+const actions = require("../Action/Action");
+const expect = require("expect");
+const reducer = require("./mounts").default;
 
-it('saves mounts when ready', () => {
-  let action = actions.drives()
-  let state = reducer(undefined, action)
+it("saves mounts when ready", () => {
+  let action = actions.drives();
+  let state = reducer(undefined, action);
 
   action = actions.drivesReady({
     requestId: 1,
@@ -16,74 +15,74 @@ it('saves mounts when ready', () => {
             {
               mount: null,
               identifiers: {
-                uuid: 'abc'
-              }
+                uuid: "abc",
+              },
             },
             {
               mount: {
-                name: 'System',
-                icon: 'drive-harddisk',
-                iconType: 'ICON_NAME',
-                rootUri: 'file:///media/System',
-                attributes: {}
-              }
-            }
-          ]
-        }
+                name: "System",
+                icon: "drive-harddisk",
+                iconType: "ICON_NAME",
+                rootUri: "file:///media/System",
+                attributes: {},
+              },
+            },
+          ],
+        },
       ],
       mounts: [
         {
-          name: '/',
-          icon: 'computer',
-          iconType: 'ICON_NAME',
-          rootUri: 'file:///',
-          attributes: {}
+          name: "/",
+          icon: "computer",
+          iconType: "ICON_NAME",
+          rootUri: "file:///",
+          attributes: {},
         },
         {
-          name: 'abc',
-          icon: 'drive-harddisk',
-          iconType: 'ICON_NAME',
+          name: "abc",
+          icon: "drive-harddisk",
+          iconType: "ICON_NAME",
           rootUri: null,
-          attributes: {}
+          attributes: {},
         },
         {
-          name: 'System',
-          icon: 'drive-harddisk',
-          iconType: 'ICON_NAME',
-          rootUri: 'file:///media/System',
-          attributes: {}
-        }
-      ]
-    }
-  })
+          name: "System",
+          icon: "drive-harddisk",
+          iconType: "ICON_NAME",
+          rootUri: "file:///media/System",
+          attributes: {},
+        },
+      ],
+    },
+  });
 
-  state = reducer(state, action)
+  state = reducer(state, action);
 
   expect(state).toMatch({
-    names: ['/', 'System', 'abc'],
+    names: ["/", "System", "abc"],
     entities: {
-      '/': {
-        name: '/',
-        icon: 'computer',
-        iconType: 'ICON_NAME',
-        rootUri: 'file:///',
-        attributes: {}
+      "/": {
+        name: "/",
+        icon: "computer",
+        iconType: "ICON_NAME",
+        rootUri: "file:///",
+        attributes: {},
       },
       abc: {
-        name: 'abc',
-        icon: 'drive-harddisk',
-        iconType: 'ICON_NAME',
+        name: "abc",
+        icon: "drive-harddisk",
+        iconType: "ICON_NAME",
         rootUri: null,
-        uuid: 'abc',
-        attributes: {}
+        uuid: "abc",
+        attributes: {},
       },
       System: {
-        name: 'System',
-        icon: 'drive-harddisk',
-        iconType: 'ICON_NAME',
-        rootUri: 'file:///media/System',
-        attributes: {}
-      }
-    }
-  })
-})
+        name: "System",
+        icon: "drive-harddisk",
+        iconType: "ICON_NAME",
+        rootUri: "file:///media/System",
+        attributes: {},
+      },
+    },
+  });
+});

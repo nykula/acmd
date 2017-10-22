@@ -1,79 +1,78 @@
-/* global it */
-const expect = require('expect')
-const reducer = require('./reducer').default
-const TabAction = require('../Tab/TabAction')
+const expect = require("expect");
+const reducer = require("./reducer").default;
+const TabAction = require("../Tab/TabAction");
 
-it('clones active tab when creating a new one', () => {
+it("clones active tab when creating a new one", () => {
   let state = {
     entities: {
       panels: {
-        '0': {
+        "0": {
           activeTabId: 0,
-          tabIds: [0]
+          tabIds: [0],
         },
-        '1': {
+        "1": {
           activeTabId: 1,
-          tabIds: [1]
-        }
+          tabIds: [1],
+        },
       },
       tabs: {
-        '0': {
+        "0": {
           cursor: 1,
-          files: [{ name: 'foo' }, { name: 'bar' }],
-          location: 'file:///',
+          files: [{ name: "foo" }, { name: "bar" }],
+          location: "file:///",
           selected: [],
-          sortedBy: '-date'
+          sortedBy: "-date",
         },
-        '1': {
+        "1": {
           cursor: 0,
-          files: [{ name: 'foo' }, { name: 'bar' }],
-          location: 'file:///',
+          files: [{ name: "foo" }, { name: "bar" }],
+          location: "file:///",
           selected: [],
-          sortedBy: 'name'
-        }
-      }
-    }
-  }
+          sortedBy: "name",
+        },
+      },
+    },
+  };
 
-  const action = TabAction.create(0)
+  const action = TabAction.create(0);
 
-  state = reducer(state, action)
+  state = reducer(state, action);
 
   expect(state).toMatch({
     entities: {
       panels: {
-        '0': {
+        "0": {
           activeTabId: 2,
-          tabIds: [0, 2]
+          tabIds: [0, 2],
         },
-        '1': {
+        "1": {
           activeTabId: 1,
-          tabIds: [1]
-        }
+          tabIds: [1],
+        },
       },
       tabs: {
-        '0': {
+        "0": {
           cursor: 1,
-          files: [{ name: 'foo' }, { name: 'bar' }],
-          location: 'file:///',
+          files: [{ name: "foo" }, { name: "bar" }],
+          location: "file:///",
           selected: [],
-          sortedBy: '-date'
+          sortedBy: "-date",
         },
-        '1': {
+        "1": {
           cursor: 0,
-          files: [{ name: 'foo' }, { name: 'bar' }],
-          location: 'file:///',
+          files: [{ name: "foo" }, { name: "bar" }],
+          location: "file:///",
           selected: [],
-          sortedBy: 'name'
+          sortedBy: "name",
         },
-        '2': {
+        "2": {
           cursor: 0,
-          files: [{ name: 'foo' }, { name: 'bar' }],
-          location: 'file:///',
+          files: [{ name: "foo" }, { name: "bar" }],
+          location: "file:///",
           selected: [],
-          sortedBy: '-date'
-        }
-      }
-    }
-  })
-})
+          sortedBy: "-date",
+        },
+      },
+    },
+  });
+});

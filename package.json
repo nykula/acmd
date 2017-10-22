@@ -6,7 +6,8 @@
   "devDependencies": {
     "buffer": "5.0.8",
     "expect": "^21.2.1",
-    "standard": "^10.0.3"
+    "tslint": "^5.8.0",
+    "typescript": "^2.5.3"
   },
   "dependencies": {
     "@types/async": "^2.0.44",
@@ -31,7 +32,7 @@
     "start": "gjs bin/start.js 2>&1 | grep -v 'Message.*node_modules'",
     "test": "gjs bin/test.js 2>&1 | grep -v 'Message.*node_modules'",
     "coverage": "bash bin/coverage.sh 2>&1 | grep -v 'Message.*node_modules'",
-    "format": "standard --fix 'bin/**/*.js' 'src/**/*.js'",
+    "format": "tslint --fix 'bin/**/*.js' 'src/**/*.js'",
     "repl": "gjs bin/repl.js"
   }
 }

@@ -1,1 +1,1 @@
-exports.default = (...args) => Function.apply(null, args) // eslint-disable-line
+exports.default = (...args) => Function.apply(null, args);

@@ -1,145 +1,145 @@
-const { computed, extendObservable } = require('mobx')
+const { computed, extendObservable } = require("mobx");
 
-function PanelService () {
+function PanelService() {
   extendObservable(this, {
     activeId: this.activeId,
-    entities: this.entities
-  })
+    entities: this.entities,
+  });
 }
 
-PanelService.prototype.activeId = 0
+PanelService.prototype.activeId = 0;
 
 PanelService.prototype.entities = {
-  '0': {
+  "0": {
     activeTabId: 0,
-    history: ['file:///'],
+    history: ["file:///"],
     now: 0,
-    tabIds: [0]
+    tabIds: [0],
   },
-  '1': {
+  "1": {
     activeTabId: 1,
-    history: ['file:///'],
+    history: ["file:///"],
     now: 0,
-    tabIds: [1]
-  }
-}
+    tabIds: [1],
+  },
+};
 
 /**
  * @param {number} id
  */
-PanelService.prototype.setActiveId = function (id) {
-  this.activeId = id
-}
+PanelService.prototype.setActiveId = function(id) {
+  this.activeId = id;
+};
 
-PanelService.prototype.toggleActive = function () {
-  this.activeId = this.activeId === 0 ? 1 : 0
-}
+PanelService.prototype.toggleActive = function() {
+  this.activeId = this.activeId === 0 ? 1 : 0;
+};
 
 /**
  * @returns {number}
  */
-PanelService.prototype.getActiveTabId = function () {
-  return this.entities[this.activeId].activeTabId
-}
+PanelService.prototype.getActiveTabId = function() {
+  return this.entities[this.activeId].activeTabId;
+};
 
 /**
  * @param {number} panelId
  * @param {number} tabId
  */
-PanelService.prototype.setActiveTabId = function (panelId, tabId) {
-  this.entities[panelId].activeTabId = tabId
-}
+PanelService.prototype.setActiveTabId = function(panelId, tabId) {
+  this.entities[panelId].activeTabId = tabId;
+};
 
 /**
  * @param {number} tabId
  */
-PanelService.prototype.getIdByTabId = function (tabId) {
-  return this.entities[0].tabIds.indexOf(tabId) > -1 ? 0 : 1
-}
+PanelService.prototype.getIdByTabId = function(tabId) {
+  return this.entities[0].tabIds.indexOf(tabId) > -1 ? 0 : 1;
+};
 
 /**
  * @param {number} panelId
  */
-PanelService.prototype.nextTab = function (panelId) {
-  const tabIds = this.entities[panelId].tabIds
-  let index = tabIds.indexOf(this.entities[panelId].activeTabId) + 1
+PanelService.prototype.nextTab = function(panelId) {
+  const tabIds = this.entities[panelId].tabIds;
+  let index = tabIds.indexOf(this.entities[panelId].activeTabId) + 1;
 
   if (index >= tabIds.length) {
-    index = 0
+    index = 0;
   }
 
-  this.setActiveTabId(panelId, tabIds[index])
-}
+  this.setActiveTabId(panelId, tabIds[index]);
+};
 
 /**
  * @param {number} panelId
  */
-PanelService.prototype.prevTab = function (panelId) {
-  const tabIds = this.entities[panelId].tabIds
-  let index = tabIds.indexOf(this.entities[panelId].activeTabId) - 1
+PanelService.prototype.prevTab = function(panelId) {
+  const tabIds = this.entities[panelId].tabIds;
+  let index = tabIds.indexOf(this.entities[panelId].activeTabId) - 1;
 
   if (index < 0) {
-    index = tabIds.length - 1
+    index = tabIds.length - 1;
   }
 
-  this.setActiveTabId(panelId, tabIds[index])
-}
+  this.setActiveTabId(panelId, tabIds[index]);
+};
 
 /**
  * @param { number } id
  */
-PanelService.prototype.removeTab = function (id) {
-  const panelId = this.getIdByTabId(id)
-  const panel = this.entities[panelId]
+PanelService.prototype.removeTab = function(id) {
+  const panelId = this.getIdByTabId(id);
+  const panel = this.entities[panelId];
 
-  let index = panel.tabIds.indexOf(id)
-  const isActive = panel.activeTabId === id
-  const isOnly = panel.tabIds.length === 1
-  const tabIds = isOnly ? panel.tabIds : panel.tabIds.filter(x => x !== id)
-  index = Math.min(index, tabIds.length - 1)
+  let index = panel.tabIds.indexOf(id);
+  const isActive = panel.activeTabId === id;
+  const isOnly = panel.tabIds.length === 1;
+  const tabIds = isOnly ? panel.tabIds : panel.tabIds.filter(x => x !== id);
+  index = Math.min(index, tabIds.length - 1);
 
-  const activeTabId = isActive ? tabIds[index] : panel.activeTabId
-  this.setActiveTabId(panelId, activeTabId)
-  panel.tabIds = tabIds
-}
+  const activeTabId = isActive ? tabIds[index] : panel.activeTabId;
+  this.setActiveTabId(panelId, activeTabId);
+  panel.tabIds = tabIds;
+};
 
 /**
  * @param {{ tabId: number, uri: string }} props
  */
-PanelService.prototype.pushLocation = function (props) {
-  const { tabId, uri } = props
-  const panelId = this.getIdByTabId(tabId)
-  const panel = this.entities[panelId]
+PanelService.prototype.pushLocation = function(props) {
+  const { tabId, uri } = props;
+  const panelId = this.getIdByTabId(tabId);
+  const panel = this.entities[panelId];
 
-  panel.history = panel.history.slice(0, panel.now + 1).concat(uri)
-  panel.now = panel.now + 1
-}
+  panel.history = panel.history.slice(0, panel.now + 1).concat(uri);
+  panel.now = panel.now + 1;
+};
 
 /**
  * @param {{ delta: number, tabId: number }} props
  */
-PanelService.prototype.replaceLocation = function (props) {
-  const { delta, tabId } = props
-  const panelId = this.getIdByTabId(tabId)
-  const panel = this.entities[panelId]
+PanelService.prototype.replaceLocation = function(props) {
+  const { delta, tabId } = props;
+  const panelId = this.getIdByTabId(tabId);
+  const panel = this.entities[panelId];
 
-  panel.now = panel.now + delta
-}
+  panel.now = panel.now + delta;
+};
 
 /**
  * @param {number} tabId
  * @param {number} delta
  */
-PanelService.prototype.getHistoryItem = function (tabId, delta) {
-  const panelId = this.getIdByTabId(tabId)
-  const { history, now } = this.entities[panelId]
-  const nextNow = now + delta
+PanelService.prototype.getHistoryItem = function(tabId, delta) {
+  const panelId = this.getIdByTabId(tabId);
+  const { history, now } = this.entities[panelId];
+  const nextNow = now + delta;
 
   if (nextNow < 0 || nextNow > history.length - 1) {
-    return null
+    return null;
   }
 
-  return history[nextNow]
-}
+  return history[nextNow];
+};
 
-exports.PanelService = PanelService
+exports.PanelService = PanelService;

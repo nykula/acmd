@@ -2,110 +2,114 @@
  * @param {any} Gtk
  * @param {any} win
  */
-function DialogService (Gtk, win) {
-  this.Gtk = Gtk
-  this.win = win
+function DialogService(Gtk, win) {
+  this.Gtk = Gtk;
+  this.win = win;
 }
 
 /**
  * @param {string} text
  * @param {() => void} callback
  */
-DialogService.prototype.alert = function (text, callback) {
+DialogService.prototype.alert = function(text, callback) {
   const dialog = new this.Gtk.MessageDialog({
     buttons: this.Gtk.ButtonsType.CLOSE,
     modal: true,
     text: text,
     transient_for: this.win,
-    window_position: this.Gtk.WindowPosition.CENTER
-  })
+    window_position: this.Gtk.WindowPosition.CENTER,
+  });
 
-  dialog.connect('response', () => {
-    dialog.destroy()
-    callback()
-  })
+  dialog.connect("response", () => {
+    dialog.destroy();
+    callback();
+  });
 
-  dialog.show()
-}
+  dialog.show();
+};
 
 /**
  * @param {string} text
  * @param {(result: boolean | null) => void} callback
  */
-DialogService.prototype.confirm = function (text, callback) {
+DialogService.prototype.confirm = function(text, callback) {
   const dialog = new this.Gtk.MessageDialog({
     buttons: this.Gtk.ButtonsType.YES_NO,
     modal: true,
     text: text,
     transient_for: this.win,
-    window_position: this.Gtk.WindowPosition.CENTER
-  })
+    window_position: this.Gtk.WindowPosition.CENTER,
+  });
 
-  dialog.connect('response', (
+  // tslint:disable align
+  dialog.connect("response", (
     /** @type {any} */ _,
-    /** @type {number} */ response
+    /** @type {number} */ response,
   ) => {
-    dialog.destroy()
+    // tslint:enable align
+    dialog.destroy();
 
     if (response === this.Gtk.ResponseType.YES) {
-      callback(true)
-      return
+      callback(true);
+      return;
     }
 
     if (response === this.Gtk.ResponseType.NO) {
-      callback(false)
-      return
+      callback(false);
+      return;
     }
 
-    callback(null)
-  })
+    callback(null);
+  });
 
-  dialog.show()
-}
+  dialog.show();
+};
 
 /**
  * @param {string} text
  * @param {string} initialValue
  * @param {(text: string | null) => void} callback
  */
-DialogService.prototype.prompt = function (text, initialValue, callback) {
+DialogService.prototype.prompt = function(text, initialValue, callback) {
   const dialog = new this.Gtk.MessageDialog({
     buttons: this.Gtk.ButtonsType.OK_CANCEL,
     modal: true,
     text: text,
     transient_for: this.win,
-    window_position: this.Gtk.WindowPosition.CENTER
-  })
+    window_position: this.Gtk.WindowPosition.CENTER,
+  });
 
-  const entry = new this.Gtk.Entry({ text: initialValue })
-  dialog.get_content_area().add(entry)
-  entry.connect('activate', () => {
-    const text = entry.text
-    dialog.destroy()
-    callback(text)
-  })
+  const entry = new this.Gtk.Entry({ text: initialValue });
+  dialog.get_content_area().add(entry);
+  entry.connect("activate", () => {
+    const text = entry.text;
+    dialog.destroy();
+    callback(text);
+  });
 
-  dialog.connect('response', (
+  // tslint:disable align
+  dialog.connect("response", (
     /** @type {any} */ _,
-    /** @type {number} */ response
+    /** @type {number} */ response,
   ) => {
-    const text = entry.text
-    dialog.destroy()
+    // tslint:enable align
+    const text = entry.text;
+    dialog.destroy();
 
     if (response === this.Gtk.ResponseType.OK) {
-      callback(text)
-      return
+      callback(text);
+      return;
     }
 
     if (response === this.Gtk.ResponseType.CANCEL) {
-      callback(null)
-      return
+      callback(null);
+      return;
     }
 
-    callback(null)
-  })
+    callback(null);
+  });
 
-  dialog.show_all()
-}
+  dialog.show_all();
+};
 
-exports.DialogService = DialogService
+exports.DialogService = DialogService;

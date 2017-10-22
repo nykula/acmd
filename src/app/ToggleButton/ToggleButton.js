@@ -1,9 +1,8 @@
-/* global imports */
-const Gtk = imports.gi.Gtk
-const assign = require('lodash/assign')
-const Component = require('inferno-component').default
-const h = require('inferno-hyperscript').default
-const autoBind = require('../Gjs/autoBind').default
+const Gtk = imports.gi.Gtk;
+const assign = require("lodash/assign");
+const Component = require("inferno-component").default;
+const h = require("inferno-hyperscript").default;
+const autoBind = require("../Gjs/autoBind").default;
 
 /**
  * @typedef INode
@@ -15,49 +14,49 @@ const autoBind = require('../Gjs/autoBind').default
  *
  * @param {IProps} props
  */
-function ToggleButton (props) {
-  Component.call(this, props)
-  autoBind(this, ToggleButton.prototype)
+function ToggleButton(props) {
+  Component.call(this, props);
+  autoBind(this, ToggleButton.prototype);
 }
 
-ToggleButton.prototype = Object.create(Component.prototype)
+ToggleButton.prototype = Object.create(Component.prototype);
 
 /**
  * @type {INode}
  */
-ToggleButton.prototype.node = undefined
+ToggleButton.prototype.node = undefined;
 
 /**
  * @type {IProps}
  */
-ToggleButton.prototype.props = undefined
+ToggleButton.prototype.props = undefined;
 
-ToggleButton.prototype.componentDidUpdate = function () {
-  this.resetActive()
-}
+ToggleButton.prototype.componentDidUpdate = function() {
+  this.resetActive();
+};
 
 /**
  * @param {INode} node
  */
-ToggleButton.prototype.ref = function (node) {
-  this.node = node
-  this.resetActive()
-}
+ToggleButton.prototype.ref = function(node) {
+  this.node = node;
+  this.resetActive();
+};
 
-ToggleButton.prototype.resetActive = function () {
+ToggleButton.prototype.resetActive = function() {
   if (this.node && this.props.active) {
-    this.node.set_state_flags(Gtk.StateFlags.CHECKED, false)
+    this.node.set_state_flags(Gtk.StateFlags.CHECKED, false);
   } else if (this.node) {
-    this.node.unset_state_flags(Gtk.StateFlags.CHECKED)
+    this.node.unset_state_flags(Gtk.StateFlags.CHECKED);
   }
-}
+};
 
-ToggleButton.prototype.render = function () {
+ToggleButton.prototype.render = function() {
   return (
-    h('button', assign({}, this.props, {
-      ref: this.ref
+    h("button", assign({}, this.props, {
+      ref: this.ref,
     }))
-  )
-}
+  );
+};
 
-exports.default = ToggleButton
+exports.default = ToggleButton;

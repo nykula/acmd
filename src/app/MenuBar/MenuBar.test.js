@@ -1,6 +1,5 @@
-/* global it */
-const { MenuBar } = require('./MenuBar')
+const { MenuBar } = require("./MenuBar");
 
-it('renders without crashing', () => {
-  MenuBar()
-})
+it("renders without crashing", () => {
+  MenuBar();
+});

@@ -1,9 +1,9 @@
-function Mount () {
-  this.icon = ''
-  this.iconType = ''
-  this.name = ''
-  this.rootUri = ''
-  this.uuid = ''
+function Mount() {
+  this.icon = "";
+  this.iconType = "";
+  this.name = "";
+  this.rootUri = "";
+  this.uuid = "";
 }
 
-exports.Mount = Mount
+exports.Mount = Mount;

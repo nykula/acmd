@@ -1,7 +1,7 @@
-const GLib = imports.gi.GLib
+const GLib = imports.gi.GLib;
 
-function setTimeout (callback, duration) {
-  GLib.timeout_add(GLib.PRIORITY_DEFAULT, duration, callback)
+function setTimeout(callback, duration) {
+  GLib.timeout_add(GLib.PRIORITY_DEFAULT, duration, callback);
 }
 
-exports.setTimeout = setTimeout
+exports.setTimeout = setTimeout;
