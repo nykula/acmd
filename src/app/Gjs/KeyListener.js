@@ -1,12 +1,13 @@
 const Gdk = imports.gi.Gdk;
 
-exports.default = KeyListener;
 function KeyListener(node) {
   this.handleKeyPress = this.handleKeyPress.bind(this);
   this.handleKeyRelease = this.handleKeyRelease.bind(this);
   this.on = this.on.bind(this);
 
   this.node = node;
+  this.onKeyPress = undefined;
+  this.onKeyRelease = undefined;
   this.pressed = {};
 
   this.node.connect("key-press-event", this.handleKeyPress);
@@ -59,3 +60,5 @@ function Ev(pressed, which) {
   this.altKey = pressed[Gdk.KEY_Alt_L] || pressed[Gdk.KEY_Alt_R];
   this.metaKey = pressed[Gdk.KEY_Meta_L] || pressed[Gdk.KEY_Meta_R];
 }
+
+exports.default = KeyListener;

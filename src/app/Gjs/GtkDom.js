@@ -22,9 +22,24 @@ function removeAllChildren() {
 }
 
 /**
+ * @param {any} Gtk
+ * @param {any} _window
+ */
+function GtkDom(Gtk = imports.gi.Gtk, _window = window) {
+  this.app = this.app.bind(this);
+  this.createElement = this.createElement.bind(this);
+  this.domify = this.domify.bind(this);
+  this.require = this.require.bind(this);
+
+  this.document = _window;
+  this.Gtk = Gtk;
+  this.window = _window;
+}
+
+/**
  * Monkey-patches a GTK+ widget to resemble a DOM node.
  */
-exports.domify = function(document, node) {
+GtkDom.prototype.domify = function(node) {
   node.setAttribute = function(name, value) {
     this[name] = value;
   };
@@ -129,7 +144,7 @@ exports.domify = function(document, node) {
     return JSON.stringify(result);
   };
 
-  node.ownerDocument = document;
+  node.ownerDocument = this.document;
 
   return node;
 };
@@ -138,20 +153,20 @@ exports.domify = function(document, node) {
  * Instantiates a GTK+ widget associated with a given tag name. Assigns helpers
  * for it to be compatible with Inferno.
  */
-exports.createElement = function(Gtk, domify, tagName) {
+GtkDom.prototype.createElement = function(tagName) {
   tagName = tagName.replace(/(?:^|-)(.)/g, (_, x) => x.toUpperCase());
-  return domify(new Gtk[tagName]());
+  return this.domify(new this.Gtk[tagName]());
 };
 
 /**
  * Creates a Gtk application with a main window.
  */
-exports.app = function({ on_activate, on_startup }) {
+GtkDom.prototype.app = function({ on_activate, on_startup }) {
   const Gtk = imports.gi.Gtk;
   const app = new Gtk.Application();
   let win;
   app.connect("startup", () => {
-    win = window.domify(new Gtk.ApplicationWindow({ application: app }));
+    win = this.domify(new Gtk.ApplicationWindow({ application: app }));
     on_startup({ app: app, win: win });
   });
   app.connect("activate", () => {
@@ -162,15 +177,22 @@ exports.app = function({ on_activate, on_startup }) {
 };
 
 /**
- * Assigns domify and createElement on window. Points document and global to
+ * Inits GTK. Assigns createElement on window. Points document and global to
  * window. Sets navigator and process.env to empty objects. Aliases print as
- * console.error, console.log and console.warn.
+ * console.error, console.log and console.warn. Exports own `app` as static
+ * function on this module.
  */
-exports.require = function() {
+GtkDom.prototype.require = function() {
+  this.Gtk.init(null);
+
+  const window = this.window;
   window.document = window.global = window;
-  window.domify = exports.domify.bind(null, window);
-  window.createElement = exports.createElement.bind(null, imports.gi.Gtk, window.domify);
+  window.createElement = this.createElement;
   window.navigator = {};
   window.process = { env: {} };
   window.console = { error: window.print, log: window.print, warn: window.print };
+
+  exports.app = this.app;
 };
+
+exports.GtkDom = GtkDom;

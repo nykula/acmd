@@ -19,13 +19,11 @@ exports.render = ({ refstore }) => {
         h(MountList, { panelId: 1 }),
       ]),
       h("h-separator"),
-      h("h-box", { homogeneous: true, spacing: 1 }, [
-        [0, 1].map(panelId => h(Panel, {
-          id: panelId,
-          key: panelId,
-          refstore: refstore,
-        })),
-      ]),
+      h("h-box", { homogeneous: true, spacing: 1 }, [0, 1].map(panelId => h(Panel, {
+        id: panelId,
+        key: panelId,
+        refstore: refstore,
+      }))),
       h(Prompt),
       h(ActionBar),
     ])

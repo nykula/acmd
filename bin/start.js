@@ -4,8 +4,6 @@
 const path = /^.*?@(.*):/.exec(new Error().stack)[1];
 const dirname = imports.gi.Gio.File.new_for_path(path).get_parent().get_parent().get_path();
 imports.searchPath.push(dirname);
-imports.src.app.Gjs.require.require();
-
-imports.gi.Gtk.init(null);
-require("../src/app/Gjs/GtkDom").require();
+new imports.src.app.Gjs.Require.Require().require();
+new imports.src.app.Gjs.GtkDom.GtkDom().require();
 require("../src/app");

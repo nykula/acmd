@@ -42,19 +42,17 @@ ActionBar.prototype.handlePressed = function(type) {
 
 ActionBar.prototype.render = function() {
   return (
-    h("box", { expand: false }, [
-      actions.map(action => [
-        h("button", {
-          can_focus: false,
-          expand: true,
-          key: action.type,
-          label: action.shortcut + " " + action.text,
-          on_pressed: this.handlePressed(action.type),
-          relief: Gtk.ReliefStyle.NONE,
-        }),
-        h("v-separator", { key: action.type + "+" }),
-      ]),
-    ])
+    h("box", { expand: false }, actions.reduce((prev, action) => prev.concat([
+      h("button", {
+        can_focus: false,
+        expand: true,
+        key: action.type,
+        label: action.shortcut + " " + action.text,
+        on_pressed: this.handlePressed(action.type),
+        relief: Gtk.ReliefStyle.NONE,
+      }),
+      h("v-separator", { key: action.type + "+" }),
+    ]), []))
   );
 };
 
