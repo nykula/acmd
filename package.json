@@ -2,7 +2,7 @@
   "name": "acme-commander",
   "version": "0.1.0",
   "description": "Twin-panel file manager",
-  "private": true,
+  "license": "MIT",
   "devDependencies": {
     "buffer": "4",
     "expect": "^1.20.2",

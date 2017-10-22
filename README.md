@@ -89,3 +89,7 @@ yarn coverage && xdg-open coverage/index.html
 - [ ] Remove extra slash when copying to root
 
 - [ ] Equal panel label height
+
+## License
+
+MIT
