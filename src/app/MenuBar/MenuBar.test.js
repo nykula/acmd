@@ -1,5 +1,7 @@
 const { MenuBar } = require("./MenuBar");
 
-it("renders without crashing", () => {
-  MenuBar();
+describe("MenuBar", () => {
+  it("renders without crashing", () => {
+    MenuBar();
+  });
 });

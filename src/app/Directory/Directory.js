@@ -5,12 +5,12 @@ const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const assign = require("lodash/assign");
 const { autorun, extendObservable } = require("mobx");
+const { File } = require("../../domain/File/File");
 const { ActionService } = require("../Action/ActionService");
 const getVisibleFiles = require("../Action/getVisibleFiles").default;
 const { FileService } = require("../File/FileService");
 const autoBind = require("../Gjs/autoBind").default;
 const { GICON, TEXT } = require("../ListStore/ListStore");
-const PanelAction = require("../Panel/PanelAction");
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
 const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
@@ -59,6 +59,19 @@ Directory.prototype.tabId = function() {
 
 Directory.prototype.tab = function() {
   return this.props.tabService.entities[this.tabId()];
+};
+
+Directory.prototype.rows = function() {
+  const panelId = this.props.panelId;
+  const tabId = this.props.panelService.entities[panelId].activeTabId;
+  const { files } = this.props.tabService.entities[tabId];
+
+  const rows = getVisibleFiles({
+    files: files,
+    showHidSys: this.props.showHidSysService.state,
+  }).map(mapFileToRow);
+
+  return rows;
 };
 
 /**
@@ -196,9 +209,9 @@ Directory.prototype.handleLayout = function(node) {
 };
 
 Directory.prototype.handleSearch = function(store, _col, input, iter) {
-  const { cursor, rows } = this.tab();
+  const { cursor } = this.tab();
 
-  const skip = rows.map(({ filename, ext, size }) => {
+  const skip = this.rows().map(({ filename, ext, size }) => {
     const isDir = size === "<DIR>";
     let name = filename;
 
@@ -252,15 +265,7 @@ Directory.prototype.refContainer = function(node) {
 };
 
 Directory.prototype.render = function() {
-  const panelId = this.props.panelId;
-  const tabId = this.props.panelService.entities[panelId].activeTabId;
-  const { files } = this.props.tabService.entities[tabId];
-
-  const rows = getVisibleFiles({
-    files: files,
-    showHidSys: this.props.showHidSysService.state,
-  }).map(mapFileToRow);
-
+  const rows = this.rows();
   const { cursor, selected } = this.tab();
 
   return (
@@ -294,6 +299,9 @@ Directory.prototype.render = function() {
 };
 
 exports.mapFileToRow = mapFileToRow;
+/**
+ * @param {File} file
+ */
 function mapFileToRow(file) {
   let { icon, iconType } = file;
   let filename = file.name;
@@ -336,6 +344,8 @@ function mapFileToRow(file) {
     mode: mode,
   };
 }
+
+exports.Directory = Directory;
 
 exports.default = connect([
   "actionService",

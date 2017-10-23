@@ -97,4 +97,5 @@ Location.prototype.render = function() {
   );
 };
 
+exports.Location = Location;
 exports.default = connect(["panelService", "tabService"])(Location);

@@ -123,6 +123,7 @@ Mount.prototype.render = function() {
   );
 };
 
+exports.Mount = Mount;
 exports.default = connect([
   "actionService",
   "mountService",

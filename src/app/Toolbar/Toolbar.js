@@ -78,4 +78,5 @@ Toolbar.prototype.render = function() {
   );
 };
 
+exports.Toolbar = Toolbar;
 exports.default = connect(["actionService", "showHidSysService"])(Toolbar);

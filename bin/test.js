@@ -1,5 +1,7 @@
 #!/usr/bin/gjs
 // Sets up the environment and runs the tests.
+// - `node bin/test`: All tests.
+// - `node bin/test Action Panel`: Tests from src/app/{Action,Panel} only.
 
 const path = /^.*?@(.*):/.exec(new Error().stack)[1];
 const dirname = imports.gi.Gio.File.new_for_path(path).get_parent().get_parent().get_path();
@@ -14,7 +16,8 @@ const data = new Worker().flatten(imports.gi.Gio.File.new_for_path(dirname + "/s
 const scripts = data.files.map(x => x.relativePath).filter(x => (
   !!x &&
   x.slice(-3) === ".js" &&
-  x !== "index.js"
+  x !== "index.js" &&
+  (!ARGV.length || ARGV.indexOf(x.split("/").slice(-2)[0]) !== -1)
 )).map(x => "../src/" + x);
 
 const tests = scripts.filter(x => /\.test\.js$/.test(x));

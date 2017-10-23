@@ -1,5 +1,5 @@
+const GLib = imports.gi.GLib;
 const waterfall = require("async/waterfall");
-const Lang = imports.lang;
 const find = require("lodash/find");
 const Uri = require("url-parse");
 const autoBind = require("../Gjs/autoBind").default;
@@ -10,14 +10,12 @@ const { WorkerRunner } = require("./WorkerRunner");
  * Let the front-end use drives.
  *
  * @param {any} Gio
- * @param {any} GLib
  * @param {any} Gtk
  */
-function GioService(Gio, GLib, Gtk) {
+function GioService(Gio, Gtk) {
   autoBind(this, GioService.prototype);
 
   this.Gio = Gio;
-  this.GLib = GLib;
   this.Gtk = Gtk;
 
   this.gVolMon = this.Gio.VolumeMonitor.get();
@@ -182,7 +180,7 @@ GioService.prototype.ls = function(uri, callback) {
     gioAsync(dir, "query_info",
       "standard::*,access::*,owner::*,time::*,unix::*",
       this.Gio.FileQueryInfoFlags.NONE,
-      this.GLib.PRIORITY_DEFAULT,
+      GLib.PRIORITY_DEFAULT,
       null,
       callback,
     );
@@ -204,7 +202,7 @@ GioService.prototype.ls = function(uri, callback) {
     gioAsync(parent, "query_info",
       "standard::*,access::*,owner::*,time::*,unix::*",
       this.Gio.FileQueryInfoFlags.NONE,
-      this.GLib.PRIORITY_DEFAULT,
+      GLib.PRIORITY_DEFAULT,
       null,
       callback,
     );
@@ -224,7 +222,7 @@ GioService.prototype.ls = function(uri, callback) {
     gioAsync(dir, "enumerate_children",
       "standard::*,access::*,owner::*,time::*,unix::*",
       this.Gio.FileQueryInfoFlags.NONE,
-      this.GLib.PRIORITY_DEFAULT,
+      GLib.PRIORITY_DEFAULT,
       null,
       callback,
     );
@@ -232,8 +230,8 @@ GioService.prototype.ls = function(uri, callback) {
 
   const handleChildren = (enumerator, callback) => {
     gioAsync(enumerator, "next_files",
-      this.GLib.MAXINT32,
-      this.GLib.PRIORITY_DEFAULT,
+      GLib.MAXINT32,
+      GLib.PRIORITY_DEFAULT,
       null,
       callback,
     );
@@ -327,7 +325,7 @@ GioService.prototype.getMountUri = function(gFile) {
  */
 GioService.prototype.mkdir = function(uri, callback) {
   gioAsync(this.Gio.file_new_for_uri(uri), "make_directory",
-    this.GLib.PRIORITY_DEFAULT,
+    GLib.PRIORITY_DEFAULT,
     null,
     callback,
   );
@@ -339,7 +337,7 @@ GioService.prototype.mkdir = function(uri, callback) {
 GioService.prototype.touch = function(uri, callback) {
   gioAsync(this.Gio.File.new_for_uri(uri), "create",
     this.Gio.FileCreateFlags.NONE,
-    this.GLib.PRIORITY_DEFAULT,
+    GLib.PRIORITY_DEFAULT,
     null,
     callback,
   );

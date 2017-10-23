@@ -3,7 +3,6 @@ const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const autoBind = require("../Gjs/autoBind").default;
-const PanelAction = require("../Panel/PanelAction");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
@@ -32,7 +31,10 @@ TabListItem.prototype = Object.create(Component.prototype);
 TabListItem.prototype.props = undefined;
 
 TabListItem.prototype.handleClicked = function() {
-  this.props.panelService.setActiveTabId(this.props.panelId, this.props.id);
+  this.props.panelService.setActiveTabId({
+    id: this.props.panelId,
+    tabId: this.props.id,
+  });
 };
 
 TabListItem.prototype.render = function() {
@@ -47,17 +49,18 @@ TabListItem.prototype.render = function() {
       on_clicked: this.handleClicked,
       relief: Gtk.ReliefStyle.NONE,
     }, [
-      h("box", { spacing: 4 }, [
-        icon ? (
+        h("box", { spacing: 4 }, [
+          icon ? (
             h("image", {
               icon_name: icon + "-symbolic",
               icon_size: Gtk.IconSize.SMALL_TOOLBAR,
             })
           ) : null,
-        h("label", { label: text }),
-      ]),
-    ])
+          h("label", { label: text }),
+        ]),
+      ])
   );
 };
 
+exports.TabListItem = TabListItem;
 exports.default = connect(["panelService", "tabService"])(TabListItem);

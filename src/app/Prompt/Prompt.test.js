@@ -1,27 +1,54 @@
 const expect = require("expect");
-const assign = require("lodash/assign");
-const { Prompt, mapStateToProps, mapDispatchToProps } = require("./Prompt");
 const h = require("inferno-hyperscript").default;
-const { EXEC } = require("../Action/Action");
+const { shallow } = require("../Test/Test");
+const { Prompt } = require("./Prompt");
 
-it("dispatches action when user activates field", () => {
-  const actions = [];
-  const dispatch = action => actions.push(action);
-  const tree = h(Prompt).type(assign({},
-    mapStateToProps({
-      activePanelId: 0,
-      entities: {
-        panels: {
-          "0": { activeTabId: 0 },
+describe("Prompt", () => {
+  it("renders without crashing", () => {
+    shallow(
+      h(Prompt, {
+        actionService: {},
+
+        panelService: {
+          getActiveTabId: () => 0,
         },
-        tabs: {
-          "0": { location: "file:///" },
+
+        tabService: {
+          entities: {
+            "0": { location: "file:///" },
+          },
         },
-      },
-    }),
-    mapDispatchToProps(dispatch),
-  ));
-  const entry = tree.children.filter(x => x.type === "entry")[0];
-  entry.events.on_activate({ text: "x-terminal-emulator -e ranger" });
-  expect(actions).toContain({ type: EXEC, cmd: "x-terminal-emulator -e ranger" });
+      }),
+    );
+  });
+
+  it("dispatches action when user activates field", () => {
+    const cmds = [];
+
+    /**
+     * @type {any}
+     */
+    const actionService = {
+      exec: (cmd) => cmds.push(cmd),
+    };
+
+    /**
+     * @type {any}
+     */
+    const panelService = {};
+
+    /**
+     * @type {any}
+     */
+    const tabService = {};
+
+    new Prompt({
+      actionService: actionService,
+      panelService: panelService,
+      tabService: tabService,
+    })
+      .activate({ text: "x-terminal-emulator -e ranger" });
+
+    expect(cmds).toEqual(["x-terminal-emulator -e ranger"]);
+  });
 });

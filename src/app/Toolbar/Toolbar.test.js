@@ -1,20 +1,30 @@
-const assign = require("lodash/assign");
 const expect = require("expect");
-const { Toolbar, mapStateToProps, mapDispatchToProps } = require("./Toolbar");
+const { Toolbar } = require("./Toolbar");
 const h = require("inferno-hyperscript").default;
-const { REFRESH } = require("../Action/Action");
 const { shallow } = require("../Test/Test");
 
-it("dispatches action without payload", () => {
-  const actions = [];
-  const dispatch = action => actions.push(action);
-  const tree = shallow(h(Toolbar, assign(
-    {},
-    mapStateToProps({
-      showHidSys: true,
-    }),
-    mapDispatchToProps(dispatch),
-  )));
-  tree.children[0].props.on_pressed();
-  expect(actions).toContain({ type: REFRESH });
+describe("Toolbar", () => {
+  it("dispatches action without payload", () => {
+    const actions = [];
+
+    const actionService = {
+      refresh: function() {
+        actions.push(arguments.length);
+      },
+    };
+
+    const showHidSysService = {
+      state: false,
+    };
+
+    const tree = shallow(
+      h(Toolbar, {
+        actionService: actionService,
+        showHidSysService: showHidSysService,
+      }),
+    );
+
+    tree.children[0].props.on_pressed();
+    expect(actions).toEqual([0]);
+  });
 });

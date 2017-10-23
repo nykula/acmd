@@ -56,4 +56,5 @@ ActionBar.prototype.render = function() {
   );
 };
 
+exports.ActionBar = ActionBar;
 exports.default = connect(["actionService"])(ActionBar);

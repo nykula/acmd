@@ -5,7 +5,7 @@
   "license": "MIT",
   "devDependencies": {
     "buffer": "5.0.8",
-    "expect": "^21.2.1",
+    "expect": "^1.20.2",
     "tslint": "^5.8.0",
     "typescript": "^2.5.3"
   },

@@ -1,22 +1,24 @@
 const assign = require("lodash/assign");
 const h = require("inferno-hyperscript").default;
 const { shallow } = require("../Test/Test");
-const { TabList, mapStateToProps } = require("./TabList");
+const { TabList } = require("./TabList");
 
-it("renders without crashing", () => {
-  const state = {
-    entities: {
-      panels: {
+describe("TabList", () => {
+  it("renders without crashing", () => {
+    const panelService = {
+      entities: {
         "0": {
           activeTabId: 0,
           tabIds: [0, 1],
         },
       },
-    },
-  };
+    };
 
-  const ownProps = { panelId: 0 };
-  const stateProps = mapStateToProps(state, ownProps);
-  const props = assign(ownProps, stateProps);
-  shallow(h(TabList, props));
+    shallow(
+      h(TabList, {
+        panelId: 0,
+        panelService: panelService,
+      }),
+    );
+  });
 });

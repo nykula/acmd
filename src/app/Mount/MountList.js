@@ -27,4 +27,5 @@ function MountList(props) {
   );
 }
 
+exports.MountList = MountList;
 exports.default = connect(["mountService"])(MountList);

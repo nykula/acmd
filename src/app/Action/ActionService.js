@@ -1,3 +1,4 @@
+const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
@@ -7,7 +8,6 @@ const { GioService } = require("../Gio/GioService");
 const { LogService } = require("../Log/LogService");
 const getActiveMountUri = require("../Mount/getActiveMountUri").default;
 const { MountService } = require("../Mount/MountService");
-const getNextTabId = require("../Panel/getNextTabId").default;
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
 const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
@@ -124,7 +124,7 @@ ActionService.prototype.cp = function(srcUris, destUri) {
  * @param {number} panelId
  */
 ActionService.prototype.createTab = function(panelId) {
-  const tabId = getNextTabId(this.panelService);
+  const tabId = this.panelService.getNextTabId();
   const panel = this.panelService.entities[panelId];
   const prevTabId = panel.activeTabId;
 
@@ -213,7 +213,7 @@ ActionService.prototype.exec = function(cmd) {
 
   this.gioService.spawn({
     cwd: location.replace(/^file:\/\//, ""),
-    argv: this.gioService.GLib.shell_parse_argv(cmd)[1],
+    argv: GLib.shell_parse_argv(cmd)[1],
   });
 };
 

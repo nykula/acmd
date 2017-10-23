@@ -1,5 +1,6 @@
 const { extendObservable } = require("mobx");
 const orderBy = require("lodash/orderBy");
+const { Tab } = require("../../domain/Tab/Tab");
 
 function TabService() {
   extendObservable(this, {
@@ -28,6 +29,9 @@ const sampleFiles = [
   },
 ];
 
+/**
+ * @type {{ [ id: number ]: Tab }}
+ */
 TabService.prototype.entities = {
   0: {
     cursor: 0,

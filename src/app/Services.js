@@ -1,5 +1,4 @@
 const Gio = imports.gi.Gio;
-const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const { ActionService } = require("./Action/ActionService");
 const { DialogService } = require("./Dialog/DialogService");
@@ -19,7 +18,7 @@ function Services(win) {
   this.win = win;
 
   this.dialogService = new DialogService(Gtk, this.win);
-  this.gioService = new GioService(Gio, GLib, Gtk);
+  this.gioService = new GioService(Gio, Gtk);
   this.logService = new LogService();
   this.mountService = new MountService();
   this.panelService = new PanelService();
@@ -40,11 +39,7 @@ function Services(win) {
     this.win,
   );
 
-  this.fileService = new FileService(
-    this.logService,
-    this.panelService,
-    this.tabService,
-  );
+  this.fileService = new FileService(this.panelService, this.tabService);
 }
 
 exports.Services = Services;

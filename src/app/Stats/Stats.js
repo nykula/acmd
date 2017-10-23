@@ -62,6 +62,7 @@ Stats.prototype.render = function() {
   );
 };
 
+exports.Stats = Stats;
 exports.default = connect(["panelService", "showHidSysService", "tabService"])(Stats);
 
 exports.totalSize = totalSize;

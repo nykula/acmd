@@ -1,14 +1,11 @@
-const actions = require("../Action/Action");
 const expect = require("expect");
-const reducer = require("./mounts").default;
+const { MountService } = require("./MountService");
 
-it("saves mounts when ready", () => {
-  let action = actions.drives();
-  let state = reducer(undefined, action);
+describe("MountService", () => {
+  it("saves mounts when ready", () => {
+    const mountService = new MountService();
 
-  action = actions.drivesReady({
-    requestId: 1,
-    result: {
+    mountService.set({
       drives: [
         {
           volumes: [
@@ -53,36 +50,34 @@ it("saves mounts when ready", () => {
           attributes: {},
         },
       ],
-    },
-  });
+    });
 
-  state = reducer(state, action);
-
-  expect(state).toMatch({
-    names: ["/", "System", "abc"],
-    entities: {
-      "/": {
-        name: "/",
-        icon: "computer",
-        iconType: "ICON_NAME",
-        rootUri: "file:///",
-        attributes: {},
+    expect(mountService).toMatch({
+      names: ["/", "System", "abc"],
+      entities: {
+        "/": {
+          name: "/",
+          icon: "computer",
+          iconType: "ICON_NAME",
+          rootUri: "file:///",
+          attributes: {},
+        },
+        abc: {
+          name: "abc",
+          icon: "drive-harddisk",
+          iconType: "ICON_NAME",
+          rootUri: null,
+          uuid: "abc",
+          attributes: {},
+        },
+        System: {
+          name: "System",
+          icon: "drive-harddisk",
+          iconType: "ICON_NAME",
+          rootUri: "file:///media/System",
+          attributes: {},
+        },
       },
-      abc: {
-        name: "abc",
-        icon: "drive-harddisk",
-        iconType: "ICON_NAME",
-        rootUri: null,
-        uuid: "abc",
-        attributes: {},
-      },
-      System: {
-        name: "System",
-        icon: "drive-harddisk",
-        iconType: "ICON_NAME",
-        rootUri: "file:///media/System",
-        attributes: {},
-      },
-    },
+    });
   });
 });

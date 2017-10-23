@@ -3,7 +3,6 @@ const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { ActionService } = require("../Action/ActionService");
-const getActiveTabId = require("../Panel/getActiveTabId").default;
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 
@@ -51,4 +50,5 @@ Prompt.prototype.render = function() {
   );
 };
 
+exports.Prompt = Prompt;
 exports.default = connect(["actionService", "panelService", "tabService"])(Prompt);

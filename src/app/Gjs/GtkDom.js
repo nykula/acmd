@@ -190,7 +190,7 @@ GtkDom.prototype.require = function() {
   window.createElement = this.createElement;
   window.navigator = {};
   window.process = { env: {} };
-  window.console = { error: window.print, log: window.print, warn: window.print };
+  window.console = { error: print, log: print, warn: print };
 
   exports.app = this.app;
 };

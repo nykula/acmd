@@ -1,8 +1,27 @@
 const Buffer = require("buffer/").Buffer;
 
-exports.it = function(title, callback) {
-  console.log(title + " STARTED");
+let description = "";
+
+exports.describe = function(_description, callback) {
+  description = _description;
   callback();
+  description = "";
+};
+
+exports.it = function(title, callback) {
+  if (description) {
+    title = description ? `${description}: ${title}` : title;
+  }
+
+  console.log(title + " STARTED");
+
+  try {
+    callback();
+  } catch (error) {
+    console.log(title + " ERROR");
+    throw error;
+  }
+
   console.log(title + " SUCCESS");
 };
 
@@ -29,6 +48,7 @@ exports.require = () => {
    * @type {any}
    */
   const win = window;
+  win.describe = exports.describe;
   win.Buffer = Buffer;
   win.it = exports.it;
 };

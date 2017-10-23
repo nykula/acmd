@@ -1,63 +1,67 @@
 const expect = require("expect");
-const assign = require("lodash/assign");
 const h = require("inferno-hyperscript").default;
-const { mapStateToProps, Stats } = require("./Stats");
+const { Stats } = require("./Stats");
 const { shallow } = require("../Test/Test");
 
-it("renders without crashing", () => {
-  const { state, ownProps } = setup();
-  const stateProps = mapStateToProps(state, ownProps);
-  const props = assign({}, ownProps, stateProps);
-  shallow(h(Stats, props));
-});
+describe("Stats", () => {
+  it("renders without crashing", () => {
+    const props = sampleProps();
+    shallow(h(Stats, props));
+  });
 
-it("counts total size of selected files", () => {
-  const { state, ownProps } = setup();
-  const stateProps = mapStateToProps(state, ownProps);
-  expect(stateProps).toEqual({
-    selectedCount: 2,
-    totalCount: 4,
-    selectedSize: 20,
-    totalSize: 60,
+  it("counts total size of selected files", () => {
+    const props = sampleProps();
+    const stateProps = new Stats(props).getData();
+    expect(stateProps).toEqual({
+      selectedCount: 2,
+      totalCount: 4,
+      selectedSize: 20,
+      totalSize: 60,
+    });
   });
 });
 
-function setup() {
-  const state = {
+function sampleProps() {
+  const panelService = {
     entities: {
-      panels: {
-        "0": { activeTabId: 0 },
-      },
-      tabs: {
-        "0": {
-          files: [
-            {
-              name: "foo",
-              size: 0,
-            },
-            {
-              name: "bar",
-              size: 10,
-            },
-            {
-              name: "baz",
-              size: 20,
-            },
-            {
-              name: "qux",
-              size: 30,
-            },
-          ],
-          selected: [0, 2],
-        },
+      "0": { activeTabId: 0 },
+    },
+  };
+
+  const tabService = {
+    entities: {
+      "0": {
+        files: [
+          {
+            name: "foo",
+            size: 0,
+          },
+          {
+            name: "bar",
+            size: 10,
+          },
+          {
+            name: "baz",
+            size: 20,
+          },
+          {
+            name: "qux",
+            size: 30,
+          },
+        ],
+        selected: [0, 2],
       },
     },
   };
 
-  const ownProps = { panelId: 0 };
+  const showHidSysService = {
+    state: false,
+  };
 
   return {
-    state: state,
-    ownProps: ownProps,
+    panelId: 0,
+    panelService: panelService,
+    showHidSysService: showHidSysService,
+    tabService: tabService,
   };
 }

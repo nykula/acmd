@@ -1,14 +1,11 @@
-const { LogService } = require("../Log/LogService");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 
 /**
- * @param {LogService} logService
  * @param {PanelService} panelService
  * @param {TabService} tabService
  */
-function FileService(logService, panelService, tabService) {
-  this.logService = logService;
+function FileService(panelService, tabService) {
   this.panelService = panelService;
   this.tabService = tabService;
 }

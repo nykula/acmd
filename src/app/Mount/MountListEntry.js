@@ -109,4 +109,5 @@ MountListEntry.prototype.render = function() {
   );
 };
 
+exports.MountListEntry = MountListEntry;
 exports.default = connect(["actionService", "panelService", "tabService"])(MountListEntry);

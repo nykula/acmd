@@ -1,4 +1,5 @@
 const { computed, extendObservable } = require("mobx");
+const { Panel } = require("../../domain/Panel/Panel");
 
 function PanelService() {
   extendObservable(this, {
@@ -9,6 +10,9 @@ function PanelService() {
 
 PanelService.prototype.activeId = 0;
 
+/**
+ * @type {{ [id: string]: Panel }}
+ */
 PanelService.prototype.entities = {
   "0": {
     activeTabId: 0,
@@ -35,19 +39,16 @@ PanelService.prototype.toggleActive = function() {
   this.activeId = this.activeId === 0 ? 1 : 0;
 };
 
-/**
- * @returns {number}
- */
 PanelService.prototype.getActiveTabId = function() {
   return this.entities[this.activeId].activeTabId;
 };
 
 /**
- * @param {number} panelId
- * @param {number} tabId
+ * @param {{ id: number, tabId: number }} props
  */
-PanelService.prototype.setActiveTabId = function(panelId, tabId) {
-  this.entities[panelId].activeTabId = tabId;
+PanelService.prototype.setActiveTabId = function(props) {
+  const { id, tabId } = props;
+  this.entities[id].activeTabId = tabId;
 };
 
 /**
@@ -55,6 +56,11 @@ PanelService.prototype.setActiveTabId = function(panelId, tabId) {
  */
 PanelService.prototype.getIdByTabId = function(tabId) {
   return this.entities[0].tabIds.indexOf(tabId) > -1 ? 0 : 1;
+};
+
+PanelService.prototype.getNextTabId = function() {
+  const ids = this.entities[0].tabIds.concat(this.entities[1].tabIds);
+  return Math.max.apply(null, ids) + 1;
 };
 
 /**
@@ -68,7 +74,10 @@ PanelService.prototype.nextTab = function(panelId) {
     index = 0;
   }
 
-  this.setActiveTabId(panelId, tabIds[index]);
+  this.setActiveTabId({
+    id: panelId,
+    tabId: tabIds[index],
+  });
 };
 
 /**
@@ -82,7 +91,10 @@ PanelService.prototype.prevTab = function(panelId) {
     index = tabIds.length - 1;
   }
 
-  this.setActiveTabId(panelId, tabIds[index]);
+  this.setActiveTabId({
+    id: panelId,
+    tabId: tabIds[index],
+  });
 };
 
 /**
@@ -99,7 +111,10 @@ PanelService.prototype.removeTab = function(id) {
   index = Math.min(index, tabIds.length - 1);
 
   const activeTabId = isActive ? tabIds[index] : panel.activeTabId;
-  this.setActiveTabId(panelId, activeTabId);
+  this.setActiveTabId({
+    id: panelId,
+    tabId: activeTabId,
+  });
   panel.tabIds = tabIds;
 };
 

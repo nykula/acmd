@@ -1,49 +1,71 @@
-const assign = require("lodash/assign");
+const expect = require("expect");
 const h = require("inferno-hyperscript").default;
+const assign = require("lodash/assign");
 const noop = require("lodash/noop");
 const { shallow } = require("../Test/Test");
-const {
-  TabListItem,
-  mapStateToProps,
-  mapDispatchToProps,
-} = require("./TabListItem");
+const { TabListItem } = require("./TabListItem");
 
-it("renders without crashing", () => {
-  let ownProps;
-  let props;
-  let stateProps;
-  const state = {
-    entities: {
-      tabs: {
+describe("TabListItem", () => {
+  it("renders without crashing", () => {
+    const tabService = {
+      entities: {
         "0": { location: "file:///" },
         "1": { location: "sftp:///test@example.com/foo/bar" },
       },
-    },
-  };
+    };
 
-  ownProps = {
-    id: 0,
-    panelId: 1,
-  };
-  stateProps = mapStateToProps(state, ownProps);
-  props = assign(ownProps, stateProps);
-  shallow(h(TabListItem, props));
+    shallow(
+      h(TabListItem, {
+        id: 0,
+        panelId: 1,
+        tabService: tabService,
+      }),
+    );
 
-  ownProps = {
-    id: 1,
-    panelId: 1,
-  };
-  stateProps = mapStateToProps(state, ownProps);
-  props = assign(ownProps, stateProps);
-  shallow(h(TabListItem, props));
-});
+    shallow(
+      h(TabListItem, {
+        id: 1,
+        panelId: 1,
+        tabService: tabService,
+      }),
+    );
+  });
 
-it("requests active tab change on click without crashing", () => {
-  const ownProps = {
-    id: 0,
-    panelId: 0,
-  };
+  it("requests active tab change on click without crashing", () => {
+    /**
+     * @type {*}
+     */
+    const tabService = {
+      entities: {
+        "0": { location: "file:///" },
+        "1": { location: "sftp:///test@example.com/foo/bar" },
+      },
+    };
 
-  const props = mapDispatchToProps(noop, ownProps);
-  props.onClicked();
+    let _id = -1;
+    let _tabId = -1;
+
+    /**
+     * @type {*}
+     */
+    const panelService = {
+      setActiveTabId: ({ id, tabId }) => {
+        _id = id;
+        _tabId = tabId;
+      },
+    };
+
+    new TabListItem({
+      active: false,
+      icon: "",
+      id: 0,
+      panelId: 1,
+      panelService: panelService,
+      tabService: tabService,
+    })
+      .handleClicked();
+
+    expect(_id).toEqual(1);
+    expect(_tabId).toEqual(0);
+  });
 });

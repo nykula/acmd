@@ -42,4 +42,5 @@ TabList.prototype.render = function() {
   );
 };
 
+exports.TabList = TabList;
 exports.default = connect(["panelService"])(TabList);

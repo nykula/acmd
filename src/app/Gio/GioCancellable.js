@@ -1,5 +1,4 @@
 const Gio = imports.gi.Gio;
-const Lang = imports.lang;
 
 /**
  * Let the user make a request and then another one to cancel it.

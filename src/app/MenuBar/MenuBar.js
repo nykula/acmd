@@ -19,4 +19,5 @@ const MenuBar = () => (
   ])
 );
 
+exports.MenuBar = MenuBar;
 exports.default = connect([])(MenuBar);
