@@ -11,17 +11,7 @@ const TEXT = exports.TEXT = "TEXT";
 exports.fromProps = function(props) {
   const store = new Gtk.ListStore();
 
-  store.set_column_types(props.cols.map(col => {
-    if (col.type === GICON) {
-      return Gio.Icon;
-    }
-
-    if (col.type === CHECKBOX) {
-      return GObject.TYPE_BOOLEAN;
-    }
-
-    return GObject.TYPE_STRING;
-  }));
+  setCols(store, props.cols);
 
   props.rows.forEach(row => {
     store.set(
@@ -38,6 +28,38 @@ exports.fromProps = function(props) {
   });
 
   return store;
+};
+
+const setCols = exports.setCols = function(store, cols) {
+  store.cols = cols;
+  store.set_column_types(cols.map(col => {
+    if (col.type === GICON) {
+      return Gio.Icon;
+    }
+
+    if (col.type === CHECKBOX) {
+      return GObject.TYPE_BOOLEAN;
+    }
+
+    return GObject.TYPE_STRING;
+  }));
+};
+
+const setValue = exports.setValue = function(store, iter, name, value) {
+  for (let i = 0; i < store.cols.length; i++) {
+    const col = store.cols[i];
+
+    if (col.name === name) {
+      if (col.type === GICON) {
+        value = value ? Icon(value) : null;
+      } else if (col.type === TEXT) {
+        value = value || "";
+      }
+
+      store.set_value(iter, i, value);
+      break;
+    }
+  }
 };
 
 exports.configureColumn = function(node, col, i) {

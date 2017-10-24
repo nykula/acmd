@@ -16,7 +16,6 @@ const Refstore = require("../Refstore/Refstore").default;
 const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
 const formatSize = require("../Size/formatSize").default;
 const { TabService } = require("../Tab/TabService");
-const TreeView = require("../TreeView/TreeView").default;
 
 /**
  * @typedef IProps
@@ -49,19 +48,19 @@ Directory.prototype.container = undefined;
 /** @type {IProps} */
 Directory.prototype.props = undefined;
 
-Directory.prototype.componentWillUnmount = function() {
+Directory.prototype.componentWillUnmount = function () {
   this.unsubscribeUpdate();
 };
 
-Directory.prototype.tabId = function() {
+Directory.prototype.tabId = function () {
   return this.props.panelService.entities[this.props.panelId].activeTabId;
 };
 
-Directory.prototype.tab = function() {
+Directory.prototype.tab = function () {
   return this.props.tabService.entities[this.tabId()];
 };
 
-Directory.prototype.rows = function() {
+Directory.prototype.rows = function () {
   const panelId = this.props.panelId;
   const tabId = this.props.panelService.entities[panelId].activeTabId;
   const { files } = this.props.tabService.entities[tabId];
@@ -77,25 +76,25 @@ Directory.prototype.rows = function() {
 /**
  * @param {IProps=} props
  */
-Directory.prototype.isActive = function(props = this.props) {
+Directory.prototype.isActive = function (props = this.props) {
   return props.panelService.activeId === props.panelId;
 };
 
-Directory.prototype.focusIfActive = function() {
+Directory.prototype.focusIfActive = function () {
   if (this.container && this.isActive()) {
     const children = this.container.get_children();
     children[0].grab_focus();
   }
 };
 
-Directory.prototype.handleActivated = function(index) {
+Directory.prototype.handleActivated = function (index) {
   this.props.actionService.activated({
     index: index,
     panelId: this.props.panelId,
   });
 };
 
-Directory.prototype.handleClicked = function(colName) {
+Directory.prototype.handleClicked = function (colName) {
   this.props.tabService.sorted({
     by: colName,
     tabId: this.tabId(),
@@ -105,7 +104,7 @@ Directory.prototype.handleClicked = function(colName) {
 /**
  * @param {number} cursor
  */
-Directory.prototype.handleCursor = function(cursor) {
+Directory.prototype.handleCursor = function (cursor) {
   this.props.fileService.cursor({
     cursor: cursor,
     panelId: this.props.panelId,
@@ -113,7 +112,7 @@ Directory.prototype.handleCursor = function(cursor) {
   });
 };
 
-Directory.prototype.handleKeyPressEvent = function(ev) {
+Directory.prototype.handleKeyPressEvent = function (ev) {
   const { actionService, panelService, panelId } = this.props;
   const tabId = this.tabId();
 
@@ -203,12 +202,12 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
   return false;
 };
 
-Directory.prototype.handleLayout = function(node) {
+Directory.prototype.handleLayout = function (node) {
   this.props.refstore.set("panel" + this.props.panelId)(node);
   this.focusIfActive();
 };
 
-Directory.prototype.handleSearch = function(store, _col, input, iter) {
+Directory.prototype.handleSearch = function (store, _col, input, iter) {
   const { cursor } = this.tab();
 
   const skip = this.rows().map(({ filename, ext, size }) => {
@@ -238,7 +237,7 @@ Directory.prototype.handleSearch = function(store, _col, input, iter) {
 /**
  * @param {number[]} selected
  */
-Directory.prototype.handleSelected = function(selected) {
+Directory.prototype.handleSelected = function (selected) {
   this.props.fileService.selected({
     panelId: this.props.panelId,
     selected: selected,
@@ -246,7 +245,7 @@ Directory.prototype.handleSelected = function(selected) {
   });
 };
 
-Directory.prototype.prefixSort = function(col) {
+Directory.prototype.prefixSort = function (col) {
   const { sortedBy } = this.tab();
 
   if (col.name === sortedBy) {
@@ -260,11 +259,11 @@ Directory.prototype.prefixSort = function(col) {
   return col;
 };
 
-Directory.prototype.refContainer = function(node) {
+Directory.prototype.refContainer = function (node) {
   this.container = node;
 };
 
-Directory.prototype.render = function() {
+Directory.prototype.render = function () {
   const rows = this.rows();
   const { cursor, selected } = this.tab();
 
@@ -274,27 +273,28 @@ Directory.prototype.render = function() {
       hscrollbar_policy: Gtk.PolicyType.NEVER,
       ref: this.refContainer,
     }, [
-      h(TreeView, {
-        cols: [
+        h('table', {
+          cols: [
             { title: null, name: "icon", type: GICON },
             { title: "Name", name: "filename", type: TEXT, expand: true },
             { title: "Ext", name: "ext", type: TEXT, min_width: 50 },
             { title: "Size", name: "size", type: TEXT, min_width: 55 },
             { title: "Date", name: "mtime", type: TEXT, min_width: 125 },
             { title: "Attr", name: "mode", type: TEXT, min_width: 45 },
-        ].map(this.prefixSort),
-        cursor: cursor,
-        on_activated: this.handleActivated,
-        on_clicked: this.handleClicked,
-        on_cursor: this.handleCursor,
-        on_key_press_event: this.handleKeyPressEvent,
-        on_layout: this.handleLayout,
-        on_selected: this.handleSelected,
-        on_search: this.handleSearch,
-        rows: rows,
-        selected: selected,
-      }),
-    ])
+          ].map(this.prefixSort),
+          // cursor: cursor,
+          on_activated: this.handleActivated,
+          // on_clicked: this.handleClicked,
+          // on_cursor: this.handleCursor,
+          // on_key_press_event: this.handleKeyPressEvent,
+          // on_layout: this.handleLayout,
+          // on_selected: this.handleSelected,
+          // on_search: this.handleSearch,
+          // selected: selected,
+        },
+          rows.map(props => h('tr', props))
+        ),
+      ])
   );
 };
 

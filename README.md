@@ -1,10 +1,38 @@
 # acme-commander
 
-> Twin-panel file manager
+Twin-panel file manager.
 
-## Build Setup
+## Usage
 
-``` bash
+Make sure you have a GNOME JavaScript runtime, v1.50 or newer:
+
+```bash
+# Ubuntu 17.10
+sudo apt update && sudo apt install gjs
+
+# macOS (not much works besides UI)
+brew update && brew install gjs
+```
+
+Then install with [Yarn](https://yarnpkg.com/en/docs/install#linux-tab):
+
+```bash
+yarn global add acme-commander
+```
+
+Run:
+
+```bash
+acme-commander
+```
+
+## Development
+
+```bash
+# clone repo
+git clone https://github.com/makepost/acme-commander
+cd acme-commander
+
 # install dependencies
 yarn
 
@@ -26,7 +54,7 @@ yarn coverage && xdg-open coverage/index.html
 
 - [x] Multiple tabs on each panel
 
-- [x] Gio back-end: Ls, cp, mv, mkdir and rm
+- [ ] Gio back-end: Ls, cp, mv, mkdir and rm (FIXME: GioWorker)
 
 - [x] Sort files by name, ext or date
 
