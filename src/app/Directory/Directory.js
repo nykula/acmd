@@ -4,18 +4,22 @@ const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const assign = require("lodash/assign");
+const isEqual = require("lodash/isEqual");
 const { autorun, extendObservable } = require("mobx");
+const range = require("lodash/range");
 const { File } = require("../../domain/File/File");
 const { ActionService } = require("../Action/ActionService");
 const getVisibleFiles = require("../Action/getVisibleFiles").default;
 const { FileService } = require("../File/FileService");
 const autoBind = require("../Gjs/autoBind").default;
-const { GICON, TEXT } = require("../ListStore/ListStore");
+const { CHECKBOX, GICON, TEXT } = require("../ListStore/ListStore");
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
 const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
 const formatSize = require("../Size/formatSize").default;
 const { TabService } = require("../Tab/TabService");
+const { DirectoryFile } = require("./DirectoryFile");
+const select = require("./select").default;
 
 /**
  * @typedef IProps
@@ -48,19 +52,19 @@ Directory.prototype.container = undefined;
 /** @type {IProps} */
 Directory.prototype.props = undefined;
 
-Directory.prototype.componentWillUnmount = function () {
+Directory.prototype.componentWillUnmount = function() {
   this.unsubscribeUpdate();
 };
 
-Directory.prototype.tabId = function () {
+Directory.prototype.tabId = function() {
   return this.props.panelService.entities[this.props.panelId].activeTabId;
 };
 
-Directory.prototype.tab = function () {
+Directory.prototype.tab = function() {
   return this.props.tabService.entities[this.tabId()];
 };
 
-Directory.prototype.rows = function () {
+Directory.prototype.rows = function() {
   const panelId = this.props.panelId;
   const tabId = this.props.panelService.entities[panelId].activeTabId;
   const { files } = this.props.tabService.entities[tabId];
@@ -68,7 +72,7 @@ Directory.prototype.rows = function () {
   const rows = getVisibleFiles({
     files: files,
     showHidSys: this.props.showHidSysService.state,
-  }).map(mapFileToRow);
+  });
 
   return rows;
 };
@@ -76,25 +80,25 @@ Directory.prototype.rows = function () {
 /**
  * @param {IProps=} props
  */
-Directory.prototype.isActive = function (props = this.props) {
+Directory.prototype.isActive = function(props = this.props) {
   return props.panelService.activeId === props.panelId;
 };
 
-Directory.prototype.focusIfActive = function () {
+Directory.prototype.focusIfActive = function() {
   if (this.container && this.isActive()) {
     const children = this.container.get_children();
     children[0].grab_focus();
   }
 };
 
-Directory.prototype.handleActivated = function (index) {
+Directory.prototype.handleActivated = function(index) {
   this.props.actionService.activated({
     index: index,
     panelId: this.props.panelId,
   });
 };
 
-Directory.prototype.handleClicked = function (colName) {
+Directory.prototype.handleClicked = function(colName) {
   this.props.tabService.sorted({
     by: colName,
     tabId: this.tabId(),
@@ -104,7 +108,7 @@ Directory.prototype.handleClicked = function (colName) {
 /**
  * @param {number} cursor
  */
-Directory.prototype.handleCursor = function (cursor) {
+Directory.prototype.handleCursor = function(cursor) {
   this.props.fileService.cursor({
     cursor: cursor,
     panelId: this.props.panelId,
@@ -112,7 +116,38 @@ Directory.prototype.handleCursor = function (cursor) {
   });
 };
 
-Directory.prototype.handleKeyPressEvent = function (ev) {
+/**
+ * @param {{ altKey: boolean, ctrlKey: boolean, limit: number, shiftKey: number, top: number, which: any }} ev
+ */
+Directory.prototype.handleKeyPressEvent = function(ev) {
+  const { cursor, selected } = this.tab();
+
+  const state = {
+    limit: ev.limit,
+    indices: range(0, this.rows().length),
+    cursor: cursor,
+    selected: selected,
+    top: ev.top,
+  };
+
+  const nextState = select(state, ev);
+
+  if (state !== nextState) {
+    if (state.cursor !== nextState.cursor) {
+      this.handleCursor(nextState.cursor);
+    }
+
+    if (!isEqual(state.selected.slice(), nextState.selected.slice())) {
+      this.props.fileService.selected({
+        panelId: this.props.panelId,
+        selected: nextState.selected,
+        tabId: this.tabId(),
+      });
+    }
+
+    return true;
+  }
+
   const { actionService, panelService, panelId } = this.props;
   const tabId = this.tabId();
 
@@ -202,42 +237,21 @@ Directory.prototype.handleKeyPressEvent = function (ev) {
   return false;
 };
 
-Directory.prototype.handleLayout = function (node) {
+Directory.prototype.handleLayout = function(node) {
   this.props.refstore.set("panel" + this.props.panelId)(node);
   this.focusIfActive();
 };
 
-Directory.prototype.handleSearch = function (store, _col, input, iter) {
-  const { cursor } = this.tab();
-
-  const skip = this.rows().map(({ filename, ext, size }) => {
-    const isDir = size === "<DIR>";
-    let name = filename;
-
-    if (isDir) {
-      name = name.slice(1, -1);
-    }
-
-    if (ext) {
-      name += "." + ext;
-    }
-
-    return name.toLowerCase().indexOf(input.toLowerCase()) !== 0;
-  });
-
-  const index = Number(store.get_string_from_iter(iter));
-
-  if (skip.indexOf(false) === -1 && index === cursor) {
-    return false;
-  }
-
-  return skip[index];
-};
-
 /**
- * @param {number[]} selected
+ * @param {value} number
  */
-Directory.prototype.handleSelected = function (selected) {
+Directory.prototype.handleSelected = function(index) {
+  let { selected } = this.tab();
+
+  selected = selected.indexOf(index) === -1
+    ? selected.concat(index)
+    : selected.filter(x => x !== index);
+
   this.props.fileService.selected({
     panelId: this.props.panelId,
     selected: selected,
@@ -245,7 +259,7 @@ Directory.prototype.handleSelected = function (selected) {
   });
 };
 
-Directory.prototype.prefixSort = function (col) {
+Directory.prototype.prefixSort = function(col) {
   const { sortedBy } = this.tab();
 
   if (col.name === sortedBy) {
@@ -259,12 +273,11 @@ Directory.prototype.prefixSort = function (col) {
   return col;
 };
 
-Directory.prototype.refContainer = function (node) {
+Directory.prototype.refContainer = function(node) {
   this.container = node;
 };
 
-Directory.prototype.render = function () {
-  const rows = this.rows();
+Directory.prototype.render = function() {
   const { cursor, selected } = this.tab();
 
   return (
@@ -273,8 +286,16 @@ Directory.prototype.render = function () {
       hscrollbar_policy: Gtk.PolicyType.NEVER,
       ref: this.refContainer,
     }, [
-        h('table', {
+        h("tree-view", {
+          activatedCallback: this.handleActivated,
+          clickedCallback: this.handleClicked,
           cols: [
+            {
+              title: null,
+              name: "selected",
+              type: CHECKBOX,
+              on_toggled: this.handleSelected,
+            },
             { title: null, name: "icon", type: GICON },
             { title: "Name", name: "filename", type: TEXT, expand: true },
             { title: "Ext", name: "ext", type: TEXT, min_width: 50 },
@@ -282,68 +303,22 @@ Directory.prototype.render = function () {
             { title: "Date", name: "mtime", type: TEXT, min_width: 125 },
             { title: "Attr", name: "mode", type: TEXT, min_width: 45 },
           ].map(this.prefixSort),
-          // cursor: cursor,
-          on_activated: this.handleActivated,
-          // on_clicked: this.handleClicked,
-          // on_cursor: this.handleCursor,
-          // on_key_press_event: this.handleKeyPressEvent,
-          // on_layout: this.handleLayout,
-          // on_selected: this.handleSelected,
-          // on_search: this.handleSearch,
-          // selected: selected,
+          cursor,
+          cursorCallback: this.handleCursor,
+          keyPressEventCallback: this.handleKeyPressEvent,
+          layoutCallback: this.handleLayout,
         },
-          rows.map(props => h('tr', props))
+          this.rows().map((file, index) => {
+            return h(DirectoryFile, {
+              file,
+              key: file.name,
+              selected: selected.indexOf(index) !== -1,
+            });
+          }),
         ),
       ])
   );
 };
-
-exports.mapFileToRow = mapFileToRow;
-/**
- * @param {File} file
- */
-function mapFileToRow(file) {
-  let { icon, iconType } = file;
-  let filename = file.name;
-  let ext = "";
-  let mode = "";
-
-  const matches = /^(.+)\.(.*?)$/.exec(file.name);
-
-  if (file.fileType !== "DIRECTORY" && file.name !== ".." && matches) {
-    filename = matches[1];
-    ext = matches[2];
-  }
-
-  if (file.fileType === "DIRECTORY") {
-    filename = "[" + file.name + "]";
-  }
-
-  const mtime = ((time) => {
-    const date = new Date(time * 1000);
-
-    const month = ("00" + (date.getMonth() + 1)).slice(-2);
-    const day = ("00" + (date.getDate())).slice(-2);
-    const year = ("0000" + (date.getFullYear())).slice(-4);
-    const hours = ("00" + (date.getHours())).slice(-2);
-    const minutes = ("00" + (date.getMinutes())).slice(-2);
-
-    return [month, day, year].join("/") + " " + [hours, minutes].join(":");
-  })(file.modificationTime);
-
-  if (file.attributes && file.attributes["unix::mode"]) {
-    mode = Number(file.attributes["unix::mode"]).toString(8).slice(-4);
-  }
-
-  return {
-    icon: { icon: icon, iconType: iconType },
-    filename: filename,
-    ext: ext,
-    size: file.fileType === "DIRECTORY" ? "<DIR>" : formatSize(file.size),
-    mtime: mtime,
-    mode: mode,
-  };
-}
 
 exports.Directory = Directory;
 

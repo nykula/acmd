@@ -1,3 +1,4 @@
+const noop = require("lodash/noop");
 const { extendObservable, when } = require("mobx");
 const { setValue } = require("../ListStore/ListStore");
 
@@ -8,26 +9,21 @@ const { setValue } = require("../ListStore/ListStore");
  * @property {(iter: any, column: number, value: any) => void} set_value
  */
 
-/**
- * @param {any} node The domified gtk node to patch.
- */
-function TableRow(node) {
-  node.removeAttribute = this.set.bind(node);
-  node.setAttribute = this.set.bind(node);
+function TreeViewRow() {
+  this.removeAttribute = this.set.bind(this);
+  this.setAttribute = this.set.bind(this);
 
-  extendObservable(node, {
+  extendObservable(this, {
     iter: undefined,
     store: undefined,
   });
-
-  return node;
 }
 
 /** @type {any} */
-TableRow.prototype.iter = undefined;
+TreeViewRow.prototype.iter = undefined;
 
 /** @type {GtkListStore} */
-TableRow.prototype.store = undefined;
+TreeViewRow.prototype.store = undefined;
 
 /**
  * Sets value for own column. Waits for store if not available.
@@ -35,7 +31,7 @@ TableRow.prototype.store = undefined;
  * @param {string} name
  * @param {any=} value
  */
-TableRow.prototype.set = function(name, value) {
+TreeViewRow.prototype.set = function(name, value) {
   when(() => !!this.store, () => {
     if (!this.iter) {
       this.iter = this.store.append();
@@ -45,4 +41,9 @@ TableRow.prototype.set = function(name, value) {
   });
 };
 
-exports.TableRow = TableRow;
+/**
+ * @type {(input: string) => boolean}
+ */
+TreeViewRow.prototype.shouldSearchSkip = noop;
+
+exports.TreeViewRow = TreeViewRow;

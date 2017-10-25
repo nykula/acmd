@@ -1,6 +1,6 @@
 const noop = require("lodash/noop");
-const { Table } = require("../TreeView/Table");
-const { TableRow } = require("../TreeView/TableRow");
+const { TreeView } = require("../TreeView/TreeView");
+const { TreeViewRow } = require("../TreeView/TreeViewRow");
 
 function getFirstChild() {
   const children = this.get_children();
@@ -156,12 +156,12 @@ GtkDom.prototype.domify = function(node) {
  * for it to be compatible with Inferno.
  */
 GtkDom.prototype.createElement = function(tagName) {
-  if (tagName === "table") {
-    return new Table(this.domify(new this.Gtk.TreeView()));
+  if (tagName === "tree-view") {
+    return new TreeView(this.domify(new this.Gtk.TreeView()));
   }
 
-  if (tagName === "tr") {
-    return new TableRow(this.domify(new this.Gtk.Label()));
+  if (tagName === "tree-view-row") {
+    return new TreeViewRow();
   }
 
   tagName = tagName.replace(/(?:^|-)(.)/g, (_, x) => x.toUpperCase());
