@@ -130,8 +130,6 @@ TreeView.prototype.setCols = function(cols) {
  */
 TreeView.prototype.insertBefore = function(newChild, existingChild) {
   when(() => !!this.store, () => {
-    const index = this.rows.indexOf(existingChild);
-
     if (this.rows.indexOf(newChild) === -1) {
       Object.defineProperties(newChild, {
         nextSibling: {
@@ -156,7 +154,14 @@ TreeView.prototype.insertBefore = function(newChild, existingChild) {
 
     when(() => !!newChild.iter, () => {
       this.store.move_before(newChild.iter, existingChild ? existingChild.iter : null);
-      this.rows.splice(index, 0, newChild);
+
+      const index = this.rows.indexOf(existingChild);
+
+      if (index === -1) {
+        this.rows.push(newChild);
+      } else {
+        this.rows.splice(index, 0, newChild);
+      }
     });
   });
 };
@@ -182,7 +187,7 @@ TreeView.prototype.removeChild = function(row) {
  */
 TreeView.prototype.replaceChild = function(newChild, oldChild) {
   this.insertBefore(newChild, oldChild);
-  this.rows.splice(this.rows.indexOf(oldChild), 1, newChild);
+  this.removeChild(oldChild);
 };
 
 TreeView.prototype.clear = function() {

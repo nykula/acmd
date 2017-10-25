@@ -5,8 +5,8 @@ const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const assign = require("lodash/assign");
 const isEqual = require("lodash/isEqual");
-const { autorun, extendObservable } = require("mobx");
 const range = require("lodash/range");
+const { autorun, extendObservable } = require("mobx");
 const { File } = require("../../domain/File/File");
 const { ActionService } = require("../Action/ActionService");
 const getVisibleFiles = require("../Action/getVisibleFiles").default;
@@ -16,7 +16,6 @@ const { CHECKBOX, GICON, TEXT } = require("../ListStore/ListStore");
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
 const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
-const formatSize = require("../Size/formatSize").default;
 const { TabService } = require("../Tab/TabService");
 const { DirectoryFile } = require("./DirectoryFile");
 const select = require("./select").default;
@@ -292,7 +291,7 @@ Directory.prototype.render = function() {
           cols: [
             {
               title: null,
-              name: "selected",
+              name: "isSelected",
               type: CHECKBOX,
               on_toggled: this.handleSelected,
             },
@@ -311,8 +310,7 @@ Directory.prototype.render = function() {
           this.rows().map((file, index) => {
             return h(DirectoryFile, {
               file,
-              key: file.name,
-              selected: selected.indexOf(index) !== -1,
+              isSelected: selected.indexOf(index) !== -1,
             });
           }),
         ),

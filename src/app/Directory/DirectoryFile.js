@@ -8,7 +8,7 @@ const formatSize = require("../Size/formatSize").default;
 /**
  * @typedef IProps
  * @property {File} file
- * @property {boolean} selected
+ * @property {boolean} isSelected
  *
  * @param {IProps} props
  */
@@ -75,18 +75,18 @@ DirectoryFile.prototype.shouldSearchSkip = function(input) {
 };
 
 DirectoryFile.prototype.render = function() {
-  const { file, selected } = this.props;
+  const { file, isSelected } = this.props;
   const [filename, ext] = this.name();
 
   return h("tree-view-row", {
     ext,
     filename,
     icon: file,
+    isSelected,
     mode: this.mode(),
     mtime: this.mtime(),
-    size: this.size(),
-    selected,
     shouldSearchSkip: this.shouldSearchSkip,
+    size: this.size(),
   });
 };
 
