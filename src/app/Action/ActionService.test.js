@@ -165,7 +165,6 @@ describe("ActionService", () => {
         next_files_finish: () => [{
           list_attributes: () => ["someNamespace::someKey"],
           get_attribute_as_string: () => "someValue",
-          get_content_type: () => "text/plain",
           get_display_name: () => "file.txt",
           get_file_type: () => 2,
           get_icon: () => ({
@@ -194,7 +193,6 @@ describe("ActionService", () => {
       query_info_finish: () => ({
         list_attributes: () => ["someNamespace::someKey"],
         get_attribute_as_string: () => "someValue",
-        get_content_type: () => "inode/directory",
         get_display_name: () => "/",
         get_file_type: () => 1,
         get_icon: () => ({
@@ -209,50 +207,12 @@ describe("ActionService", () => {
     };
 
     const Gio = {
-      AppInfo: {
-        get_all_for_type: () => [
-          {
-            get_commandline: () => "/usr/share/code/code --unity-launch %U",
-            get_display_name: () => "Visual Studio Code",
-            get_icon: () => ({
-              to_string: () => "code",
-            }),
-          },
-          {
-            get_commandline: () => "/usr/bin/gedit %U",
-            get_display_name: () => "Text Editor",
-            get_icon: () => ({
-              to_string: () => "gedit",
-            }),
-          },
-          {
-            get_commandline: () => "/usr/bin/foobar %U",
-            get_display_name: () => "Foobar",
-            get_icon: () => null,
-          },
-          {
-            get_commandline: () => "/usr/bin/gedit %U",
-            get_display_name: () => "Text Editor",
-            get_icon: () => ({
-              to_string: () => "gedit",
-            }),
-          },
-        ],
-        get_default_for_type: () => ({
-          get_commandline: () => "/usr/bin/gedit %U",
-          get_display_name: () => "Text Editor",
-          get_icon: () => ({
-            to_string: () => "gedit",
-          }),
-        }),
-      },
       FileQueryInfoFlags: { NONE: 0 },
       FileType: {
         "typeA": 0,
         "typeB": 0,
         "typeC": 0,
       },
-      VolumeMonitor: { get: () => null },
       file_new_for_uri: () => dirGFile,
     };
 
@@ -274,11 +234,9 @@ describe("ActionService", () => {
     actionService.ls(tabId, "file:///");
 
     expect(pushLocation.calls.length).toBe(1);
-    console.log(JSON.stringify(set.calls[0], null, 2));
     expect(set).toHaveBeenCalledWith({
       files: [
         {
-          contentType: "inode/directory",
           displayName: ".",
           fileType: "typeB",
           icon: "some gio icon",
@@ -289,28 +247,10 @@ describe("ActionService", () => {
           attributes: {
             "someNamespace::someKey": "someValue",
           },
-          handlers: [
-            {
-              commandline: "/usr/bin/gedit %U",
-              displayName: "Text Editor",
-              icon: "gedit",
-            },
-            {
-              commandline: "/usr/share/code/code --unity-launch %U",
-              displayName: "Visual Studio Code",
-              icon: "code",
-            },
-            {
-              commandline: "/usr/bin/foobar %U",
-              displayName: "Foobar",
-              icon: null,
-            },
-          ],
           "uri": "file:///",
           "mountUri": "file:///",
         },
         {
-          contentType: "text/plain",
           displayName: "file.txt",
           fileType: "typeC",
           icon: "some gio icon",
@@ -321,23 +261,6 @@ describe("ActionService", () => {
           attributes: {
             "someNamespace::someKey": "someValue",
           },
-          handlers: [
-            {
-              commandline: "/usr/bin/gedit %U",
-              displayName: "Text Editor",
-              icon: "gedit",
-            },
-            {
-              commandline: "/usr/share/code/code --unity-launch %U",
-              displayName: "Visual Studio Code",
-              icon: "code",
-            },
-            {
-              commandline: "/usr/bin/foobar %U",
-              displayName: "Foobar",
-              icon: null,
-            },
-          ],
           "uri": "file:///?@$/@!#$/*@!)(#</>E",
         },
       ],
@@ -348,7 +271,6 @@ describe("ActionService", () => {
 
   it("creates a directory", () => {
     const Gio = {
-      VolumeMonitor: { get: () => null },
       file_new_for_uri: () => ({
         make_directory_async: function() {
           arguments[arguments.length - 1]();
@@ -404,7 +326,6 @@ describe("ActionService", () => {
         }),
       },
       MountUnmountFlags: { NONE: 0 },
-      VolumeMonitor: { get: noop },
     };
 
     const actionService = new ActionService();
@@ -451,7 +372,6 @@ describe("ActionService", () => {
         this.set_flags = noop;
         this.spawnv = noop;
       },
-      VolumeMonitor: { get: noop },
     };
 
     const actionService = new ActionService();

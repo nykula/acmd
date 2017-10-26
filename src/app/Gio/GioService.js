@@ -1,7 +1,10 @@
+const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const waterfall = require("async/waterfall");
 const find = require("lodash/find");
+const uniqBy = require("lodash/uniqBy");
 const Uri = require("url-parse");
+const { FileHandler } = require("../../domain/File/FileHandler");
 const autoBind = require("../Gjs/autoBind").default;
 const gioAsync = require("./gioAsync").default;
 const { WorkerRunner } = require("./WorkerRunner");
@@ -18,14 +21,26 @@ function GioService(Gio, Gtk) {
   this.Gio = Gio;
   this.Gtk = Gtk;
 
-  this.gVolMon = this.Gio.VolumeMonitor.get();
   this.work = new WorkerRunner();
 }
+
+/**
+ * Native volume monitor.
+ * @type {{ get_connected_drives: () => any[], get_mounts: () => any[], get_volumes: () => any[] }}
+ */
+GioService.prototype.gVolMon = undefined;
+
+GioService.prototype.ensureGVolMon = function() {
+  if (!this.gVolMon) {
+    this.gVolMon = this.Gio.VolumeMonitor.get();
+  }
+};
 
 /**
  * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Drive.html
  */
 GioService.prototype.drives = function(callback) {
+  this.ensureGVolMon();
   const gDrives = this.gVolMon.get_connected_drives();
   const drives = gDrives.map(this._serializeDrive);
   const rootInfo = this.Gio.File.new_for_uri("file:///").query_filesystem_info("*", null);
@@ -65,6 +80,8 @@ GioService.prototype.mount = function(props, callback) {
 
   if (props.identifier) {
     const identifier = props.identifier;
+
+    this.ensureGVolMon();
 
     const gVolume = find(this.gVolMon.get_volumes(), _gVolume => {
       return _gVolume.get_identifier(identifier.type) === identifier.value;
@@ -252,35 +269,8 @@ GioService.prototype.ls = function(uri, callback) {
         return prev;
       }, {});
 
-    const contentType = gFileInfo.get_content_type();
-    const gAppInfos = this.Gio.AppInfo.get_all_for_type(contentType);
-
-    const def = this.Gio.AppInfo.get_default_for_type(contentType, false);
-    if (def) {
-      gAppInfos.unshift(def);
-    }
-
-    const handlers = gAppInfos
-      .map(gAppInfo => {
-        const icon = gAppInfo.get_icon();
-        return {
-          commandline: gAppInfo.get_commandline(),
-          displayName: gAppInfo.get_display_name(),
-          icon: icon ? icon.to_string() : null,
-        };
-      })
-      .filter((x, i, xs) => {
-        for (let j = 0; j < i; j++) {
-          if (xs[j].commandline === x.commandline) {
-            return false;
-          }
-        }
-        return true;
-      });
-
     const name = gFileInfo.get_name();
     const file = {
-      contentType: contentType,
       displayName: gFileInfo.get_display_name(),
       fileType: Object.keys(this.Gio.FileType)[gFileInfo.get_file_type()],
       icon: gFileInfo.get_icon().to_string(),
@@ -289,7 +279,6 @@ GioService.prototype.ls = function(uri, callback) {
       modificationTime: gFileInfo.get_modification_time().tv_sec,
       size: gFileInfo.get_size(),
       attributes: attributes,
-      handlers: handlers,
       uri: dir.get_child(name).get_uri(),
     };
 
@@ -303,6 +292,55 @@ GioService.prototype.ls = function(uri, callback) {
     handleChildren,
     handleInfos,
   ], callback);
+};
+
+/**
+ * Gets content type of a given file, and apps that can open it.
+ *
+ * @param {string} url
+ * @param {(error: Error, result: { contentType: string, handlers: FileHandler[] }) => void} callback
+ */
+GioService.prototype.getHandlers = function(uri, callback) {
+  const file = this.Gio.file_new_for_uri(uri);
+
+  gioAsync(file, "query_info",
+    "standard::*,access::*,owner::*,time::*,unix::*",
+    Gio.FileQueryInfoFlags.NONE,
+    GLib.PRIORITY_DEFAULT,
+    null,
+    (error, gFileInfo) => {
+      if (error) {
+        callback(error);
+        return;
+      }
+
+      const contentType = gFileInfo.get_content_type();
+
+      /** @type {any[]} */
+      const gAppInfos = this.Gio.AppInfo.get_all_for_type(contentType);
+
+      const def = this.Gio.AppInfo.get_default_for_type(contentType, false);
+      if (def) {
+        gAppInfos.unshift(def);
+      }
+
+      let handlers = gAppInfos.map(gAppInfo => {
+        const icon = gAppInfo.get_icon();
+        return {
+          commandline: gAppInfo.get_commandline(),
+          displayName: gAppInfo.get_display_name(),
+          icon: icon ? icon.to_string() : null,
+        };
+      });
+
+      handlers = uniqBy(handlers, x => x.commandline);
+
+      callback(null, {
+        contentType,
+        handlers,
+      });
+    },
+  );
 };
 
 /**

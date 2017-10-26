@@ -1,3 +1,4 @@
+const Gdk = imports.gi.Gdk;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const assign = require("lodash/assign");
@@ -139,42 +140,52 @@ ActionService.prototype.createTab = function(panelId) {
 };
 
 ActionService.prototype.ctxMenu = function() {
-  const file = this.getCursor();
+  const { uri } = this.getCursor();
 
-  if (file.handlers.length === 0) {
-    this.dialogService.alert("No handlers registered for " + file.contentType + ".", noop);
-    return;
-  }
-
-  const menu = new Gtk.Menu();
-
-  file.handlers.forEach(handler => {
-    let item;
-
-    if (handler.icon) {
-      item = new Gtk.MenuItem();
-
-      const box = new Gtk.Box();
-      item.add(box);
-
-      const image = Gtk.Image.new_from_icon_name(handler.icon, Gtk.IconSize.MENU);
-      box.add(image);
-
-      const label = new Gtk.Label({ label: handler.displayName });
-      box.add(label);
-    } else {
-      item = new Gtk.MenuItem({ label: handler.displayName });
+  this.gioService.getHandlers(uri, (error, result) => {
+    if (error) {
+      this.dialogService.alert(error.message, noop);
+      return;
     }
 
-    item.connect("activate", () => {
-      this.gioService.launch(handler, [file.uri]);
-    });
+    const { contentType, handlers } = result;
 
-    menu.add(item);
+    if (!handlers.length) {
+      this.dialogService.alert("No handlers registered for " + contentType + ".", noop);
+      return;
+    }
+
+    const menu = new this.Gtk.Menu();
+
+    for (const handler of handlers) {
+      const { displayName, icon } = handler;
+      let item;
+
+      if (icon) {
+        item = new this.Gtk.MenuItem();
+
+        const box = new this.Gtk.Box();
+        item.add(box);
+
+        const image = this.Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.MENU);
+        box.add(image);
+
+        const label = new this.Gtk.Label({ label: displayName });
+        box.add(label);
+      } else {
+        item = new this.Gtk.MenuItem({ label: displayName });
+      }
+
+      item.connect("activate", () => {
+        this.gioService.launch(handler, [uri]);
+      });
+
+      menu.add(item);
+    }
+
+    menu.show_all();
+    menu.popup(null, null, null, null, null);
   });
-
-  menu.show_all();
-  menu.popup(null, null, null, null, null);
 };
 
 ActionService.prototype.drives = function() {
