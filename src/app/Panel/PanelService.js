@@ -1,10 +1,22 @@
 const { computed, extendObservable } = require("mobx");
+const { File } = require("../../domain/File/File");
 const { Panel } = require("../../domain/Panel/Panel");
+const { TabService } = require("../Tab/TabService");
 
-function PanelService() {
+/**
+ * @param {TabService} tabService
+ */
+function PanelService(tabService) {
+  this.tabService = tabService;
+
   extendObservable(this, {
     activeId: this.activeId,
     entities: this.entities,
+    showHidSys: this.showHidSys,
+    visibleFiles: {
+      "0": computed(this.getVisibleFiles.bind(this, 0)),
+      "1": computed(this.getVisibleFiles.bind(this, 1)),
+    },
   });
 }
 
@@ -27,6 +39,13 @@ PanelService.prototype.entities = {
     tabIds: [1],
   },
 };
+
+PanelService.prototype.showHidSys = false;
+
+/**
+ * @type {{ [id: string]: File[] }}
+ */
+PanelService.prototype.visibleFiles = undefined;
 
 /**
  * @param {number} id
@@ -155,6 +174,20 @@ PanelService.prototype.getHistoryItem = function(tabId, delta) {
   }
 
   return history[nextNow];
+};
+
+/**
+ * @param {number} panelId
+ */
+PanelService.prototype.getVisibleFiles = function(panelId) {
+  const { activeTabId } = this.entities[panelId];
+  const { files } = this.tabService.entities[activeTabId];
+
+  if (this.showHidSys) {
+    return files.filter(file => file.name !== ".");
+  }
+
+  return files.filter(file => file.name[0] !== "." || file.name === "..");
 };
 
 exports.PanelService = PanelService;

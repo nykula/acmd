@@ -4,13 +4,13 @@ const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { ActionService } = require("../Action/ActionService");
 const autoBind = require("../Gjs/autoBind").default;
-const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
+const { PanelService } = require("../Panel/PanelService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
 
 /**
  * @typedef IProps
  * @property {ActionService} actionService
- * @property {ShowHidSysService} showHidSysService
+ * @property {PanelService} panelService
  *
  * @param {IProps} props
  */
@@ -44,7 +44,7 @@ Toolbar.prototype.render = function() {
     { type: "touch", icon_name: "document-new", tooltip_text: "Create file" },
     { type: "terminal", icon_name: "utilities-terminal", tooltip_text: "Terminal" },
     {
-      active: this.props.showHidSysService.state,
+      active: this.props.panelService.showHidSys,
       icon_name: "dialog-warning",
       tooltip_text: "Hidden files",
       type: "showHidSys",
@@ -79,4 +79,4 @@ Toolbar.prototype.render = function() {
 };
 
 exports.Toolbar = Toolbar;
-exports.default = connect(["actionService", "showHidSysService"])(Toolbar);
+exports.default = connect(["actionService", "panelService"])(Toolbar);

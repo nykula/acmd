@@ -7,7 +7,6 @@ const { GioService } = require("./Gio/GioService");
 const { LogService } = require("./Log/LogService");
 const { MountService } = require("./Mount/MountService");
 const Refstore = require("./Refstore/Refstore").default;
-const { ShowHidSysService } = require("./ShowHidSys/ShowHidSysService");
 const { PanelService } = require("./Panel/PanelService");
 const { TabService } = require("./Tab/TabService");
 
@@ -21,10 +20,10 @@ function Services(win) {
   this.gioService = new GioService(Gio, Gtk);
   this.logService = new LogService();
   this.mountService = new MountService();
-  this.panelService = new PanelService();
   this.refstore = new Refstore();
-  this.showHidSysService = new ShowHidSysService();
   this.tabService = new TabService();
+
+  this.panelService = new PanelService(this.tabService);
 
   this.actionService = new ActionService(
     this.dialogService,
@@ -34,7 +33,6 @@ function Services(win) {
     this.mountService,
     this.panelService,
     this.refstore,
-    this.showHidSysService,
     this.tabService,
     this.win,
   );

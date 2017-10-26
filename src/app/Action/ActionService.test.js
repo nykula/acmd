@@ -415,6 +415,22 @@ describe("ActionService", () => {
     expect(actionService.refresh).toHaveBeenCalled();
   });
 
+  it("toggles hidden file visibility", () => {
+    /** @type {any} */
+    const panelService = {
+      showHidSys: undefined,
+    };
+
+    const actionService = new ActionService();
+    actionService.panelService = panelService;
+
+    actionService.showHidSys();
+    expect(panelService.showHidSys).toEqual(true);
+
+    actionService.showHidSys();
+    expect(panelService.showHidSys).toEqual(false);
+  });
+
   it("opens a terminal in the current directory", () => {
     /** @type {any} */
     const panelService = {
@@ -447,18 +463,6 @@ describe("ActionService", () => {
   });
 
   it("creates tab in panel, cloning active tab", () => {
-    const panelService = new PanelService();
-    panelService.entities = {
-      "0": {
-        activeTabId: 0,
-        tabIds: [0],
-      },
-      "1": {
-        activeTabId: 1,
-        tabIds: [1],
-      },
-    };
-
     /** @type {*} */
     const tabService = {
       entities: {
@@ -476,6 +480,18 @@ describe("ActionService", () => {
           selected: [],
           sortedBy: "name",
         },
+      },
+    };
+
+    const panelService = new PanelService(tabService);
+    panelService.entities = {
+      "0": {
+        activeTabId: 0,
+        tabIds: [0],
+      },
+      "1": {
+        activeTabId: 1,
+        tabIds: [1],
       },
     };
 

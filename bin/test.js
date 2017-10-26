@@ -16,7 +16,7 @@ const data = new Worker().flatten(imports.gi.Gio.File.new_for_path(dirname + "/s
 const scripts = data.files.map(x => x.relativePath).filter(x => (
   !!x &&
   x.slice(-3) === ".js" &&
-  x !== "index.js" &&
+  x !== "app/index.js" &&
   (!ARGV.length || ARGV.indexOf(x.split("/").slice(-2)[0]) !== -1)
 )).map(x => "../src/" + x);
 

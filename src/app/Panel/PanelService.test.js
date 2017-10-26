@@ -3,7 +3,10 @@ const { PanelService } = require("./PanelService");
 
 describe("PanelService", () => {
   it("switches active tab in panel", () => {
-    const panelService = new PanelService();
+    /** @type {any} */
+    const tabService = undefined;
+
+    const panelService = new PanelService(tabService);
 
     panelService.entities = {
       "0": { activeTabId: 0 },
@@ -20,7 +23,10 @@ describe("PanelService", () => {
   });
 
   it("switches panel to next tab", () => {
-    const panelService = new PanelService();
+    /** @type {any} */
+    const tabService = undefined;
+
+    const panelService = new PanelService(tabService);
 
     panelService.entities = {
       "0": {
@@ -40,7 +46,10 @@ describe("PanelService", () => {
   });
 
   it("switches panel to prev tab", () => {
-    const panelService = new PanelService();
+    /** @type {any} */
+    const tabService = undefined;
+
+    const panelService = new PanelService(tabService);
 
     panelService.entities = {
       "0": {
@@ -60,7 +69,10 @@ describe("PanelService", () => {
   });
 
   it("removes tab in panel", () => {
-    const panelService = new PanelService();
+    /** @type {any} */
+    const tabService = undefined;
+
+    const panelService = new PanelService(tabService);
 
     panelService.entities = {
       "0": {
@@ -84,7 +96,10 @@ describe("PanelService", () => {
   });
 
   it("toggles active panel", () => {
-    const panelService = new PanelService();
+    /** @type {any} */
+    const tabService = undefined;
+
+    const panelService = new PanelService(tabService);
     panelService.activeId = 0;
 
     panelService.toggleActive();

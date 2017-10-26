@@ -10,7 +10,7 @@ describe("FileService", () => {
       selected() {},
     };
 
-    const panelService = new PanelService();
+    const panelService = new PanelService(tabService);
     const fileService = new FileService(panelService, tabService);
     panelService.activeId = 0;
 

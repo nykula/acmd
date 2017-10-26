@@ -10,9 +10,7 @@ const getActiveMountUri = require("../Mount/getActiveMountUri").default;
 const { MountService } = require("../Mount/MountService");
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
-const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
 const { TabService } = require("../Tab/TabService");
-const getVisibleFiles = require("./getVisibleFiles").default;
 
 const Action = {
   CP: "CP",
@@ -29,7 +27,6 @@ function ActionService(
   /** @type {MountService} */  mountService,
   /** @type {PanelService} */  panelService,
   /** @type {Refstore} */      refstore,
-  /** @type {ShowHidSysService} */ showHidSysService,
   /** @type {TabService} */    tabService,
   /** @type {any} */           win,
 ) {
@@ -41,7 +38,6 @@ function ActionService(
   this.mountService = mountService;
   this.panelService = panelService;
   this.refstore = refstore;
-  this.showHidSysService = showHidSysService;
   this.tabService = tabService;
   this.win = win;
 
@@ -54,12 +50,10 @@ function ActionService(
 ActionService.prototype.activated = function(props) {
   const { index, panelId } = props;
   const tabId = this.panelService.entities[panelId].activeTabId;
-  const { files, location } = this.tabService.entities[tabId];
+  const { location } = this.tabService.entities[tabId];
 
-  const file = getVisibleFiles({
-    files: files,
-    showHidSys: this.showHidSysService.state,
-  })[index];
+  const files = this.panelService.visibleFiles[panelId];
+  const file = files[index];
 
   const uri = location.replace(/\/?$/, "") + "/" + file.name;
 
@@ -433,6 +427,10 @@ ActionService.prototype.root = function(panelId) {
   this.ls(tabId, nextLocation);
 };
 
+ActionService.prototype.showHidSys = function() {
+  this.panelService.showHidSys = !this.panelService.showHidSys;
+};
+
 ActionService.prototype.terminal = function() {
   const location = this.tabService.entities[this.panelService.getActiveTabId()].location;
 
@@ -504,12 +502,10 @@ ActionService.prototype.getActiveFiles = function() {
  */
 ActionService.prototype.getCursor = function() {
   const activeTabId = this.panelService.getActiveTabId();
-  const { cursor, files } = this.tabService.entities[activeTabId];
+  const { cursor } = this.tabService.entities[activeTabId];
 
-  const file = getVisibleFiles({
-    files: files,
-    showHidSys: this.showHidSysService.state,
-  })[cursor];
+  const files = this.panelService.visibleFiles[this.panelService.activeId];
+  const file = files[cursor];
 
   return file;
 };
@@ -529,20 +525,10 @@ ActionService.prototype.getDest = function() {
  */
 ActionService.prototype.getSelected = function() {
   const activeTabId = this.panelService.getActiveTabId();
-  const { files, selected } = this.tabService.entities[activeTabId];
+  const { selected } = this.tabService.entities[activeTabId];
 
-  const visibleFiles = getVisibleFiles({
-    files: files,
-    showHidSys: this.showHidSysService.state,
-  });
-
-  return visibleFiles.filter((
-    /** @type {*} */
-    _,
-
-    /** @type {number} */
-    i,
-  ) => selected.indexOf(i) !== -1);
+  const files = this.panelService.visibleFiles[this.panelService.activeId];
+  return selected.map(index => files[index]);
 };
 
 exports.ActionService = ActionService;

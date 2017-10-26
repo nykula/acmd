@@ -268,7 +268,7 @@ TreeView.prototype.setKeyPressEventCallback = function(callback) {
 
   new KeyListener(this).on("key-press-event", (ev) => {
     const visible = this.get_visible_range();
-    const top = visible[1].get_indices()[0];
+    const top = visible[1] ? visible[1].get_indices()[0] : 0;
 
     const shouldPreventDefault = callback(assign({}, ev, {
       limit: this.limit,
@@ -319,8 +319,8 @@ TreeView.prototype.shouldSearchSkip = function(store, _, input, iter) {
   const index = Number(store.get_string_from_iter(iter));
 
   if (index === this._cursor) {
-    for (const row of this.rows) {
-      if (!row.shouldSearchSkip(input)) {
+    for (let i = 0; i < this.rows.length; i++) {
+      if (i !== index && !this.rows[i].shouldSearchSkip(input)) {
         return true;
       }
     }

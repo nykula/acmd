@@ -9,13 +9,11 @@ const range = require("lodash/range");
 const { autorun, extendObservable } = require("mobx");
 const { File } = require("../../domain/File/File");
 const { ActionService } = require("../Action/ActionService");
-const getVisibleFiles = require("../Action/getVisibleFiles").default;
 const { FileService } = require("../File/FileService");
 const autoBind = require("../Gjs/autoBind").default;
 const { CHECKBOX, GICON, TEXT } = require("../ListStore/ListStore");
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
-const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
 const { TabService } = require("../Tab/TabService");
 const { DirectoryFile } = require("./DirectoryFile");
 const select = require("./select").default;
@@ -27,7 +25,6 @@ const select = require("./select").default;
  * @property {number} panelId
  * @property {PanelService} panelService
  * @property {Refstore} refstore
- * @property {ShowHidSysService} showHidSysService
  * @property {TabService} tabService
  *
  * @param {IProps} props
@@ -62,18 +59,8 @@ Directory.prototype.tabId = function() {
 Directory.prototype.tab = function() {
   return this.props.tabService.entities[this.tabId()];
 };
-
-Directory.prototype.rows = function() {
-  const panelId = this.props.panelId;
-  const tabId = this.props.panelService.entities[panelId].activeTabId;
-  const { files } = this.props.tabService.entities[tabId];
-
-  const rows = getVisibleFiles({
-    files: files,
-    showHidSys: this.props.showHidSysService.state,
-  });
-
-  return rows;
+Directory.prototype.files = function() {
+  return this.props.panelService.visibleFiles[this.props.panelId];
 };
 
 /**
@@ -123,7 +110,7 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
 
   const state = {
     limit: ev.limit,
-    indices: range(0, this.rows().length),
+    indices: range(0, this.files().length),
     cursor: cursor,
     selected: selected,
     top: ev.top,
@@ -210,7 +197,7 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
 
     case Gdk.KEY_b:
       if (ev.ctrlKey) {
-        this.props.showHidSysService.toggle();
+        actionService.showHidSys();
       }
       break;
 
@@ -307,7 +294,7 @@ Directory.prototype.render = function() {
           keyPressEventCallback: this.handleKeyPressEvent,
           layoutCallback: this.handleLayout,
         },
-          this.rows().map((file, index) => {
+          this.files().map((file, index) => {
             return h(DirectoryFile, {
               file,
               isSelected: selected.indexOf(index) !== -1,
@@ -326,6 +313,5 @@ exports.default = connect([
   "fileService",
   "panelService",
   "refstore",
-  "showHidSysService",
   "tabService",
 ])(Directory);

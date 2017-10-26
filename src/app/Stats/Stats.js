@@ -2,18 +2,15 @@ const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { File } = require("../../domain/File/File");
-const getVisibleFiles = require("../Action/getVisibleFiles").default;
 const autoBind = require("../Gjs/autoBind").default;
 const { PanelService } = require("../Panel/PanelService");
 const formatSize = require("../Size/formatSize").default;
-const { ShowHidSysService } = require("../ShowHidSys/ShowHidSysService");
 const { TabService } = require("../Tab/TabService");
 
 /**
  * @typedef IProps
  * @property {number} panelId
  * @property {PanelService} panelService
- * @property {ShowHidSysService} showHidSysService
  * @property {TabService} tabService
  *
  * @param {IProps} param0
@@ -34,16 +31,12 @@ Stats.prototype.getData = function() {
   const tabId = this.props.panelService.entities[this.props.panelId].activeTabId;
   const tab = this.props.tabService.entities[tabId];
 
-  const files = getVisibleFiles({
-    files: tab.files,
-    showHidSys: this.props.showHidSysService.state,
-  });
-
+  const files = this.props.panelService.visibleFiles[this.props.panelId];
   const selected = tab.selected;
 
   return {
     selectedCount: selected.length,
-    selectedSize: totalSize(files.filter((_, i) => selected.indexOf(i) !== -1)),
+    selectedSize: totalSize(selected.map(index => files[index])),
     totalCount: files.length,
     totalSize: totalSize(files),
   };
@@ -63,7 +56,7 @@ Stats.prototype.render = function() {
 };
 
 exports.Stats = Stats;
-exports.default = connect(["panelService", "showHidSysService", "tabService"])(Stats);
+exports.default = connect(["panelService", "tabService"])(Stats);
 
 exports.totalSize = totalSize;
 /**
