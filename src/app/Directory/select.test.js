@@ -197,6 +197,8 @@ function handle(pairs) {
 
     it(msg, () => {
       const keys = key.split("__");
+
+      /** @type {*} */
       const ev = {
         which: Gdk["KEY_" + keys[keys.length - 1]],
         shiftKey: keys.indexOf("Shift") !== -1,
@@ -243,7 +245,7 @@ function State([cursor, selected, top]) {
     cursor: cursor,
     selected: Selected(selected),
     top: top,
-  }, { type: "@@redux/INIT" });
+  }, { shiftKey: false, which: -1 });
 
   return state;
 }

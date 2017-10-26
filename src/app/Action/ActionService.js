@@ -59,7 +59,22 @@ ActionService.prototype.activated = function(props) {
   const uri = location.replace(/\/?$/, "") + "/" + file.name;
 
   if (file.fileType !== "DIRECTORY") {
-    this.ctxMenu();
+    this.gioService.getHandlers(uri, (error, result) => {
+      if (error) {
+        this.dialogService.alert(error.message, noop);
+        return;
+      }
+
+      const { contentType, handlers } = result;
+
+      if (!handlers.length) {
+        this.dialogService.alert("No handlers registered for " + contentType + ".", noop);
+        return;
+      }
+
+      this.gioService.launch(handlers[0], [uri]);
+    });
+
     return;
   }
 
@@ -139,8 +154,14 @@ ActionService.prototype.createTab = function(panelId) {
   panel.activeTabId = tabId;
 };
 
-ActionService.prototype.ctxMenu = function() {
+/**
+ * @param {{ keyEvent?: any, mouseEvent?: any, rect?: any, win?: any }} props
+ */
+ActionService.prototype.ctxMenu = function(props) {
+  const { keyEvent, mouseEvent, rect, win } = props;
   const { uri } = this.getCursor();
+
+  const menu = new this.Gtk.Menu();
 
   this.gioService.getHandlers(uri, (error, result) => {
     if (error) {
@@ -154,8 +175,6 @@ ActionService.prototype.ctxMenu = function() {
       this.dialogService.alert("No handlers registered for " + contentType + ".", noop);
       return;
     }
-
-    const menu = new this.Gtk.Menu();
 
     for (const handler of handlers) {
       const { displayName, icon } = handler;
@@ -184,7 +203,14 @@ ActionService.prototype.ctxMenu = function() {
     }
 
     menu.show_all();
-    menu.popup(null, null, null, null, null);
+
+    if (mouseEvent) {
+      menu.popup_at_pointer(mouseEvent);
+    } else {
+      const rectAnchor = Gdk.Gravity.SOUTH_EAST;
+      const menuAnchor = Gdk.Gravity.STATIC;
+      menu.popup_at_rect(win, rect, rectAnchor, menuAnchor, keyEvent);
+    }
   });
 };
 

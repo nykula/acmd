@@ -22,7 +22,7 @@ KeyListener.prototype.handleKeyPress = function(_, nativeEv) {
     return false;
   }
 
-  const ev = new Ev(this.pressed, keyval);
+  const ev = new Ev(this.pressed, keyval, nativeEv);
   const result = this.onKeyPress(ev);
   this.pressed[keyval] = true;
 
@@ -37,7 +37,7 @@ KeyListener.prototype.handleKeyRelease = function(_, nativeEv) {
     return false;
   }
 
-  const ev = new Ev(this.pressed, keyval);
+  const ev = new Ev(this.pressed, keyval, nativeEv);
   const result = this.onKeyRelease(ev);
   this.pressed[keyval] = false;
 
@@ -53,7 +53,8 @@ KeyListener.prototype.on = function(evName, callback) {
 };
 
 exports.Ev = Ev;
-function Ev(pressed, which) {
+function Ev(pressed, which, nativeEvent) {
+  this.nativeEvent = nativeEvent;
   this.which = which;
   this.ctrlKey = pressed[Gdk.KEY_Control_L] || pressed[Gdk.KEY_Control_R];
   this.shiftKey = pressed[Gdk.KEY_Shift_L] || pressed[Gdk.KEY_Shift_R];

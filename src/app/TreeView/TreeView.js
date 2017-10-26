@@ -42,7 +42,7 @@ function TreeView(node) {
 }
 
 /**
- * Cursor row index, used in setters of `cursor` and `cursorCallback`.
+ * Cursor row index.
  * @type {number}
  */
 TreeView.prototype._cursor = undefined;
@@ -52,6 +52,12 @@ TreeView.prototype._cursor = undefined;
  * @type {number}
  */
 TreeView.prototype.limit = undefined;
+
+/**
+ * Defined when user clicks a row, as opposed to key press.
+ * @type {any}
+ */
+TreeView.prototype.mouseEvent = undefined;
 
 /**
  * @type {TreeViewRow[]}
@@ -86,6 +92,10 @@ TreeView.prototype.useNodeAsThis = function() {
     keyPressEventCallback: { set: callback => this.setKeyPressEventCallback(callback) },
     layoutCallback: { set: callback => this.setLayoutCallback(callback) },
     textContent: { set: () => this.clear() },
+  });
+
+  this.connect("button_press_event", (_, ev) => {
+    this.mouseEvent = ev;
   });
 
   this.set_search_equal_func(this.shouldSearchSkip);
@@ -211,7 +221,7 @@ TreeView.prototype.clear = function() {
 };
 
 /**
- * @param {(rowIndex: number) => void} callback
+ * @param {(index: number) => void} callback
  */
 TreeView.prototype.setActivatedCallback = function(callback) {
   this.setActivatedCallback = noop;
@@ -238,7 +248,7 @@ TreeView.prototype.setClickedCallback = function(callback) {
 };
 
 /**
- * @param {(rowIndex: number) => void} callback
+ * @param {(ev: { index: number, mouseEvent: MouseEvent }) => void} callback
  */
 TreeView.prototype.setCursorCallback = function(callback) {
   this.setCursorCallback = noop;
@@ -251,11 +261,11 @@ TreeView.prototype.setCursorCallback = function(callback) {
     const cursor = this.get_cursor();
 
     if (cursor && cursor[0]) {
-      const index = cursor[0].get_indices()[0];
+      const mouseEvent = this.mouseEvent;
+      this.mouseEvent = undefined;
 
-      if (index !== this._cursor) {
-        callback(index);
-      }
+      const index = cursor[0].get_indices()[0];
+      callback({ index, mouseEvent });
     }
   });
 };
@@ -270,9 +280,15 @@ TreeView.prototype.setKeyPressEventCallback = function(callback) {
     const visible = this.get_visible_range();
     const top = visible[1] ? visible[1].get_indices()[0] : 0;
 
+    const cursor = Gtk.TreePath.new_from_string(String(this._cursor));
+    const rect = this.get_cell_area(cursor, null);
+    const win = this.get_window();
+
     const shouldPreventDefault = callback(assign({}, ev, {
       limit: this.limit,
+      rect,
       top,
+      win,
     }));
 
     return shouldPreventDefault;
@@ -291,6 +307,7 @@ TreeView.prototype.setCursor = function(rowIndex) {
   sel.unselect_all();
   sel.select_path(path);
   this.set_cursor(path, this.get_columns()[1], null);
+  this._cursor = rowIndex;
 
   this.shouldReactToCursorChanges = true;
 };
@@ -344,6 +361,12 @@ TreeView.prototype.connect = undefined;
 TreeView.prototype.get_background_area = undefined;
 
 /**
+ * Native method. Returns position of row in visible window ara.
+ * @type {(path: GtkTreeViewPath, column: null) => GdkRectangle}
+ */
+TreeView.prototype.get_cell_area = undefined;
+
+/**
  * Native method. Returns column nodes.
  * @type {() => { clickable: boolean, connect(evName: string, callback: Function): void }[]}
  */
@@ -363,6 +386,7 @@ TreeView.prototype.get_selection = undefined;
 
 /**
  * Native method. Returns visible paths.
+ * @type {() => GtkTreeViewPath[]}
  */
 TreeView.prototype.get_visible_range = undefined;
 
@@ -371,6 +395,11 @@ TreeView.prototype.get_visible_range = undefined;
  * @type {() => GdkRectangle}
  */
 TreeView.prototype.get_visible_rect = undefined;
+
+/**
+ * Native method. Returns host window.
+ */
+TreeView.prototype.get_window = undefined;
 
 /**
  * Native method. Assigns column to position.

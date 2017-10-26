@@ -6,6 +6,20 @@ const range = require("lodash/range");
 // tslint:enable align
 const uniqSort = xs => uniq(xs.sort((a, b) => a - b), null, true);
 
+/**
+ * @typedef IState
+ * @property {number} cursor
+ * @property {number[]} indices
+ * @property {number} limit
+ * @property {number[]} selected
+ * @property {number} top
+ */
+
+/**
+ * @param {IState} state
+ * @param {{ shiftKey: boolean, which: number }} ev
+ * @returns {IState}
+ */
 exports.default = function(state, ev) {
   const { limit, indices, cursor, selected, top } = state;
   const { which, shiftKey } = ev;

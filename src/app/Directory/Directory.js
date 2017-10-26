@@ -77,9 +77,12 @@ Directory.prototype.focusIfActive = function() {
   }
 };
 
+/**
+ * @param {number} index
+ */
 Directory.prototype.handleActivated = function(index) {
   this.props.actionService.activated({
-    index: index,
+    index,
     panelId: this.props.panelId,
   });
 };
@@ -92,18 +95,30 @@ Directory.prototype.handleClicked = function(colName) {
 };
 
 /**
- * @param {number} cursor
+ * @param {{ index: number, mouseEvent?: any }} ev
  */
-Directory.prototype.handleCursor = function(cursor) {
-  this.props.fileService.cursor({
-    cursor: cursor,
-    panelId: this.props.panelId,
-    tabId: this.tabId(),
-  });
+Directory.prototype.handleCursor = function(ev) {
+  const { index, mouseEvent } = ev;
+
+  if (this.tab().cursor !== index) {
+    this.props.fileService.cursor({
+      cursor: index,
+      panelId: this.props.panelId,
+      tabId: this.tabId(),
+    });
+  }
+
+  if (mouseEvent) {
+    const button = mouseEvent.get_button()[1];
+
+    if (button === Gdk.BUTTON_SECONDARY) {
+      this.props.actionService.ctxMenu({ mouseEvent });
+    }
+  }
 };
 
 /**
- * @param {{ altKey: boolean, ctrlKey: boolean, limit: number, shiftKey: number, top: number, which: any }} ev
+ * @param {{ altKey: boolean, ctrlKey: boolean, limit: number, nativeEvent: any, rect: any, shiftKey: boolean, top: number, win: any, which: any }} ev
  */
 Directory.prototype.handleKeyPressEvent = function(ev) {
   const { cursor, selected } = this.tab();
@@ -119,9 +134,7 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
   const nextState = select(state, ev);
 
   if (state !== nextState) {
-    if (state.cursor !== nextState.cursor) {
-      this.handleCursor(nextState.cursor);
-    }
+    this.handleCursor({ index: nextState.cursor });
 
     if (!isEqual(state.selected.slice(), nextState.selected.slice())) {
       this.props.fileService.selected({
@@ -140,6 +153,14 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
   switch (ev.which) {
     case Gdk.KEY_BackSpace:
       actionService.levelUp(panelId);
+      break;
+
+    case Gdk.KEY_Menu:
+      actionService.ctxMenu({
+        keyEvent: ev.nativeEvent,
+        rect: ev.rect,
+        win: ev.win,
+      });
       break;
 
     case Gdk.KEY_ISO_Left_Tab:

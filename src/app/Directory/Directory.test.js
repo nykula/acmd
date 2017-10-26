@@ -173,7 +173,7 @@ describe("Directory", () => {
       tabService,
     });
 
-    instance.handleCursor(1);
+    instance.handleCursor({ index: 1 });
     instance.handleSelected([1]);
 
     expect(cursor.calls.length).toBe(1);
