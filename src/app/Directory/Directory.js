@@ -311,6 +311,7 @@ Directory.prototype.render = function() {
             return h(DirectoryFile, {
               file,
               isSelected: selected.indexOf(index) !== -1,
+              key: file.name,
             });
           }),
         ),

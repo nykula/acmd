@@ -1,10 +1,9 @@
 const Gtk = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
-const { extendObservable, when } = require("mobx");
 const autoBind = require("../Gjs/autoBind").default;
 const KeyListener = require("../Gjs/KeyListener").default;
-const { configureColumn, setCols } = require("../ListStore/ListStore");
+const { configureColumn, setCols, setValue } = require("../ListStore/ListStore");
 const { TreeViewRow } = require("./TreeViewRow");
 
 function Col() {
@@ -75,10 +74,6 @@ TreeView.prototype.useNodeAsThis = function() {
   this.rows = [];
   this.shouldReactToCursorChanges = true;
 
-  extendObservable(this, {
-    store: undefined,
-  });
-
   autoBind(this, TreeView.prototype);
 
   Object.defineProperties(this, {
@@ -90,7 +85,7 @@ TreeView.prototype.useNodeAsThis = function() {
     firstChild: { get: () => this.rows[0] },
     keyPressEventCallback: { set: callback => this.setKeyPressEventCallback(callback) },
     layoutCallback: { set: callback => this.setLayoutCallback(callback) },
-    text: { set: () => this.clear() },
+    textContent: { set: () => this.clear() },
   });
 
   this.set_search_equal_func(this.shouldSearchSkip);
@@ -125,52 +120,71 @@ TreeView.prototype.setCols = function(cols) {
 };
 
 /**
+ * Initial children appended, `store` attached.
+ */
+TreeView.prototype.didMount = function() {
+  this.didMount = noop;
+
+  for (const row of this.rows) {
+    this.ensureInit(row);
+  }
+};
+
+/**
+ * @param {TreeViewRow} row
+ */
+TreeView.prototype.ensureInit = function(row) {
+  if (row.iter) {
+    return;
+  }
+
+  Object.defineProperties(row, {
+    nextSibling: {
+      get: () => this.rows[this.rows.indexOf(row) + 1],
+    },
+  });
+
+  row.iter = this.store.append();
+  row.parentNode = this;
+
+  const setAttribute = (name, value) => {
+    setValue(this.store, row.iter, name, value);
+  };
+
+  for (const name of Object.keys(row)) {
+    setAttribute(name, row[name]);
+  }
+
+  row.setAttribute = setAttribute;
+};
+
+/**
  * @param {TreeViewRow} newChild
  * @param {TreeViewRow=} existingChild
  */
 TreeView.prototype.insertBefore = function(newChild, existingChild) {
-  when(() => !!this.store, () => {
-    if (this.rows.indexOf(newChild) === -1) {
-      Object.defineProperties(newChild, {
-        nextSibling: {
-          get: () => {
-            for (let i = 1; i < this.rows.length; i++) {
-              if (this.rows[i - 1] === newChild) {
-                return this.rows[i];
-              }
-            }
+  this.ensureInit(newChild);
+  this.store.move_before(newChild.iter, existingChild ? existingChild.iter : null);
+  const index = this.rows.indexOf(existingChild);
 
-            return null;
-          },
-        },
+  if (index === -1) {
+    this.rows.push(newChild);
+  } else {
+    this.rows.splice(index, 0, newChild);
+  }
 
-        parentNode: {
-          get: () => this,
-        },
-      });
-
-      newChild.store = this.store;
-    }
-
-    when(() => !!newChild.iter, () => {
-      this.store.move_before(newChild.iter, existingChild ? existingChild.iter : null);
-
-      const index = this.rows.indexOf(existingChild);
-
-      if (index === -1) {
-        this.rows.push(newChild);
-      } else {
-        this.rows.splice(index, 0, newChild);
-      }
-    });
-  });
+  return newChild;
 };
 
 /**
  * @param {TreeViewRow} newChild
  */
 TreeView.prototype.appendChild = function(newChild) {
-  this.insertBefore(newChild);
+  if (this.store) {
+    this.insertBefore(newChild);
+  } else {
+    this.rows.push(newChild);
+  }
 };
 
 /**
@@ -179,6 +193,7 @@ TreeView.prototype.appendChild = function(newChild) {
 TreeView.prototype.removeChild = function(row) {
   this.store.remove(row.iter);
   this.rows.splice(this.rows.indexOf(row), 1);
+  return row;
 };
 
 /**
@@ -187,7 +202,7 @@ TreeView.prototype.removeChild = function(row) {
  */
 TreeView.prototype.replaceChild = function(newChild, oldChild) {
   this.insertBefore(newChild, oldChild);
-  this.removeChild(oldChild);
+  return this.removeChild(oldChild);
 };
 
 TreeView.prototype.clear = function() {
@@ -211,19 +226,15 @@ TreeView.prototype.setActivatedCallback = function(callback) {
  * @param {(colName: string) => void} callback
  */
 TreeView.prototype.setClickedCallback = function(callback) {
-  this.setClickedCallback = noop;
+  const tvCols = this.get_columns();
 
-  when(() => !!this.store, () => {
-    const tvCols = this.get_columns();
-
-    for (let i = 0; i < tvCols.length; i++) {
-      const tvCol = tvCols[i];
-      tvCol.clickable = true;
-      tvCol.connect("clicked", () => {
-        callback(this.store.cols[i].name);
-      });
-    }
-  });
+  for (let i = 0; i < tvCols.length; i++) {
+    const tvCol = tvCols[i];
+    tvCol.clickable = true;
+    tvCol.connect("clicked", () => {
+      callback(this.store.cols[i].name);
+    });
+  }
 };
 
 /**
@@ -294,6 +305,7 @@ TreeView.prototype.setLayoutCallback = function(callback) {
     const rowHeight = this.get_background_area(Gtk.TreePath.new_from_string("0"), null).height;
     const height = this.get_visible_rect().height;
     this.limit = Number((height / rowHeight).toFixed(2));
+    this.didMount();
     callback(this);
   });
 };

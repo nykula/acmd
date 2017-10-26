@@ -9,36 +9,22 @@ const { setValue } = require("../ListStore/ListStore");
  * @property {(iter: any, column: number, value: any) => void} set_value
  */
 
-function TreeViewRow() {
-  this.removeAttribute = this.set.bind(this);
-  this.setAttribute = this.set.bind(this);
-
-  extendObservable(this, {
-    iter: undefined,
-    store: undefined,
-  });
-}
+function TreeViewRow() {}
 
 /** @type {any} */
 TreeViewRow.prototype.iter = undefined;
 
-/** @type {GtkListStore} */
-TreeViewRow.prototype.store = undefined;
+/** @type {any} */
+TreeViewRow.prototype.parentNode = undefined;
 
 /**
- * Sets value for own column. Waits for store if not available.
+ * Stores initial values until TreeView uses them and redefines it.
  *
  * @param {string} name
  * @param {any=} value
  */
-TreeViewRow.prototype.set = function(name, value) {
-  when(() => !!this.store, () => {
-    if (!this.iter) {
-      this.iter = this.store.append();
-    }
-
-    setValue(this.store, this.iter, name, value);
-  });
+TreeViewRow.prototype.setAttribute = function(name, value) {
+  this[name] = value;
 };
 
 /**
