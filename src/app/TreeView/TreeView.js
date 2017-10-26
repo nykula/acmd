@@ -84,7 +84,6 @@ TreeView.prototype.useNodeAsThis = function() {
 
   Object.defineProperties(this, {
     activatedCallback: { set: callback => this.setActivatedCallback(callback) },
-    clickedCallback: { set: callback => this.setClickedCallback(callback) },
     cols: { set: value => this.setCols(value) },
     cursor: { set: value => this.setCursor(value) },
     cursorCallback: { set: callback => this.setCursorCallback(callback) },
@@ -105,7 +104,13 @@ TreeView.prototype.useNodeAsThis = function() {
  * @param {Col[]} cols
  */
 TreeView.prototype.setCols = function(cols) {
-  this.setCols = noop;
+  this.setCols = _cols => {
+    const tvCols = this.get_columns();
+    for (let i = 0; i < _cols.length; i++) {
+      tvCols[i].title = _cols[i].title;
+    }
+  };
+
   const store = new Gtk.ListStore();
   setCols(store, cols);
 
@@ -120,6 +125,11 @@ TreeView.prototype.setCols = function(cols) {
 
     if (col.min_width) {
       tvCol.min_width = col.min_width;
+    }
+
+    if (col.on_clicked) {
+      tvCol.clickable = true;
+      tvCol.connect("clicked", col.on_clicked);
     }
 
     this.insert_column(tvCol, i);
@@ -230,21 +240,6 @@ TreeView.prototype.setActivatedCallback = function(callback) {
     const index = path.get_indices()[0];
     callback(index);
   });
-};
-
-/**
- * @param {(colName: string) => void} callback
- */
-TreeView.prototype.setClickedCallback = function(callback) {
-  const tvCols = this.get_columns();
-
-  for (let i = 0; i < tvCols.length; i++) {
-    const tvCol = tvCols[i];
-    tvCol.clickable = true;
-    tvCol.connect("clicked", () => {
-      callback(this.store.cols[i].name);
-    });
-  }
 };
 
 /**
@@ -368,7 +363,7 @@ TreeView.prototype.get_cell_area = undefined;
 
 /**
  * Native method. Returns column nodes.
- * @type {() => { clickable: boolean, connect(evName: string, callback: Function): void }[]}
+ * @type {() => { clickable: boolean, connect(evName: string, callback: Function): void, title: string }[]}
  */
 TreeView.prototype.get_columns = undefined;
 

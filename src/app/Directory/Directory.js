@@ -6,7 +6,7 @@ const { connect } = require("inferno-mobx");
 const assign = require("lodash/assign");
 const isEqual = require("lodash/isEqual");
 const range = require("lodash/range");
-const { autorun, extendObservable } = require("mobx");
+const { autorun, computed, extendObservable } = require("mobx");
 const { File } = require("../../domain/File/File");
 const { ActionService } = require("../Action/ActionService");
 const { FileService } = require("../File/FileService");
@@ -34,6 +34,7 @@ function Directory(props) {
   autoBind(this, Directory.prototype);
 
   extendObservable(this, {
+    cols: computed(this.getCols),
     container: this.container,
   });
 
@@ -41,6 +42,21 @@ function Directory(props) {
 }
 
 Directory.prototype = Object.create(Component.prototype);
+
+Directory.prototype.cols = [
+  {
+    title: null,
+    name: "isSelected",
+    type: CHECKBOX,
+    on_toggled: this.handleSelected,
+  },
+  { title: null, name: "icon", type: GICON },
+  { title: "Name", name: "filename", type: TEXT, expand: true },
+  { title: "Ext", name: "ext", type: TEXT, min_width: 50 },
+  { title: "Size", name: "size", type: TEXT, min_width: 55 },
+  { title: "Date", name: "mtime", type: TEXT, min_width: 125 },
+  { title: "Attr", name: "mode", type: TEXT, min_width: 45 },
+];
 
 /** @type {{ get_children(): { grab_focus(): void }[] }} */
 Directory.prototype.container = undefined;
@@ -87,6 +103,9 @@ Directory.prototype.handleActivated = function(index) {
   });
 };
 
+/**
+ * @param {string} colName
+ */
 Directory.prototype.handleClicked = function(colName) {
   this.props.tabService.sorted({
     by: colName,
@@ -280,6 +299,14 @@ Directory.prototype.prefixSort = function(col) {
   return col;
 };
 
+Directory.prototype.getCols = function() {
+  return Directory.prototype.cols
+    .map(this.prefixSort)
+    .map(col => assign({}, col, {
+      on_clicked: () => this.handleClicked(col.name),
+    }));
+};
+
 Directory.prototype.refContainer = function(node) {
   this.container = node;
 };
@@ -295,21 +322,7 @@ Directory.prototype.render = function() {
     }, [
         h("tree-view", {
           activatedCallback: this.handleActivated,
-          clickedCallback: this.handleClicked,
-          cols: [
-            {
-              title: null,
-              name: "isSelected",
-              type: CHECKBOX,
-              on_toggled: this.handleSelected,
-            },
-            { title: null, name: "icon", type: GICON },
-            { title: "Name", name: "filename", type: TEXT, expand: true },
-            { title: "Ext", name: "ext", type: TEXT, min_width: 50 },
-            { title: "Size", name: "size", type: TEXT, min_width: 55 },
-            { title: "Date", name: "mtime", type: TEXT, min_width: 125 },
-            { title: "Attr", name: "mode", type: TEXT, min_width: 45 },
-          ].map(this.prefixSort),
+          cols: this.cols,
           cursor,
           cursorCallback: this.handleCursor,
           keyPressEventCallback: this.handleKeyPressEvent,
