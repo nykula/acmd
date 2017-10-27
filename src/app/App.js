@@ -8,7 +8,7 @@ const Panel = require("./Panel/Panel").default;
 const Prompt = require("./Prompt/Prompt").default;
 const Toolbar = require("./Toolbar/Toolbar").default;
 
-exports.render = ({ refstore }) => {
+exports.render = () => {
   return (
     h("box", { orientation: Gtk.Orientation.VERTICAL }, [
       h(MenuBar),
@@ -22,7 +22,6 @@ exports.render = ({ refstore }) => {
       h("h-box", { homogeneous: true, spacing: 1 }, [0, 1].map(panelId => h(Panel, {
         id: panelId,
         key: panelId,
-        refstore: refstore,
       }))),
       h(Prompt),
       h(ActionBar),

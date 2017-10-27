@@ -86,7 +86,7 @@ describe("Directory", () => {
     expect(col.title).toBe("Size");
   });
 
-  it("grabs child focus when isActive becomes true", () => {
+  it("grabs focus when isActive becomes true", () => {
     /** @type {any} */
     const panelService = observable({
       activeId: 1,
@@ -109,9 +109,7 @@ describe("Directory", () => {
 
     const grabFocus = createSpy().andReturn(undefined);
 
-    instance.refContainer({
-      get_children: () => [{ grab_focus: grabFocus }],
-    });
+    instance.ref({ grab_focus: grabFocus });
 
     expect(grabFocus).toHaveBeenCalled();
   });

@@ -7,13 +7,12 @@ const Stats = require("../Stats/Stats").default;
 const TabList = require("../Tab/TabList").default;
 
 exports.default = Panel;
-function Panel({ id, refstore }) {
+function Panel({ id }) {
   return (
     h("box", { orientation: Gtk.Orientation.VERTICAL }, [
       h(Mount, {
         key: "MOUNT",
         panelId: id,
-        refstore: refstore,
       }),
       h(TabList, {
         key: "TAB_LIST",
@@ -25,11 +24,13 @@ function Panel({ id, refstore }) {
         panelId: id,
       }),
       h("h-separator"),
-      h(Directory, {
+      h("scrolled-window", {
+        expand: true,
+        hscrollbar_policy: Gtk.PolicyType.NEVER,
         key: "DIRECTORY",
-        panelId: id,
-        refstore: refstore,
-      }),
+      }, [
+        h(Directory, { panelId: id }),
+      ]),
       h(Stats, {
         key: "STATS",
         panelId: id,

@@ -5,8 +5,9 @@ const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const assign = require("lodash/assign");
 const isEqual = require("lodash/isEqual");
+const noop = require("lodash/noop");
 const range = require("lodash/range");
-const { autorun, computed, extendObservable } = require("mobx");
+const { autorun, computed, extendObservable, observable } = require("mobx");
 const { File } = require("../../domain/File/File");
 const { ActionService } = require("../Action/ActionService");
 const { FileService } = require("../File/FileService");
@@ -35,7 +36,7 @@ function Directory(props) {
 
   extendObservable(this, {
     cols: computed(this.getCols),
-    container: this.container,
+    node: observable.ref(undefined),
   });
 
   this.unsubscribeUpdate = autorun(this.focusIfActive);
@@ -58,8 +59,8 @@ Directory.prototype.cols = [
   { title: "Attr", name: "mode", type: TEXT, min_width: 45 },
 ];
 
-/** @type {{ get_children(): { grab_focus(): void }[] }} */
-Directory.prototype.container = undefined;
+/** @type {{ grab_focus(): void }}} */
+Directory.prototype.node = undefined;
 
 /** @type {IProps} */
 Directory.prototype.props = undefined;
@@ -75,21 +76,16 @@ Directory.prototype.tabId = function() {
 Directory.prototype.tab = function() {
   return this.props.tabService.entities[this.tabId()];
 };
+
 Directory.prototype.files = function() {
   return this.props.panelService.visibleFiles[this.props.panelId];
 };
 
-/**
- * @param {IProps=} props
- */
-Directory.prototype.isActive = function(props = this.props) {
-  return props.panelService.activeId === props.panelId;
-};
-
 Directory.prototype.focusIfActive = function() {
-  if (this.container && this.isActive()) {
-    const children = this.container.get_children();
-    children[0].grab_focus();
+  const isActive = this.props.panelService.activeId === this.props.panelId;
+
+  if (isActive && this.node) {
+    this.node.grab_focus();
   }
 };
 
@@ -307,36 +303,32 @@ Directory.prototype.getCols = function() {
     }));
 };
 
-Directory.prototype.refContainer = function(node) {
-  this.container = node;
+Directory.prototype.ref = function(node) {
+  this.node = node;
+  this.ref = noop;
 };
 
 Directory.prototype.render = function() {
   const { cursor, selected } = this.tab();
 
   return (
-    h("scrolled-window", {
-      expand: true,
-      hscrollbar_policy: Gtk.PolicyType.NEVER,
-      ref: this.refContainer,
-    }, [
-        h("tree-view", {
-          activatedCallback: this.handleActivated,
-          cols: this.cols,
-          cursor,
-          cursorCallback: this.handleCursor,
-          keyPressEventCallback: this.handleKeyPressEvent,
-          layoutCallback: this.handleLayout,
-        },
-          this.files().map((file, index) => {
-            return h(DirectoryFile, {
-              file,
-              isSelected: selected.indexOf(index) !== -1,
-              key: file.name,
-            });
-          }),
-        ),
-      ])
+    h("tree-view", {
+      activatedCallback: this.handleActivated,
+      cols: this.cols,
+      cursor,
+      cursorCallback: this.handleCursor,
+      keyPressEventCallback: this.handleKeyPressEvent,
+      layoutCallback: this.handleLayout,
+      ref: this.ref,
+    },
+      this.files().map((file, index) => {
+        return h(DirectoryFile, {
+          file,
+          isSelected: selected.indexOf(index) !== -1,
+          key: file.name,
+        });
+      }),
+    )
   );
 };
 

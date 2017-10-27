@@ -5,14 +5,10 @@ const { render } = require("inferno");
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { Provider } = require("inferno-mobx");
-const Refstore = require("./Refstore/Refstore").default;
 const { Services } = require("./Services");
 
 /**
- * @typedef IProps
- * @property {Refstore} refstore
- *
- * @param {IProps} props
+ * @param {any} props
  */
 function View(props) {
   Component.call(this, props);
@@ -27,7 +23,7 @@ View.prototype = Object.create(Component.prototype);
 View.prototype.props = undefined;
 
 View.prototype.render = function() {
-  return this.state.render({ refstore: this.props.refstore });
+  return this.state.render();
 };
 
 require("./Gjs/GtkDom").app({
@@ -47,7 +43,6 @@ require("./Gjs/GtkDom").app({
     render(
       h(Provider, services, h(View, {
         ref: instance => { view = instance; },
-        refstore: services.refstore,
         render: require("./App").render,
       })),
       win,
