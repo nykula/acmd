@@ -1,4 +1,5 @@
 const Gdk = imports.gi.Gdk;
+const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const assign = require("lodash/assign");
@@ -53,7 +54,7 @@ ActionService.prototype.activated = function(props) {
 
   const uri = location.replace(/\/?$/, "") + "/" + file.name;
 
-  if (file.fileType !== "DIRECTORY") {
+  if (file.fileType !== Gio.FileType.DIRECTORY) {
     this.gioService.getHandlers(uri, (error, result) => {
       if (error) {
         this.dialogService.alert(error.message, noop);

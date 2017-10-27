@@ -1,6 +1,6 @@
 function File() {
   this.attributes = {};
-  this.fileType = "";
+  this.fileType = 0;
   this.icon = "";
   this.iconType = "";
   this.modificationTime = 0;

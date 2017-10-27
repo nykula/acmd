@@ -1,3 +1,4 @@
+const Gio = imports.gi.Gio;
 const expect = require("expect");
 const h = require("inferno-hyperscript").default;
 const { DirectoryFile } = require("./DirectoryFile");
@@ -7,7 +8,7 @@ const { TreeView } = require("../TreeView/TreeView");
 describe("DirectoryFile", () => {
   it("renders without crashing", () => {
     const file = {
-      fileType: "REGULAR",
+      fileType: Gio.FileType.REGULAR,
       icon: "some gio icon",
       iconType: "GICON",
       modificationTime: 1490397889,
@@ -31,7 +32,7 @@ describe("DirectoryFile", () => {
     let row;
 
     file = {
-      fileType: "DIRECTORY",
+      fileType: Gio.FileType.DIRECTORY,
       icon: "go-up",
       iconType: "ICON_NAME",
       modificationTime: 1490397889,
@@ -43,7 +44,7 @@ describe("DirectoryFile", () => {
     expect(row.size()).toEqual("<DIR>");
 
     file = {
-      fileType: "DIRECTORY",
+      fileType: Gio.FileType.DIRECTORY,
       icon: "folder",
       iconType: "ICON_NAME",
       modificationTime: 1490397889,
@@ -55,7 +56,7 @@ describe("DirectoryFile", () => {
     expect(row.size()).toEqual("<DIR>");
 
     file = {
-      fileType: "REGULAR",
+      fileType: Gio.FileType.REGULAR,
       icon: "some gio icon",
       iconType: "GICON",
       modificationTime: 1490397889,
@@ -71,12 +72,12 @@ describe("DirectoryFile", () => {
     /** @type {any[]} */
     const files = [
       {
-        fileType: "DIRECTORY",
+        fileType: Gio.FileType.DIRECTORY,
         modificationTime: 0,
         name: "system32",
       },
       {
-        fileType: "REGULAR",
+        fileType: Gio.FileType.REGULAR,
         name: "Some File Name.jpeg",
         modificationTime: 0,
         size: 1048576,

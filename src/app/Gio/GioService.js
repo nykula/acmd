@@ -269,7 +269,7 @@ GioService.prototype.ls = function(uri, callback) {
     const name = gFileInfo.get_name();
     const file = {
       displayName: gFileInfo.get_display_name(),
-      fileType: Object.keys(this.Gio.FileType)[gFileInfo.get_file_type()],
+      fileType: gFileInfo.get_file_type(),
       icon: gFileInfo.get_icon().to_string(),
       iconType: "GICON",
       name: name,

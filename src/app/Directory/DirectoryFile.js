@@ -1,3 +1,4 @@
+const Gio = imports.gi.Gio;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
@@ -29,12 +30,12 @@ DirectoryFile.prototype.name = function() {
 
   const matches = /^(.+)\.(.*?)$/.exec(file.name);
 
-  if (file.fileType !== "DIRECTORY" && file.name !== ".." && matches) {
+  if (file.fileType !== Gio.FileType.DIRECTORY && file.name !== ".." && matches) {
     filename = matches[1];
     ext = matches[2];
   }
 
-  if (file.fileType === "DIRECTORY") {
+  if (file.fileType === Gio.FileType.DIRECTORY) {
     filename = "[" + file.name + "]";
   }
 
@@ -43,7 +44,7 @@ DirectoryFile.prototype.name = function() {
 
 DirectoryFile.prototype.size = function() {
   const file = this.props.file;
-  return file.fileType === "DIRECTORY" ? "<DIR>" : formatSize(file.size);
+  return file.fileType === Gio.FileType.DIRECTORY ? "<DIR>" : formatSize(file.size);
 };
 
 DirectoryFile.prototype.mtime = function() {

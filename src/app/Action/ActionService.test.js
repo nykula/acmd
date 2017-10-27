@@ -1,3 +1,4 @@
+const { FileType } = imports.gi.Gio;
 const expect = require("expect");
 const noop = require("lodash/noop");
 const { GioService } = require("../Gio/GioService");
@@ -166,7 +167,7 @@ describe("ActionService", () => {
           list_attributes: () => ["someNamespace::someKey"],
           get_attribute_as_string: () => "someValue",
           get_display_name: () => "file.txt",
-          get_file_type: () => 2,
+          get_file_type: () => FileType.REGULAR,
           get_icon: () => ({
             to_string: () => "some gio icon",
           }),
@@ -194,7 +195,7 @@ describe("ActionService", () => {
         list_attributes: () => ["someNamespace::someKey"],
         get_attribute_as_string: () => "someValue",
         get_display_name: () => "/",
-        get_file_type: () => 1,
+        get_file_type: () => FileType.DIRECTORY,
         get_icon: () => ({
           to_string: () => "some gio icon",
         }),
@@ -208,11 +209,6 @@ describe("ActionService", () => {
 
     const Gio = {
       FileQueryInfoFlags: { NONE: 0 },
-      FileType: {
-        "typeA": 0,
-        "typeB": 0,
-        "typeC": 0,
-      },
       file_new_for_uri: () => dirGFile,
     };
 
@@ -238,7 +234,7 @@ describe("ActionService", () => {
       files: [
         {
           displayName: ".",
-          fileType: "typeB",
+          fileType: FileType.DIRECTORY,
           icon: "some gio icon",
           iconType: "GICON",
           name: ".",
@@ -252,7 +248,7 @@ describe("ActionService", () => {
         },
         {
           displayName: "file.txt",
-          fileType: "typeC",
+          fileType: FileType.REGULAR,
           icon: "some gio icon",
           iconType: "GICON",
           name: "?@$/@!#$/*@!)(#</>E",

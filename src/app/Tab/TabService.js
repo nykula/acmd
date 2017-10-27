@@ -1,3 +1,4 @@
+const { FileType } = imports.gi.Gio;
 const { extendObservable } = require("mobx");
 const orderBy = require("lodash/orderBy");
 const { Tab } = require("../../domain/Tab/Tab");
@@ -11,7 +12,7 @@ function TabService() {
 const sampleFiles = [
   {
     name: "..",
-    fileType: "DIRECTORY",
+    fileType: FileType.DIRECTORY,
     icon: "folder",
     iconType: "ICON_NAME",
     size: 0,
@@ -20,7 +21,7 @@ const sampleFiles = [
   },
   {
     name: "clan in da front.txt",
-    fileType: "REGULAR",
+    fileType: FileType.REGULAR,
     icon: "text-x-generic",
     iconType: "ICON_NAME",
     size: 4110,
@@ -117,7 +118,7 @@ function sortFiles(by, files) {
       return orderBy(
         files,
         [
-          x => x.fileType === "DIRECTORY",
+          x => x.fileType === FileType.DIRECTORY,
           x => x.name.toLowerCase(),
         ],
         ["desc", "asc"],
@@ -127,7 +128,7 @@ function sortFiles(by, files) {
       return orderBy(
         files,
         [
-          x => x.fileType === "DIRECTORY",
+          x => x.fileType === FileType.DIRECTORY,
           x => x.name.toLowerCase(),
         ],
         ["desc", "desc"],
@@ -137,10 +138,10 @@ function sortFiles(by, files) {
       return orderBy(
         files,
         [
-          x => x.fileType === "DIRECTORY",
+          x => x.fileType === FileType.DIRECTORY,
           x => {
             const matches = /^(.+)\.(.*?)$/.exec(x.name);
-            return matches && x.fileType !== "DIRECTORY" ? matches[2].toLowerCase() : "";
+            return matches && x.fileType !== FileType.DIRECTORY ? matches[2].toLowerCase() : "";
           },
           x => x.name.toLowerCase(),
         ],
@@ -151,10 +152,10 @@ function sortFiles(by, files) {
       return orderBy(
         files,
         [
-          x => x.fileType === "DIRECTORY",
+          x => x.fileType === FileType.DIRECTORY,
           x => {
             const matches = /^(.+)\.(.*?)$/.exec(x.name);
-            return matches && x.fileType !== "DIRECTORY" ? matches[2].toLowerCase() : "";
+            return matches && x.fileType !== FileType.DIRECTORY ? matches[2].toLowerCase() : "";
           },
           x => x.name.toLowerCase(),
         ],
@@ -165,7 +166,7 @@ function sortFiles(by, files) {
       return orderBy(
         files,
         [
-          x => x.fileType === "DIRECTORY",
+          x => x.fileType === FileType.DIRECTORY,
           "modificationTime",
           x => x.name.toLowerCase(),
         ],
@@ -176,7 +177,7 @@ function sortFiles(by, files) {
       return orderBy(
         files,
         [
-          x => x.fileType === "DIRECTORY",
+          x => x.fileType === FileType.DIRECTORY,
           "modificationTime",
           x => x.name.toLowerCase(),
         ],

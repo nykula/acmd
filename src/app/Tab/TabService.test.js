@@ -1,3 +1,4 @@
+const Gio = imports.gi.Gio;
 const expect = require("expect");
 const { TabService } = require("./TabService");
 
@@ -53,7 +54,7 @@ describe("TabService", () => {
         ].map(([name, modificationTime, isDir]) => ({
           name: name,
           modificationTime: modificationTime,
-          fileType: isDir ? "DIRECTORY" : "REGULAR",
+          fileType: isDir ? Gio.FileType.DIRECTORY : Gio.FileType.REGULAR,
         })),
         sortedBy: undefined,
       },
@@ -132,7 +133,7 @@ describe("TabService", () => {
         ].map(name => ({
           name: name,
           modificationTime: 0,
-          fileType: "DIRECTORY",
+          fileType: Gio.FileType.DIRECTORY,
         })),
         sortedBy: undefined,
       },

@@ -1,15 +1,26 @@
 declare const ARGV: string[];
 
 declare namespace imports {
-    const console: {
-        interact(): void
-    };
+  const console: {
+    interact(): void
+  };
 
-    const gi: any;
+  const gi: {
+    [moduleName: string]: any,
 
-    const searchPath: string[];
+    Gio: {
+      [key: string]: any,
 
-    const src: any;
+      FileType: {
+        REGULAR: 1,
+        DIRECTORY: 3
+      }
+    }
+  };
+
+  const searchPath: string[];
+
+  const src: any;
 }
 
 declare function print(message: string): void;
