@@ -77,8 +77,10 @@ TabService.prototype.set = function(props) {
   const tab = this.entities[props.id];
   const sortedBy = props.sortedBy || tab.sortedBy;
 
+  tab.cursor = Math.min(tab.cursor, props.files.length);
   tab.files = sortFiles(sortedBy, props.files);
   tab.location = props.location;
+  tab.selected = tab.selected.filter(x => x < props.files.length);
 };
 
 /**

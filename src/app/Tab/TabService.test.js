@@ -39,6 +39,49 @@ describe("TabService", () => {
     expect(tabService.entities[1].selected.slice()).toEqual([3, 4, 5]);
   });
 
+  it("sets files, adjusting selected and cursor if fewer", () => {
+    const tabService = new TabService();
+
+    tabService.entities[0] = {
+      cursor: 2,
+      files: [0, 1, 2].map(i => ({
+        displayName: `${i}`,
+        fileType: Gio.FileType.REGULAR,
+        icon: "computer",
+        iconType: "ICON_NAME",
+        mode: "0755",
+        modificationTime: Date.now(),
+        mountUri: `file:///`,
+        name: `${i}`,
+        size: 0,
+        uri: `file:///${i}`,
+      })),
+      location: "file:///",
+      sortedBy: "ext",
+      selected: [0, 1, 2],
+    };
+
+    tabService.set({
+      files: [0, 1].map(i => ({
+        displayName: `${i}`,
+        fileType: Gio.FileType.REGULAR,
+        icon: "computer",
+        iconType: "ICON_NAME",
+        mode: "0755",
+        modificationTime: Date.now(),
+        mountUri: `file:///`,
+        name: `${i}`,
+        size: 0,
+        uri: `file:///${i}`,
+      })),
+      id: 0,
+      location: "file:///",
+    });
+
+    expect(tabService.entities[0].cursor).toBe(2);
+    expect(tabService.entities[0].selected.slice()).toEqual([0, 1]);
+  });
+
   it("sorts files in tab", () => {
     const tabService = new TabService();
 
