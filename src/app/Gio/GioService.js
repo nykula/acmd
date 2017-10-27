@@ -36,7 +36,7 @@ GioService.prototype.ensureGVolMon = function() {
 };
 
 /**
- * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Drive.html
+ * @see https://www.roojs.com/seed/gir-1.2-Gtk-3.0/gjs/Gio.Drive.html
  */
 GioService.prototype.drives = function(callback) {
   this.ensureGVolMon();
@@ -72,7 +72,7 @@ GioService.prototype._serializeDrive = function(gDrive) {
 };
 
 /**
- * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Volume.html
+ * @see https://www.roojs.com/seed/gir-1.2-Gtk-3.0/gjs/Gio.Volume.html
  */
 GioService.prototype.mount = function(props, callback) {
   let mountOperation;
@@ -139,7 +139,7 @@ GioService.prototype._serializeVolume = function(gVolume) {
 };
 
 /**
- * @see https://www.roojs.com/seed/gir-1.2-this.Gtk-3.0/gjs/this.Gio.Mount.html
+ * @see https://www.roojs.com/seed/gir-1.2-Gtk-3.0/gjs/Gio.Mount.html
  */
 GioService.prototype.unmount = function(uri, callback) {
   const gFile = this.Gio.File.new_for_uri(uri);
@@ -387,8 +387,8 @@ GioService.prototype.spawn = function({ argv, cwd }) {
 };
 
 /**
- * Get a hash table of this.Gio.Drive or this.Gio.Volume identifiers. Known possible
- * keys for this.Gio.Volume: class, unix-device, uuid, label.
+ * Get a hash table of Gio.Drive or Gio.Volume identifiers. Known possible
+ * keys for Gio.Volume: class, unix-device, uuid, label.
  */
 GioService.prototype._serializeIdentifiers = function(gX) {
   return gX.enumerate_identifiers().reduce((identifiers, type) => {
