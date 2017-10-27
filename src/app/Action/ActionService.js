@@ -6,18 +6,13 @@ const noop = require("lodash/noop");
 const Fun = require("../Gjs/Fun").default;
 const { DialogService } = require("../Dialog/DialogService");
 const { GioService } = require("../Gio/GioService");
+const { WorkerService } = require("../Gio/WorkerService");
 const { LogService } = require("../Log/LogService");
 const getActiveMountUri = require("../Mount/getActiveMountUri").default;
 const { MountService } = require("../Mount/MountService");
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
 const { TabService } = require("../Tab/TabService");
-
-const Action = {
-  CP: "CP",
-  MV: "MV",
-  RM: "RM",
-};
 
 // tslint:disable align
 function ActionService(
@@ -30,6 +25,7 @@ function ActionService(
   /** @type {Refstore} */      refstore,
   /** @type {TabService} */    tabService,
   /** @type {any} */           win,
+  /** @type {WorkerService} */ workerService,
 ) {
   // tslint:enable align
   this.dialogService = dialogService;
@@ -41,8 +37,7 @@ function ActionService(
   this.refstore = refstore;
   this.tabService = tabService;
   this.win = win;
-
-  this.runWorker = (action) => this.gioAdapter.work.run(action, noop);
+  this.workerService = workerService;
 }
 
 /**
@@ -96,15 +91,15 @@ ActionService.prototype.back = function() {
 };
 
 /**
- * @param {(string[])=} srcUris
+ * @param {(string[])=} uris
  * @param {string=} destUri
  */
-ActionService.prototype.cp = function(srcUris, destUri) {
-  const files = this.getActiveFiles();
-  const uris = files.map(x => x.uri);
-  const urisStr = files.length === 1 ? uris[0] + " " : "\n" + uris.join("\n") + "\n";
+ActionService.prototype.cp = function(uris, destUri) {
+  if (!uris) {
+    const files = this.getActiveFiles();
+    uris = files.map(x => x.uri);
+    const urisStr = files.length === 1 ? uris[0] + " " : "\n" + uris.join("\n") + "\n";
 
-  if (!srcUris) {
     const dest = this.getDest();
     const destUri = dest + "/" + (files.length === 1 ? files[0].name : "");
 
@@ -113,21 +108,23 @@ ActionService.prototype.cp = function(srcUris, destUri) {
         return;
       }
 
-      this.cp(srcUris, destUri);
+      this.cp(uris, destUri);
     });
 
     return;
   }
 
-  this.runWorker({
-    type: Action.CP,
-    requestId: Date.now(),
-    srcUris: srcUris,
-    destUri: destUri,
-  })
-    .on("end", () => {
+  this.workerService.run({
+    type: "cp",
+    uris,
+    destUri,
+  }, (ev) => {
+    if (ev.type === "error") {
+      this.dialogService.alert(ev.message, noop);
+    } else if (ev.type === "success") {
       this.refresh();
-    });
+    }
+  });
 };
 
 /**
@@ -389,13 +386,13 @@ ActionService.prototype.mounts = function(panelId) {
 };
 
 /**
- * @param {(string[])=} srcUris
+ * @param {(string[])=} uris
  * @param {string=} destUri
  */
-ActionService.prototype.mv = function(srcUris, destUri) {
-  if (!srcUris) {
+ActionService.prototype.mv = function(uris, destUri) {
+  if (!uris) {
     const files = this.getActiveFiles();
-    const uris = files.map(x => x.uri);
+    uris = files.map(x => x.uri);
     const urisStr = files.length === 1 ? uris[0] + " " : "\n" + uris.join("\n") + "\n";
 
     const dest = this.getDest();
@@ -410,15 +407,17 @@ ActionService.prototype.mv = function(srcUris, destUri) {
     return;
   }
 
-  this.runWorker({
-    type: Action.MV,
-    requestId: Date.now(),
-    srcUris: srcUris,
-    destUri: destUri,
-  })
-    .on("end", () => {
+  this.workerService.run({
+    type: "mv",
+    uris,
+    destUri,
+  }, (ev) => {
+    if (ev.type === "error") {
+      this.dialogService.alert(ev.message, noop);
+    } else if (ev.type === "success") {
       this.refresh();
-    });
+    }
+  });
 };
 
 ActionService.prototype.refresh = function() {
@@ -445,14 +444,17 @@ ActionService.prototype.rm = function(uris) {
     return;
   }
 
-  this.runWorker({
-    type: Action.RM,
-    requestId: Date.now(),
-    uris: uris,
-  })
-    .on("end", () => {
+  this.workerService.run({
+    type: "rm",
+    uris,
+    destUri: "",
+  }, (ev) => {
+    if (ev.type === "error") {
+      this.dialogService.alert(ev.message, noop);
+    } else if (ev.type === "success") {
       this.refresh();
-    });
+    }
+  });
 };
 
 /**

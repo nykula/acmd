@@ -11,7 +11,7 @@ new imports.src.app.Gjs.GtkDom.GtkDom().require();
 require("../src/app/Test/Test").require();
 
 const { Worker } = require("../src/app/Gio/Worker");
-const data = new Worker().flatten(imports.gi.Gio.File.new_for_path(dirname + "/src"));
+const data = new Worker(null, null).flatten(imports.gi.Gio.File.new_for_path(dirname + "/src"));
 
 const scripts = data.files.map(x => x.relativePath).filter(x => (
   !!x &&

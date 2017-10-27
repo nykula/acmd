@@ -4,6 +4,7 @@ const { ActionService } = require("./Action/ActionService");
 const { DialogService } = require("./Dialog/DialogService");
 const { FileService } = require("./File/FileService");
 const { GioService } = require("./Gio/GioService");
+const { WorkerService } = require("./Gio/WorkerService");
 const { LogService } = require("./Log/LogService");
 const { MountService } = require("./Mount/MountService");
 const Refstore = require("./Refstore/Refstore").default;
@@ -22,6 +23,7 @@ function Services(win) {
   this.mountService = new MountService();
   this.refstore = new Refstore();
   this.tabService = new TabService();
+  this.workerService = new WorkerService();
 
   this.panelService = new PanelService(this.tabService);
 
@@ -35,6 +37,7 @@ function Services(win) {
     this.refstore,
     this.tabService,
     this.win,
+    this.workerService,
   );
 
   this.fileService = new FileService(this.panelService, this.tabService);

@@ -1,225 +1,130 @@
 const Gio = imports.gi.Gio;
+const { WorkerError } = require("../../domain/Gio/WorkerError");
+const { WorkerProgress } = require("../../domain/Gio/WorkerProgress");
+const { WorkerProps } = require("../../domain/Gio/WorkerProps");
+const { WorkerSuccess } = require("../../domain/Gio/WorkerSuccess");
+const autoBind = require("../Gjs/autoBind").default;
 
 /**
  * Tasks intended to run in a separate process because they are heavy on IO or
  * GObject Introspection doesn't provide respective asynchronous methods.
+ *
+ * @param {WorkerProps} props
+ * @param {(event: WorkerError | WorkerProgress | WorkerSuccess) => void} emit
  */
-function Worker() {
-  this.cp = this.cp.bind(this);
-  this.mv = this.mv.bind(this);
-  this.rm = this.rm.bind(this);
-
-  this.children = this.children.bind(this);
-  this.cpDirNode = this.cpDirNode.bind(this);
-  this.flatten = this.flatten.bind(this);
-  this.prepare = this.prepare.bind(this);
-  this.run = this.run.bind(this);
+function Worker(props, emit, Gio = imports.gi.Gio) {
+  this.emit = emit;
+  this.Gio = Gio;
+  this.props = props;
+  autoBind(this, Worker.prototype);
 }
 
 /**
- * Performs the requested action. Dispatches the results.
+ * Performs the requested action.
  */
-Worker.prototype.run = function(action, dispatch) {
-  switch (action.type) {
-    case "CP":
-      this.cp(action, dispatch);
-      break;
-
-    case "MV":
-      this.mv(action, dispatch);
-      break;
-
-    case "RM":
-      this.rm(action, dispatch);
-      break;
+Worker.prototype.run = function() {
+  try {
+    this[this.props.type]();
+  } catch (error) {
+    this.emit({
+      type: "error",
+      message: error.message,
+      stack: error.stack,
+    });
+    return;
   }
+
+  this.emit({ type: "success" });
 };
 
 /**
  * Copies sources to a destination directory. Recurses if a source is a
  * directory. Splices the first URI component relative to the source if the
  * source URI ends with a slash, or if there is only one source URI and the
- * destination isn't an existing directory. Dispatches progress reports.
+ * destination isn't an existing directory.
  */
-Worker.prototype.cp = function(action, dispatch) {
-  const destUri = action.destUri;
-  const srcUris = action.srcUris;
+Worker.prototype.cp = function() {
+  const data = this.prepare();
 
-  try {
-    const data = this.prepare(destUri, srcUris);
+  data.files.forEach((file, totalDoneCount) => {
+    if (file.gFileInfo.get_file_type() === Gio.FileType.DIRECTORY) {
+      this.cpDirNode(file);
+      return;
+    }
 
-    data.files.forEach(file => {
-      if (file.gFileInfo.get_file_type() === Gio.FileType.DIRECTORY) {
-        this.cpDirNode(file);
-        return;
-      }
+    const uri = file.gFile.get_uri();
+    const dest = file.dest.get_uri();
 
-      const fileUri = file.gFile.get_uri();
-      const fileDestUri = file.dest.get_uri();
+    file.gFile.copy(
+      file.dest,
+      Gio.FileCopyFlags.OVERWRITE + Gio.FileCopyFlags.NOFOLLOW_SYMLINKS + Gio.FileCopyFlags.ALL_METADATA,
+      null,
+      (doneSize, size) => {
+        this.emit({
+          type: "progress",
+          uri,
+          dest,
+          doneSize,
+          size,
+          totalDoneSize: data.totalDoneSize + doneSize,
+          totalSize: data.totalSize,
+          totalDoneCount,
+          totalCount: data.files.length,
+        });
+      },
+    );
 
-      file.gFile.copy(
-        file.dest,
-        Gio.FileCopyFlags.OVERWRITE + Gio.FileCopyFlags.NOFOLLOW_SYMLINKS + Gio.FileCopyFlags.ALL_METADATA,
-        null,
-        (doneSize, size) => {
-          dispatch({
-            type: "CP",
-            requestId: action.requestId,
-            progress: {
-              src: fileUri,
-              dest: fileDestUri,
-              doneSize: doneSize,
-              size: size,
-              totalDoneSize: data.totalDoneSize + doneSize,
-              totalSize: data.totalSize,
-            },
-          });
-        },
-      );
-
-      data.totalDoneSize += file.gFileInfo.get_size();
-    });
-
-    dispatch({
-      type: "CP",
-      requestId: action.requestId,
-      ready: true,
-    });
-  } catch (err) {
-    dispatch({
-      type: "CP",
-      requestId: action.requestId,
-      ready: true,
-      error: { message: err.message },
-    });
-  }
+    data.totalDoneSize += file.gFileInfo.get_size();
+  });
 };
 
 /**
  * Moves sources to a destination directory. Uses cp followed by rm.
  */
-Worker.prototype.mv = function(action, dispatch) {
-  const requestId = action.requestId;
-  const destUri = action.destUri;
-  const srcUris = action.srcUris;
-  let failed = false;
-
-  const handleError = (error) => {
-    dispatch({
-      type: "MV",
-      requestId: requestId,
-      ready: true,
-      error: { message: error.message },
-    });
-  };
-
-  this.cp({
-    destUri: destUri,
-    srcUris: srcUris,
-  }, (_action) => {
-    if (_action.error) {
-      failed = true;
-      handleError(_action.error);
-      return;
-    }
-
-    if (_action.progress) {
-      dispatch({
-        type: "MV",
-        requestId: requestId,
-        cp: true,
-        progress: _action.progress,
-      });
-    }
-  });
-
-  this.rm({ uris: srcUris }, (_action) => {
-    if (_action.error) {
-      failed = true;
-      handleError(_action.error);
-      return;
-    }
-
-    if (_action.progress) {
-      dispatch({
-        type: "MV",
-        requestId: requestId,
-        rm: true,
-        progress: _action.progress,
-      });
-    }
-  });
-
-  if (failed) {
-    return;
-  }
-
-  dispatch({
-    type: "MV",
-    requestId: requestId,
-    ready: true,
-  });
+Worker.prototype.mv = function() {
+  this.cp();
+  this.rm();
 };
 
 /**
- * Deletes files. Recurses into directories. Dispatches progress reports.
+ * Deletes files. Recurses into directories.
  */
-Worker.prototype.rm = function(action, dispatch) {
-  const uris = action.uris;
+Worker.prototype.rm = function() {
+  /** @type {any[]} */
+  const gFiles = this.props.uris.map(x => this.Gio.file_new_for_uri(x));
 
-  try {
-    const gFiles = uris.map(x => Gio.file_new_for_uri(x));
+  const files = gFiles.reduce((prev, gFile) => {
+    return prev.concat(this.flatten(gFile).files);
+  }, []);
 
-    const files = gFiles.reduce((prev, gFile) => {
-      return prev.concat(this.flatten(gFile).files);
-    }, []);
+  files.reverse();
 
-    files.reverse();
+  files.forEach((file, totalDoneCount) => {
+    const uri = file.gFile.get_uri();
+    file.gFile.delete(null);
 
-    const data = {
-      files: files,
-      totalDone: 0,
-    };
-
-    data.files.forEach(file => {
-      const fileUri = file.gFile.get_uri();
-      file.gFile.delete(null);
-      data.totalDone++;
-
-      dispatch({
-        type: "RM",
-        requestId: action.requestId,
-        progress: {
-          uri: fileUri,
-          totalDone: data.totalDone,
-        },
-      });
+    this.emit({
+      type: "progress",
+      uri,
+      dest: "",
+      doneSize: 0,
+      size: 0,
+      totalDoneSize: 0,
+      totalSize: 0,
+      totalDoneCount,
+      totalCount: files.length,
     });
-
-    dispatch({
-      type: "RM",
-      requestId: action.requestId,
-      ready: true,
-      result: {
-        totalDone: data.totalDone,
-      },
-    });
-  } catch (err) {
-    dispatch({
-      type: "RM",
-      requestId: action.requestId,
-      ready: true,
-      error: { message: err.message },
-    });
-  }
+  });
 };
 
 /**
  * Traverses source URIs. Maps every source file to a destination file.
  * Initializes fields to keep track of processed size.
  */
-Worker.prototype.prepare = function(destUri, srcUris) {
-  const dest = Gio.file_new_for_uri(destUri);
+Worker.prototype.prepare = function() {
+  const { destUri, uris } = this.props;
+
+  const dest = this.Gio.file_new_for_uri(destUri);
 
   const isDestExistingDir = dest.query_exists(null) && dest.query_info(
     "standard::*",
@@ -227,10 +132,10 @@ Worker.prototype.prepare = function(destUri, srcUris) {
     null,
   ).get_file_type() === Gio.FileType.DIRECTORY;
 
-  const willCreateDest = srcUris.length === 1 && !isDestExistingDir;
+  const willCreateDest = uris.length === 1 && !isDestExistingDir;
 
-  const data = srcUris.reduce((prev, srcUri) => {
-    const src = Gio.file_new_for_uri(srcUri);
+  const data = uris.reduce((prev, srcUri) => {
+    const src = this.Gio.file_new_for_uri(srcUri);
     const srcName = src.get_basename();
     const splice = srcUri[srcUri.length - 1] === "/" || willCreateDest;
     const data = this.flatten(src);
@@ -238,13 +143,13 @@ Worker.prototype.prepare = function(destUri, srcUris) {
     data.files.forEach(file => {
       if (!splice && !file.relativePath) {
         file.destUri = dest.get_child(srcName).get_uri();
-        file.dest = Gio.file_new_for_uri(file.destUri);
+        file.dest = this.Gio.file_new_for_uri(file.destUri);
         return;
       }
 
       if (!splice && file.relativePath) {
         file.destUri = dest.get_child(srcName).get_child(file.relativePath).get_uri();
-        file.dest = Gio.file_new_for_uri(file.destUri);
+        file.dest = this.Gio.file_new_for_uri(file.destUri);
         return;
       }
 
@@ -256,7 +161,7 @@ Worker.prototype.prepare = function(destUri, srcUris) {
 
       if (splice && file.relativePath) {
         file.destUri = dest.get_child(file.relativePath).get_uri();
-        file.dest = Gio.file_new_for_uri(file.destUri);
+        file.dest = this.Gio.file_new_for_uri(file.destUri);
       }
     });
 
@@ -338,8 +243,8 @@ Worker.prototype.children = function(ancestor, parent) {
     const gFile = parent.get_child(gFileInfo.get_name());
 
     files.push({
-      gFile: gFile,
-      gFileInfo: gFileInfo,
+      gFile,
+      gFileInfo,
       relativePath: ancestor.get_relative_path(gFile),
     });
   }

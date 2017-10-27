@@ -54,7 +54,7 @@ yarn coverage && xdg-open coverage/index.html
 
 - [x] Multiple tabs on each panel
 
-- [ ] Gio back-end: Ls, cp, mv, mkdir and rm (FIXME: GioWorker)
+- [x] Gio back-end: Ls, cp, mv, mkdir and rm
 
 - [x] Sort files by name, ext or date
 

@@ -7,7 +7,6 @@ const Uri = require("url-parse");
 const { FileHandler } = require("../../domain/File/FileHandler");
 const autoBind = require("../Gjs/autoBind").default;
 const gioAsync = require("./gioAsync").default;
-const { WorkerRunner } = require("./WorkerRunner");
 
 /**
  * Let the front-end use drives.
@@ -20,8 +19,6 @@ function GioService(Gio, Gtk) {
 
   this.Gio = Gio;
   this.Gtk = Gtk;
-
-  this.work = new WorkerRunner();
 }
 
 /**

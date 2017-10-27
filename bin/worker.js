@@ -7,11 +7,7 @@ imports.searchPath.push(dirname);
 new imports.src.app.Gjs.Require.Require().require();
 
 const { Worker } = require("../src/app/Gio/Worker");
-const worker = new Worker();
-
-worker.run(
-  JSON.parse(ARGV[0]),
-  (action) => {
-    print(JSON.stringify(action));
-  },
-);
+const worker = new Worker(JSON.parse(ARGV[0]), (action) => {
+  print(JSON.stringify(action));
+});
+worker.run();
