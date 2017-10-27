@@ -1,4 +1,6 @@
-function Mount() {
+function Place() {
+  this.filesystemFree = 0;
+  this.filesystemSize = 0;
   this.icon = "";
   this.iconType = "";
   this.name = "";
@@ -6,4 +8,4 @@ function Mount() {
   this.uuid = "";
 }
 
-exports.Mount = Mount;
+exports.Place = Place;

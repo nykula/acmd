@@ -3,7 +3,7 @@ const Gtk = imports.gi.Gtk;
 const h = require("inferno-hyperscript").default;
 const ActionBar = require("./Action/ActionBar").default;
 const MenuBar = require("./MenuBar/MenuBar").default;
-const MountList = require("./Mount/MountList").default;
+const Places = require("./Mount/Places").default;
 const Panel = require("./Panel/Panel").default;
 const Prompt = require("./Prompt/Prompt").default;
 const Toolbar = require("./Toolbar/Toolbar").default;
@@ -15,8 +15,8 @@ exports.render = () => {
       h(Toolbar),
       h("h-separator"),
       h("h-box", [
-        h(MountList, { panelId: 0 }),
-        h(MountList, { panelId: 1 }),
+        h(Places, { panelId: 0 }),
+        h(Places, { panelId: 1 }),
       ]),
       h("h-separator"),
       h("h-box", { homogeneous: true, spacing: 1 }, [0, 1].map(panelId => h(Panel, {

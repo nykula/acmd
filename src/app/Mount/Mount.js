@@ -8,7 +8,7 @@ const autoBind = require("../Gjs/autoBind").default;
 const { setTimeout } = require("../Gjs/setTimeout");
 const { GICON, TEXT } = require("../ListStore/ListStore");
 const minLength = require("../MinLength/minLength").default;
-const { MountService } = require("../Mount/MountService");
+const { PlaceService } = require("../Mount/PlaceService");
 const getActiveMountUri = require("../Mount/getActiveMountUri").default;
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
@@ -19,7 +19,7 @@ const { TabService } = require("../Tab/TabService");
 /**
  * @typedef IProps
  * @property {ActionService} actionService
- * @property {MountService} mountService
+ * @property {PlaceService} placeService
  * @property {number} panelId
  * @property {PanelService} panelService
  * @property {Refstore} refstore
@@ -66,18 +66,16 @@ Mount.prototype.handleRoot = function() {
 Mount.prototype.render = function() {
   const activeUri = getActiveMountUri(this.props, this.props.panelId);
 
-  const { entities, names } = this.props.mountService;
+  const { entities, names } = this.props.placeService;
 
   const activeMount = names.map(x => entities[x])
     .filter(mount => mount.rootUri === activeUri)[0];
 
-  const free = activeMount.attributes["filesystem::free"];
   const name = activeMount.name;
-  const size = activeMount.attributes["filesystem::size"];
 
   const status = "[" + name + "] " +
-    formatSize(free) + " of " +
-    formatSize(size) + " free";
+    formatSize(activeMount.filesystemFree) + " of " +
+    formatSize(activeMount.filesystemSize) + " free";
 
   return (
     h("box", { expand: false }, [
@@ -126,7 +124,7 @@ Mount.prototype.render = function() {
 exports.Mount = Mount;
 exports.default = connect([
   "actionService",
-  "mountService",
+  "placeService",
   "panelService",
   "refstore",
   "tabService",

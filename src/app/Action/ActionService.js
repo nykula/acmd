@@ -10,7 +10,7 @@ const { GioService } = require("../Gio/GioService");
 const { WorkerService } = require("../Gio/WorkerService");
 const { LogService } = require("../Log/LogService");
 const getActiveMountUri = require("../Mount/getActiveMountUri").default;
-const { MountService } = require("../Mount/MountService");
+const { PlaceService } = require("../Mount/PlaceService");
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
 const { TabService } = require("../Tab/TabService");
@@ -21,7 +21,7 @@ function ActionService(
   /** @type {GioService} */    gioService,
   /** @type {any} */           Gtk,
   /** @type {LogService} */    logService,
-  /** @type {MountService} */  mountService,
+  /** @type {PlaceService} */  placeService,
   /** @type {PanelService} */  panelService,
   /** @type {Refstore} */      refstore,
   /** @type {TabService} */    tabService,
@@ -33,7 +33,7 @@ function ActionService(
   this.gioService = gioService;
   this.Gtk = Gtk;
   this.logService = logService;
-  this.mountService = mountService;
+  this.placeService = placeService;
   this.panelService = panelService;
   this.refstore = refstore;
   this.tabService = tabService;
@@ -212,9 +212,9 @@ ActionService.prototype.ctxMenu = function(props) {
   });
 };
 
-ActionService.prototype.drives = function() {
-  this.gioService.drives((_, result) => {
-    this.mountService.set(result);
+ActionService.prototype.getPlaces = function() {
+  this.gioService.getPlaces((_, places) => {
+    this.placeService.set(places);
   });
 };
 
@@ -299,7 +299,7 @@ ActionService.prototype.ls = function(tabId, uri, delta) {
           this.dialogService.alert(error.message, noop);
         } else {
           this.ls(activeTabId, uri);
-          this.drives();
+          this.getPlaces();
         }
       });
     });
@@ -426,7 +426,7 @@ ActionService.prototype.refresh = function() {
   const panel1TabId = this.panelService.entities[1].activeTabId;
   this.ls(panel0TabId, this.tabService.entities[panel0TabId].location);
   this.ls(panel1TabId, this.tabService.entities[panel1TabId].location);
-  this.drives();
+  this.getPlaces();
 };
 
 /**

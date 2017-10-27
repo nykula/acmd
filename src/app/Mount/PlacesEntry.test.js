@@ -1,10 +1,9 @@
 const expect = require("expect");
-const h = require("inferno-hyperscript").default;
-const { MountListEntry } = require("./MountListEntry");
-const { shallow } = require("../Test/Test");
+const { PlacesEntry } = require("./PlacesEntry");
 
-describe("MountListEntry", () => {
+describe("PlacesEntry", () => {
   it("renders entry without crashing", () => {
+    /** @type {*} */
     const panelService = {
       entities: {
         "0": {
@@ -13,6 +12,7 @@ describe("MountListEntry", () => {
       },
     };
 
+    /** @type {*} */
     const tabService = {
       entities: {
         "0": {
@@ -22,35 +22,39 @@ describe("MountListEntry", () => {
       },
     };
 
-    shallow(
-      h(MountListEntry, {
-        mount: {
-          name: "/",
-          icon: "computer",
-          iconType: "ICON_NAME",
-          rootUri: "file:///",
-        },
-        panelId: 0,
-        panelService: panelService,
-        short: "/",
-        tabService: tabService,
-      }),
-    );
+    new PlacesEntry({
+      actionService: undefined,
+      panelId: 0,
+      panelService: panelService,
+      place: {
+        filesystemFree: 0,
+        filesystemSize: 0,
+        name: "/",
+        icon: "computer",
+        iconType: "ICON_NAME",
+        rootUri: "file:///",
+        uuid: null,
+      },
+      short: "/",
+      tabService: tabService,
+    }).render();
 
-    shallow(
-      h(MountListEntry, {
-        mount: {
-          name: "Music",
-          icon: "media-optical",
-          iconType: "ICON_NAME",
-          rootUri: "file:///media/Music",
-        },
-        panelId: 0,
-        panelService: panelService,
-        short: "M",
-        tabService: tabService,
-      }),
-    );
+    new PlacesEntry({
+      actionService: undefined,
+      panelId: 0,
+      panelService: panelService,
+      place: {
+        filesystemFree: 0,
+        filesystemSize: 0,
+        name: "Music",
+        icon: "media-optical",
+        iconType: "ICON_NAME",
+        rootUri: "file:///media/Music",
+        uuid: null,
+      },
+      short: "M",
+      tabService: tabService,
+    }).render();
   });
 
   it("does not show context menu on active entry click", () => {
@@ -80,17 +84,19 @@ describe("MountListEntry", () => {
       },
     };
 
-    new MountListEntry({
+    new PlacesEntry({
       actionService: actionService,
-      mount: {
+      panelId: 0,
+      panelService: panelService,
+      place: {
+        filesystemFree: 0,
+        filesystemSize: 0,
         name: "/",
         icon: "computer",
         iconType: "ICON_NAME",
         rootUri: "file:///",
-        uuid: "",
+        uuid: null,
       },
-      panelId: 0,
-      panelService: panelService,
       short: "/",
       tabService: tabService,
     })

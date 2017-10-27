@@ -1,48 +1,50 @@
 const assign = require("lodash/assign");
 const expect = require("expect");
 const { createSpy } = require("expect");
-const h = require("inferno-hyperscript").default;
 const { Mount } = require("./Mount");
-const { shallow } = require("../Test/Test");
 
 describe("Mount", () => {
   it("renders without crashing", () => {
-    const mountService = {
+    /** @type {*} */
+    const placeService = {
       names: ["System"],
       entities: {
         System: {
+          filesystemFree: 0,
+          filesystemSize: 0,
           name: "System",
-          attributes: { "filesystem::size": 1 },
           rootUri: "file:///media/System",
         },
       },
     };
 
+    /** @type {*} */
     const panelService = {
       entities: {
         "0": { activeTabId: 0 },
       },
     };
 
+    /** @type {*} */
     const tabService = {
       entities: {
         "0": {
           files: [{
-            name: ".",
             mountUri: "file:///media/System",
+            name: ".",
           }],
         },
       },
     };
 
-    shallow(
-      h(Mount, {
-        mountService: mountService,
-        panelId: 0,
-        panelService: panelService,
-        tabService: tabService,
-      }),
-    );
+    new Mount({
+      actionService: undefined,
+      panelId: 0,
+      panelService,
+      placeService,
+      refstore: undefined,
+      tabService,
+    }).render();
   });
 
   it("dispatches levelUp", () => {
@@ -57,9 +59,9 @@ describe("Mount", () => {
 
     new Mount({
       actionService: actionService,
-      mountService: undefined,
       panelId: 0,
       panelService: undefined,
+      placeService: undefined,
       refstore: undefined,
       tabService: undefined,
     })

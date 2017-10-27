@@ -6,6 +6,7 @@ const uniqBy = require("lodash/uniqBy");
 const Uri = require("url-parse");
 const { File } = require("../../domain/File/File");
 const { FileHandler } = require("../../domain/File/FileHandler");
+const { Place } = require("../../domain/Place/Place");
 const autoBind = require("../Gjs/autoBind").default;
 const gioAsync = require("./gioAsync").default;
 
@@ -36,43 +37,52 @@ GioService.prototype.ensureGVolMon = function() {
 };
 
 /**
- * @see https://www.roojs.com/seed/gir-1.2-Gtk-3.0/gjs/Gio.Drive.html
+ * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Drive.html
+ * @param {(error: null, places: Place[]) => void} callback
  */
-GioService.prototype.drives = function(callback) {
+GioService.prototype.getPlaces = function(callback) {
   this.ensureGVolMon();
-  const gDrives = this.gVolMon.get_connected_drives();
-  const drives = gDrives.map(this._serializeDrive);
+
+  /** @type {Place[]} */
+  let places = [];
+
+  for (const gDrive of this.gVolMon.get_connected_drives()) {
+    for (const gVolume of gDrive.get_volumes()) {
+      const label = gVolume.get_identifier("label");
+      const uuid = gVolume.get_identifier("uuid");
+      const gMount = gVolume.get_mount();
+
+      places.push(gMount ? this._serializeMount(gMount) : {
+        filesystemFree: 0,
+        filesystemSize: 0,
+        icon: "drive-harddisk",
+        iconType: "ICON_NAME",
+        name: label || uuid,
+        rootUri: null,
+        uuid,
+      });
+    }
+  }
+
+  places = places.concat(this.gVolMon.get_mounts().map(this._serializeMount));
+  places = uniqBy(places, mount => mount.uuid || mount.name);
+
   const rootInfo = this.Gio.File.new_for_uri("file:///").query_filesystem_info("*", null);
-  const mounts = [{
-    name: "/",
+  places.unshift({
+    filesystemFree: Number(rootInfo.get_attribute_as_string("filesystem::free")),
+    filesystemSize: Number(rootInfo.get_attribute_as_string("filesystem::size")),
     icon: "computer",
     iconType: "ICON_NAME",
+    name: "/",
     rootUri: "file:///",
-    attributes: rootInfo.list_attributes(null)
-      .reduce((prev, key) => {
-        prev[key] = rootInfo.get_attribute_as_string(key);
-        return prev;
-      }, {}),
-  }].concat(this.gVolMon.get_mounts().map(this._serializeMount));
-
-  callback(null, {
-    drives: drives,
-    mounts: mounts,
+    uuid: null,
   });
-};
 
-GioService.prototype._serializeDrive = function(gDrive) {
-  const drive = {
-    hasMedia: gDrive.has_media(),
-    identifiers: this._serializeIdentifiers(gDrive),
-    volumes: gDrive.get_volumes().map(this._serializeVolume),
-  };
-
-  return drive;
+  callback(null, places);
 };
 
 /**
- * @see https://www.roojs.com/seed/gir-1.2-Gtk-3.0/gjs/Gio.Volume.html
+ * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Volume.html
  */
 GioService.prototype.mount = function(props, callback) {
   let mountOperation;
@@ -127,19 +137,8 @@ GioService.prototype.mount = function(props, callback) {
   }
 };
 
-GioService.prototype._serializeVolume = function(gVolume) {
-  const gMount = gVolume.get_mount();
-
-  const volume = {
-    mount: gMount ? this._serializeMount(gMount) : null,
-    identifiers: this._serializeIdentifiers(gVolume),
-  };
-
-  return volume;
-};
-
 /**
- * @see https://www.roojs.com/seed/gir-1.2-Gtk-3.0/gjs/Gio.Mount.html
+ * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Mount.html
  */
 GioService.prototype.unmount = function(uri, callback) {
   const gFile = this.Gio.File.new_for_uri(uri);
@@ -154,18 +153,18 @@ GioService.prototype._serializeMount = function(gMount) {
   const root = gMount.get_root();
   const rootInfo = root.query_filesystem_info("*", null);
 
-  const mount = {
-    name: gMount.get_name(),
+  /** @type {Place} */
+  const place = {
+    filesystemFree: Number(rootInfo.get_attribute_as_string("filesystem::free")),
+    filesystemSize: Number(rootInfo.get_attribute_as_string("filesystem::size")),
     icon: gMount.get_icon().to_string(),
     iconType: "GICON",
+    name: gMount.get_name(),
     rootUri: root ? root.get_uri() : null,
-    attributes: root ? rootInfo.list_attributes(null).reduce((prev, key) => {
-      prev[key] = rootInfo.get_attribute_as_string(key);
-      return prev;
-    }, {}) : {},
+    uuid: null,
   };
 
-  return mount;
+  return place;
 };
 
 /**
@@ -384,17 +383,6 @@ GioService.prototype.spawn = function({ argv, cwd }) {
   launcher.set_cwd(cwd);
   launcher.set_flags(this.Gio.SubprocessFlags.NONE);
   return launcher.spawnv(argv);
-};
-
-/**
- * Get a hash table of Gio.Drive or Gio.Volume identifiers. Known possible
- * keys for Gio.Volume: class, unix-device, uuid, label.
- */
-GioService.prototype._serializeIdentifiers = function(gX) {
-  return gX.enumerate_identifiers().reduce((identifiers, type) => {
-    identifiers[type] = gX.get_identifier(type);
-    return identifiers;
-  }, {});
 };
 
 exports.GioService = GioService;

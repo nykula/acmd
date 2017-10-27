@@ -2,7 +2,7 @@ const Gtk = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
-const { Mount } = require("../../domain/Mount/Mount");
+const { Place } = require("../../domain/Place/Place");
 const { ActionService } = require("../Action/ActionService");
 const Icon = require("../Icon/Icon").default;
 const minLength = require("../MinLength/minLength").default;
@@ -14,66 +14,66 @@ const ToggleButton = require("../ToggleButton/ToggleButton").default;
 /**
  * @typedef IProps
  * @property {ActionService} actionService
- * @property {Mount} mount
  * @property {number} panelId
+ * @property {Place} place
  * @property {PanelService} panelService
  * @property {string} short
  * @property {TabService} tabService
  *
  * @param {IProps} props
  */
-function MountListEntry(props) {
+function PlacesEntry(props) {
   Component.call(this, props);
   this.handleClicked = this.handleClicked.bind(this);
 }
 
-MountListEntry.prototype = Object.create(Component.prototype);
+PlacesEntry.prototype = Object.create(Component.prototype);
 
 /** @type {IProps} */
-MountListEntry.prototype.props = undefined;
+PlacesEntry.prototype.props = undefined;
 
-MountListEntry.prototype.activeUri = function() {
+PlacesEntry.prototype.activeUri = function() {
   return getActiveMountUri(this.props, this.props.panelId);
 };
 
-MountListEntry.prototype.isActive = function() {
-  return this.props.mount.rootUri === this.activeUri();
+PlacesEntry.prototype.isActive = function() {
+  return this.props.place.rootUri === this.activeUri();
 };
 
-MountListEntry.prototype.location = function() {
+PlacesEntry.prototype.location = function() {
   return this.props.tabService.entities[this.props.panelId].location;
 };
 
-MountListEntry.prototype.handleClicked = function() {
-  const { mount } = this.props;
-  const isActive = mount.rootUri === this.activeUri();
+PlacesEntry.prototype.handleClicked = function() {
+  const { place } = this.props;
+  const isActive = place.rootUri === this.activeUri();
 
   const menu = new Gtk.Menu();
   let item;
 
-  if (mount.rootUri && mount.rootUri !== this.location()) {
+  if (place.rootUri && place.rootUri !== this.location()) {
     item = new Gtk.MenuItem();
     item.label = "Open";
     item.connect("activate", () => {
-      this.props.actionService.ls(this.props.panelId, mount.rootUri);
+      this.props.actionService.ls(this.props.panelId, place.rootUri);
     });
     menu.add(item);
   }
 
-  if (mount.rootUri && !isActive) {
+  if (place.rootUri && !isActive) {
     item = new Gtk.MenuItem();
     item.label = "Unmount";
     item.connect("activate", () => {
-      this.props.actionService.unmount(mount.rootUri);
+      this.props.actionService.unmount(place.rootUri);
     });
     menu.add(item);
   }
 
-  if (!mount.rootUri) {
+  if (!place.rootUri) {
     item = new Gtk.MenuItem();
     item.label = "Mount";
     item.connect("activate", () => {
-      this.props.actionService.mount(mount.uuid);
+      this.props.actionService.mount(place.uuid);
     });
     menu.add(item);
   }
@@ -86,9 +86,9 @@ MountListEntry.prototype.handleClicked = function() {
   menu.popup(null, null, null, null, null);
 };
 
-MountListEntry.prototype.render = function() {
-  const { mount, short } = this.props;
-  const { icon, iconType, name } = mount;
+PlacesEntry.prototype.render = function() {
+  const { place, short } = this.props;
+  const { icon, iconType, name } = place;
 
   return (
     h(ToggleButton, {
@@ -109,5 +109,5 @@ MountListEntry.prototype.render = function() {
   );
 };
 
-exports.MountListEntry = MountListEntry;
-exports.default = connect(["actionService", "panelService", "tabService"])(MountListEntry);
+exports.PlacesEntry = PlacesEntry;
+exports.default = connect(["actionService", "panelService", "tabService"])(PlacesEntry);

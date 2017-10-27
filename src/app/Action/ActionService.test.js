@@ -6,150 +6,23 @@ const { PanelService } = require("../Panel/PanelService");
 const { ActionService } = require("./ActionService");
 
 describe("ActionService", () => {
-  it("provides info about drives", () => {
-    const gVolMon = {
-      get_connected_drives: () => [],
-    };
-
-    const Gio = {
-      File: {
-        new_for_uri: () => ({
-          query_filesystem_info: () => ({
-            get_attribute_as_string: () => 1,
-            list_attributes: () => ["filesystem::free"],
-          }),
-        }),
-      },
-      VolumeMonitor: {
-        get: () => gVolMon,
-      },
-    };
-
-    gVolMon.get_connected_drives = () => [{
-      has_media: () => true,
-      enumerate_identifiers: () => [
-        "class",
-        "unix-device",
-        "uuid",
-        "label",
-      ],
-      get_identifier: (x) => {
-        switch (x) {
-          case "class":
-            return "device";
-
-          case "unix-device":
-            return "/dev/sda";
-
-          case "uuid":
-            return "abc";
-
-          default:
-            return "System";
-        }
-      },
-      get_volumes: () => [{
-        enumerate_identifiers: () => ["uuid"],
-        get_identifier: () => null,
-        get_mount: () => ({
-          get_name: () => "System",
-          get_icon: () => ({
-            to_string: () => ". GThemedIcon drive-harddisk-usb drive-harddisk drive",
-          }),
-          get_root: () => ({
-            get_uri: () => "file:///media/System",
-            query_filesystem_info: () => ({
-              get_attribute_as_string: () => 1,
-              list_attributes: () => ["filesystem::free"],
-            }),
-          }),
-        }),
-      }],
-    }];
-
-    gVolMon.get_mounts = () => [
-      {
-        get_name: () => "foo on bar.example.com",
-        get_icon: () => ({
-          to_string: () => ". GThemedIcon folder-remote folder",
-        }),
-        get_root: () => ({
-          get_uri: () => "sftp:///foo@bar.example.com/",
-          query_filesystem_info: () => ({
-            get_attribute_as_string: () => 1,
-            list_attributes: () => ["filesystem::free"],
-          }),
-        }),
-      },
-      {
-        get_name: () => "System",
-        get_icon: () => ({
-          to_string: () => ". GThemedIcon drive-harddisk-usb drive-harddisk drive",
-        }),
-        get_root: () => ({
-          get_uri: () => "file:///media/System",
-          query_filesystem_info: () => ({
-            get_attribute_as_string: () => 1,
-            list_attributes: () => ["filesystem::free"],
-          }),
-        }),
-      },
-    ];
-
+  it("gets places", () => {
     const set = expect.createSpy().andReturn(undefined);
 
     /** @type {*} */
-    const mountService = { set: set };
+    const gioService = {
+      getPlaces: (callback) => callback(null, [1, 2, 3]),
+    };
+
+    /** @type {*} */
+    const placeService = { set: set };
 
     const actionService = new ActionService();
-    actionService.gioService = new GioService(Gio, undefined);
-    actionService.mountService = mountService;
-    actionService.drives();
+    actionService.gioService = gioService;
+    actionService.placeService = placeService;
+    actionService.getPlaces();
 
-    expect(set).toHaveBeenCalledWith({
-      drives: [{
-        hasMedia: true,
-        identifiers: {
-          class: "device",
-          "unix-device": "/dev/sda",
-          uuid: "abc",
-          label: "System",
-        },
-        volumes: [{
-          mount: {
-            name: "System",
-            icon: ". GThemedIcon drive-harddisk-usb drive-harddisk drive",
-            iconType: "GICON",
-            rootUri: "file:///media/System",
-            attributes: { "filesystem::free": 1 },
-          },
-          identifiers: { uuid: null },
-        }],
-      }],
-      mounts: [
-        {
-          name: "/",
-          icon: "computer",
-          iconType: "ICON_NAME",
-          rootUri: "file:///",
-          attributes: { "filesystem::free": 1 },
-        },
-        {
-          name: "foo on bar.example.com",
-          icon: ". GThemedIcon folder-remote folder",
-          iconType: "GICON",
-          rootUri: "sftp:///foo@bar.example.com/",
-          attributes: { "filesystem::free": 1 },
-        },
-        {
-          name: "System",
-          icon: ". GThemedIcon drive-harddisk-usb drive-harddisk drive",
-          iconType: "GICON",
-          rootUri: "file:///media/System",
-          attributes: { "filesystem::free": 1 },
-        },
-      ],
-    });
+    expect(set).toHaveBeenCalledWith([1, 2, 3]);
   });
 
   it("lists files in a directory", () => {

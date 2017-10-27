@@ -1,10 +1,10 @@
 const h = require("inferno-hyperscript").default;
-const { MountList } = require("./MountList");
 const { shallow } = require("../Test/Test");
+const { Places } = require("./Places");
 
-describe("MountList", () => {
+describe("Places", () => {
   it("renders without crashing", () => {
-    const mountService = {
+    const placeService = {
       names: ["System", "Music"],
       entities: {
         System: {
@@ -41,10 +41,10 @@ describe("MountList", () => {
     };
 
     shallow(
-      h(MountList, {
-        mountService: mountService,
+      h(Places, {
         panelId: 0,
         panelService: panelService,
+        placeService: placeService,
         tabService: tabService,
       }),
     );
