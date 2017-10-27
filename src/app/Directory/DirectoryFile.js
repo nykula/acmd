@@ -60,14 +60,6 @@ DirectoryFile.prototype.mtime = function() {
   return [month, day, year].join("/") + " " + [hours, minutes].join(":");
 };
 
-DirectoryFile.prototype.mode = function() {
-  const file = this.props.file;
-
-  return file.attributes && file.attributes["unix::mode"]
-    ? Number(file.attributes["unix::mode"]).toString(8).slice(-4)
-    : "";
-};
-
 /**
  * @param {string} input
  */
@@ -84,7 +76,7 @@ DirectoryFile.prototype.render = function() {
     filename,
     icon: file,
     isSelected,
-    mode: this.mode(),
+    mode: file.mode,
     mtime: this.mtime(),
     shouldSearchSkip: this.shouldSearchSkip,
     size: this.size(),

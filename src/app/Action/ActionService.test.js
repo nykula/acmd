@@ -164,8 +164,7 @@ describe("ActionService", () => {
         },
 
         next_files_finish: () => [{
-          list_attributes: () => ["someNamespace::someKey"],
-          get_attribute_as_string: () => "someValue",
+          get_attribute_as_string: () => "33204",
           get_display_name: () => "file.txt",
           get_file_type: () => FileType.REGULAR,
           get_icon: () => ({
@@ -192,8 +191,7 @@ describe("ActionService", () => {
       },
 
       query_info_finish: () => ({
-        list_attributes: () => ["someNamespace::someKey"],
-        get_attribute_as_string: () => "someValue",
+        get_attribute_as_string: () => "17405",
         get_display_name: () => "/",
         get_file_type: () => FileType.DIRECTORY,
         get_icon: () => ({
@@ -238,26 +236,23 @@ describe("ActionService", () => {
           icon: "some gio icon",
           iconType: "GICON",
           name: ".",
+          mode: "1775",
           modificationTime: 0,
+          mountUri: "file:///",
           size: 1,
-          attributes: {
-            "someNamespace::someKey": "someValue",
-          },
-          "uri": "file:///",
-          "mountUri": "file:///",
+          uri: "file:///",
         },
         {
           displayName: "file.txt",
           fileType: FileType.REGULAR,
           icon: "some gio icon",
           iconType: "GICON",
+          mode: "0664",
           name: "?@$/@!#$/*@!)(#</>E",
           modificationTime: 0,
+          mountUri: "",
           size: 1,
-          attributes: {
-            "someNamespace::someKey": "someValue",
-          },
-          "uri": "file:///?@$/@!#$/*@!)(#</>E",
+          uri: "file:///?@$/@!#$/*@!)(#</>E",
         },
       ],
       id: 0,

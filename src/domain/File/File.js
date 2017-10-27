@@ -1,8 +1,9 @@
 function File() {
-  this.attributes = {};
+  this.displayName = "";
   this.fileType = 0;
   this.icon = "";
   this.iconType = "";
+  this.mode = "";
   this.modificationTime = 0;
   this.mountUri = "";
   this.name = "";

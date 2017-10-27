@@ -4,6 +4,7 @@ const waterfall = require("async/waterfall");
 const find = require("lodash/find");
 const uniqBy = require("lodash/uniqBy");
 const Uri = require("url-parse");
+const { File } = require("../../domain/File/File");
 const { FileHandler } = require("../../domain/File/FileHandler");
 const autoBind = require("../Gjs/autoBind").default;
 const gioAsync = require("./gioAsync").default;
@@ -17,6 +18,7 @@ const gioAsync = require("./gioAsync").default;
 function GioService(Gio, Gtk) {
   autoBind(this, GioService.prototype);
 
+  this.fileAttributes = "standard::*,time::*,unix::*";
   this.Gio = Gio;
   this.Gtk = Gtk;
 }
@@ -181,9 +183,10 @@ GioService.prototype.launch = function(handler, uris) {
 };
 
 /**
- * For every file in a given directory, lists its display name, name,
- * modification time and size. Also lists standard, access and ownership
- * attributes as strings.
+ * Lists every file in a given directory.
+ *
+ * @param {string} uri
+ * @param {(error: Error, files: File[]) => void} callback
  */
 GioService.prototype.ls = function(uri, callback) {
   let files = [];
@@ -192,7 +195,7 @@ GioService.prototype.ls = function(uri, callback) {
 
   const handleRequest = callback => {
     gioAsync(dir, "query_info",
-      "standard::*,access::*,owner::*,time::*,unix::*",
+      this.fileAttributes,
       this.Gio.FileQueryInfoFlags.NONE,
       GLib.PRIORITY_DEFAULT,
       null,
@@ -214,7 +217,7 @@ GioService.prototype.ls = function(uri, callback) {
     }
 
     gioAsync(parent, "query_info",
-      "standard::*,access::*,owner::*,time::*,unix::*",
+      this.fileAttributes,
       this.Gio.FileQueryInfoFlags.NONE,
       GLib.PRIORITY_DEFAULT,
       null,
@@ -234,7 +237,7 @@ GioService.prototype.ls = function(uri, callback) {
     }
 
     gioAsync(dir, "enumerate_children",
-      "standard::*,access::*,owner::*,time::*,unix::*",
+      this.fileAttributes,
       this.Gio.FileQueryInfoFlags.NONE,
       GLib.PRIORITY_DEFAULT,
       null,
@@ -257,25 +260,20 @@ GioService.prototype.ls = function(uri, callback) {
   };
 
   const mapGFileInfoToFile = gFileInfo => {
-    const attributes = []
-      .concat(gFileInfo.list_attributes("access"))
-      .concat(gFileInfo.list_attributes("owner"))
-      .concat(gFileInfo.list_attributes("unix"))
-      .reduce((prev, key) => {
-        prev[key] = gFileInfo.get_attribute_as_string(key);
-        return prev;
-      }, {});
-
+    const mode = gFileInfo.get_attribute_as_string("unix::mode");
     const name = gFileInfo.get_name();
+
+    /** @type {File} */
     const file = {
       displayName: gFileInfo.get_display_name(),
       fileType: gFileInfo.get_file_type(),
       icon: gFileInfo.get_icon().to_string(),
       iconType: "GICON",
       name: name,
+      mode: Number(mode).toString(8).slice(-4),
       modificationTime: gFileInfo.get_modification_time().tv_sec,
+      mountUri: "",
       size: gFileInfo.get_size(),
-      attributes: attributes,
       uri: dir.get_child(name).get_uri(),
     };
 
@@ -301,7 +299,7 @@ GioService.prototype.getHandlers = function(uri, callback) {
   const file = this.Gio.file_new_for_uri(uri);
 
   gioAsync(file, "query_info",
-    "standard::*,access::*,owner::*,time::*,unix::*",
+    this.fileAttributes,
     Gio.FileQueryInfoFlags.NONE,
     GLib.PRIORITY_DEFAULT,
     null,
