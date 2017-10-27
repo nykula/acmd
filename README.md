@@ -2,6 +2,8 @@
 
 Twin-panel file manager.
 
+![screenshot from 2017-10-28 01-41-49](https://user-images.githubusercontent.com/20999066/32127710-69f5080e-bb81-11e7-9fa7-e57f5103e4cb.png)
+
 ## Usage
 
 Make sure you have a GNOME JavaScript runtime, v1.50 or newer:
