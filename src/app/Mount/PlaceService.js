@@ -1,11 +1,12 @@
 const assign = require("lodash/assign");
-const { extendObservable } = require("mobx");
+const { action, extendObservable, useStrict } = require("mobx");
 const { Place } = require("../../domain/Place/Place");
 
 function PlaceService() {
   extendObservable(this, {
     entities: this.entities,
     names: this.names,
+    set: action(this.set),
   });
 }
 

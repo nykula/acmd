@@ -1,6 +1,7 @@
-const { computed, extendObservable } = require("mobx");
+const { action, computed, extendObservable } = require("mobx");
 const { File } = require("../../domain/File/File");
 const { Panel } = require("../../domain/Panel/Panel");
+const { autoBind } = require("../Gjs/autoBind");
 const { TabService } = require("../Tab/TabService");
 
 /**
@@ -9,10 +10,20 @@ const { TabService } = require("../Tab/TabService");
 function PanelService(tabService) {
   this.tabService = tabService;
 
+  autoBind(this, PanelService.prototype);
+
   extendObservable(this, {
     activeId: this.activeId,
     entities: this.entities,
+    nextTab: action(this.nextTab),
+    prevTab: action(this.prevTab),
+    pushLocation: action(this.pushLocation),
+    removeTab: action(this.removeTab),
+    replaceLocation: action(this.replaceLocation),
+    setActiveId: action(this.setActiveId),
+    setActiveTabId: action(this.setActiveTabId),
     showHidSys: this.showHidSys,
+    toggleActive: action(this.toggleActive),
     visibleFiles: {
       "0": computed(this.getVisibleFiles.bind(this, 0)),
       "1": computed(this.getVisibleFiles.bind(this, 1)),

@@ -2,7 +2,7 @@ const Pango = imports.gi.Pango;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const h = require("inferno-hyperscript").default;
-const { autorun, extendObservable } = require("mobx");
+const { action, autorun, extendObservable, observable } = require("mobx");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 
@@ -17,14 +17,16 @@ const { TabService } = require("../Tab/TabService");
 function Location(props) {
   Component.call(this, props);
 
-  extendObservable(this, {
-    list: this.list,
-    row: this.row,
-  });
-
   this.refList = this.refList.bind(this);
   this.refRow = this.refRow.bind(this);
   this.updateSelection = this.updateSelection.bind(this);
+
+  extendObservable(this, {
+    list: observable.ref(undefined),
+    refList: action(this.refList),
+    refRow: action(this.refRow),
+    row: observable.ref(undefined),
+  });
 
   this.unsubscribeSelection = autorun(this.updateSelection);
 }

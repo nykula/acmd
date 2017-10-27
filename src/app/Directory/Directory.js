@@ -7,7 +7,7 @@ const assign = require("lodash/assign");
 const isEqual = require("lodash/isEqual");
 const noop = require("lodash/noop");
 const range = require("lodash/range");
-const { autorun, computed, extendObservable, observable } = require("mobx");
+const { action, autorun, computed, extendObservable, observable } = require("mobx");
 const { File } = require("../../domain/File/File");
 const { ActionService } = require("../Action/ActionService");
 const { FileService } = require("../File/FileService");
@@ -37,6 +37,7 @@ function Directory(props) {
   extendObservable(this, {
     cols: computed(this.getCols),
     node: observable.ref(undefined),
+    ref: action(this.ref),
   });
 
   this.unsubscribeUpdate = autorun(this.focusIfActive);

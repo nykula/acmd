@@ -1,11 +1,17 @@
 const { FileType } = imports.gi.Gio;
-const { extendObservable } = require("mobx");
+const { action, extendObservable } = require("mobx");
 const orderBy = require("lodash/orderBy");
+const { autoBind } = require("../Gjs/autoBind");
 const { Tab } = require("../../domain/Tab/Tab");
 
 function TabService() {
+  autoBind(this, TabService.prototype);
+
   extendObservable(this, {
+    cursor: action(this.cursor),
     entities: this.entities,
+    set: action(this.set),
+    sorted: action(this.sorted),
   });
 }
 

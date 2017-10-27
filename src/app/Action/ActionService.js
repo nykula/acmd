@@ -4,6 +4,7 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
+const { action, extendObservable, runInAction } = require("mobx");
 const Fun = require("../Gjs/Fun").default;
 const { DialogService } = require("../Dialog/DialogService");
 const { GioService } = require("../Gio/GioService");
@@ -39,6 +40,10 @@ function ActionService(
   this.tabService = tabService;
   this.win = win;
   this.workerService = workerService;
+
+  extendObservable(this, {
+    showHidSys: action(this.showHidSys),
+  });
 }
 
 /**
@@ -318,23 +323,25 @@ ActionService.prototype.ls = function(tabId, uri, delta) {
       return;
     }
 
-    this.tabService.set({
-      files: files,
-      id: tabId,
-      location: uri,
-    });
+    runInAction(() => {
+      this.tabService.set({
+        files: files,
+        id: tabId,
+        location: uri,
+      });
 
-    if (delta) {
-      this.panelService.replaceLocation({
-        delta: delta,
-        tabId: tabId,
-      });
-    } else {
-      this.panelService.pushLocation({
-        tabId: tabId,
-        uri: uri,
-      });
-    }
+      if (delta) {
+        this.panelService.replaceLocation({
+          delta: delta,
+          tabId: tabId,
+        });
+      } else {
+        this.panelService.pushLocation({
+          tabId: tabId,
+          uri: uri,
+        });
+      }
+    });
   });
 };
 

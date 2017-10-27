@@ -1,4 +1,4 @@
-exports.default = function(self, prototype) {
+exports.default = exports.autoBind = function(self, prototype) {
   const keys = Object.getOwnPropertyNames(prototype);
 
   for (let i = 0; i < keys.length; i++) {
