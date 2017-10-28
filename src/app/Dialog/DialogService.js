@@ -1,3 +1,5 @@
+const noop = require("lodash/noop");
+
 /**
  * @param {any} Gtk
  * @param {any} win
@@ -9,9 +11,9 @@ function DialogService(Gtk, win) {
 
 /**
  * @param {string} text
- * @param {() => void} callback
+ * @param {(() => void)=} callback
  */
-DialogService.prototype.alert = function(text, callback) {
+DialogService.prototype.alert = function(text, callback = noop) {
   const dialog = new this.Gtk.MessageDialog({
     buttons: this.Gtk.ButtonsType.CLOSE,
     modal: true,

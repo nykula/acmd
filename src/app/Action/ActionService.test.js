@@ -347,4 +347,122 @@ describe("ActionService", () => {
     actionService.reportIssue();
     expect(Gtk.show_uri.calls[0].arguments[1]).toMatch(/github/);
   });
+
+  it("opens editor, rejecting if no env var", () => {
+    /** @type {*} */
+    const dialogService = {
+      alert: expect.createSpy(),
+    };
+
+    const actionService = new ActionService();
+
+    /** @type {*} */
+    const getCursor = () => ({ uri: "file:///foo.bar" });
+    const terminal = expect.createSpy();
+
+    actionService.dialogService = dialogService;
+    actionService.env = { EDITOR: undefined };
+    actionService.getCursor = getCursor;
+    actionService.terminal = terminal;
+
+    actionService.editor();
+    expect(dialogService.alert).toHaveBeenCalled();
+    expect(terminal.calls.length).toBe(0);
+  });
+
+  it("opens editor, rejecting if file not local", () => {
+    /** @type {*} */
+    const dialogService = {
+      alert: expect.createSpy(),
+    };
+
+    const actionService = new ActionService();
+
+    /** @type {*} */
+    const getCursor = () => ({ uri: "sftp://foo@bar/baz" });
+    const terminal = expect.createSpy();
+
+    actionService.dialogService = dialogService;
+    actionService.env = { EDITOR: "vim" };
+    actionService.getCursor = getCursor;
+    actionService.terminal = terminal;
+
+    actionService.editor();
+    expect(dialogService.alert).toHaveBeenCalled();
+    expect(terminal.calls.length).toBe(0);
+  });
+
+  it("opens editor", () => {
+    const actionService = new ActionService();
+
+    /** @type {*} */
+    const getCursor = () => ({ uri: "file:///foo.bar" });
+    const terminal = expect.createSpy();
+
+    actionService.env = { EDITOR: "vim" };
+    actionService.getCursor = getCursor;
+    actionService.terminal = terminal;
+
+    actionService.editor();
+    expect(terminal).toHaveBeenCalledWith(["-e", "vim", "/foo.bar"]);
+  });
+
+  it("views, rejecting if no env var", () => {
+    /** @type {*} */
+    const dialogService = {
+      alert: expect.createSpy(),
+    };
+
+    const actionService = new ActionService();
+
+    /** @type {*} */
+    const getCursor = () => ({ uri: "file:///foo.bar" });
+    const terminal = expect.createSpy();
+
+    actionService.dialogService = dialogService;
+    actionService.env = { PAGER: undefined };
+    actionService.getCursor = getCursor;
+    actionService.terminal = terminal;
+
+    actionService.view();
+    expect(dialogService.alert).toHaveBeenCalled();
+    expect(terminal.calls.length).toBe(0);
+  });
+
+  it("views, rejecting if file not local", () => {
+    /** @type {*} */
+    const dialogService = {
+      alert: expect.createSpy(),
+    };
+
+    const actionService = new ActionService();
+
+    /** @type {*} */
+    const getCursor = () => ({ uri: "sftp://foo@bar/baz" });
+    const terminal = expect.createSpy();
+
+    actionService.dialogService = dialogService;
+    actionService.env = { EDITOR: "vim" };
+    actionService.getCursor = getCursor;
+    actionService.terminal = terminal;
+
+    actionService.view();
+    expect(dialogService.alert).toHaveBeenCalled();
+    expect(terminal.calls.length).toBe(0);
+  });
+
+  it("views", () => {
+    const actionService = new ActionService();
+
+    /** @type {*} */
+    const getCursor = () => ({ uri: "file:///foo.bar" });
+    const terminal = expect.createSpy();
+
+    actionService.env = { PAGER: "less" };
+    actionService.getCursor = getCursor;
+    actionService.terminal = terminal;
+
+    actionService.view();
+    expect(terminal).toHaveBeenCalledWith(["-e", "less", "/foo.bar"]);
+  });
 });

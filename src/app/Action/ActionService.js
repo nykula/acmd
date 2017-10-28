@@ -50,6 +50,8 @@ function ActionService(
   });
 }
 
+ActionService.prototype.env = process.env;
+
 /**
  * @param {{ index: number, panelId: number }} props
  */
@@ -235,8 +237,22 @@ ActionService.prototype.getPlaces = function() {
 };
 
 ActionService.prototype.editor = function() {
+  const editor = this.env.EDITOR;
+
+  if (!editor) {
+    this.dialogService.alert(`You have to define EDITOR environment variable.`);
+    return;
+  }
+
   const file = this.getCursor();
-  this.dialogService.alert("Editing " + file.uri, noop);
+  const match = /^file:\/\/(.+)/.exec(file.uri);
+
+  if (!match) {
+    this.dialogService.alert(`${file.uri} is not local.`);
+    return;
+  }
+
+  this.terminal(["-e", editor, match[1]]);
 };
 
 /**
@@ -503,7 +519,10 @@ ActionService.prototype.showHidSys = function() {
   this.tabService.showHidSys = !this.tabService.showHidSys;
 };
 
-ActionService.prototype.terminal = function() {
+/**
+ * @param {(string[])=} argv
+ */
+ActionService.prototype.terminal = function(argv) {
   const location = this.tabService.entities[this.panelService.getActiveTabId()].location;
 
   if (location.indexOf("file:///") !== 0) {
@@ -513,7 +532,7 @@ ActionService.prototype.terminal = function() {
 
   this.gioService.spawn({
     cwd: location.replace(/^file:\/\//, ""),
-    argv: ["x-terminal-emulator"],
+    argv: ["x-terminal-emulator"].concat(argv || []),
   });
 };
 
@@ -552,8 +571,22 @@ ActionService.prototype.unmount = function(uri) {
 };
 
 ActionService.prototype.view = function() {
+  const pager = this.env.PAGER;
+
+  if (!pager) {
+    this.dialogService.alert(`You have to define PAGER environment variable.`);
+    return;
+  }
+
   const file = this.getCursor();
-  this.dialogService.alert("Viewing " + file.uri, noop);
+  const match = /^file:\/\/(.+)/.exec(file.uri);
+
+  if (!match) {
+    this.dialogService.alert(`${file.uri} is not local.`);
+    return;
+  }
+
+  this.terminal(["-e", pager, match[1]]);
 };
 
 /**

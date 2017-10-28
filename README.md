@@ -114,7 +114,7 @@ yarn coverage && xdg-open coverage/index.html
 
 - [x] Disable list view button
 
-- [ ] Get viewer and editor from env
+- [x] Get viewer and editor from env
 
 - [ ] Remove extra slash when copying to root
 
