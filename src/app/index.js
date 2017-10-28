@@ -50,7 +50,7 @@ require("./Gjs/GtkDom").app({
 
     services.actionService.refresh();
 
-    if (module.hot) {
+    if (process.env.NODE_ENV === "development" && module.hot) {
       module.hot.accept("./App", () => {
         view.setState({ render: require("./App").render });
       });

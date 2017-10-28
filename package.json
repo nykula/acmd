@@ -32,7 +32,7 @@
     "url-parse": "^1.1.9"
   },
   "scripts": {
-    "start": "gjs bin/start.js 2>&1 | grep -v 'Message.*node_modules'",
+    "start": "NODE_ENV=development gjs bin/start.js 2>&1 | grep -v 'Message.*node_modules'",
     "test": "gjs bin/test.js 2>&1 | grep -v 'Message.*node_modules'",
     "coverage": "bash bin/coverage.sh 2>&1 | grep -v 'Message.*node_modules'",
     "format": "tslint --fix 'bin/**/*.js' 'src/**/*.js' && tsc",

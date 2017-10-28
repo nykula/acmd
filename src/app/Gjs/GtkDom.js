@@ -25,16 +25,18 @@ function removeAllChildren() {
 }
 
 /**
+ * @param {any} GLib
  * @param {any} Gtk
  * @param {any} _window
  */
-function GtkDom(Gtk = imports.gi.Gtk, _window = window) {
+function GtkDom(GLib = imports.gi.GLib, Gtk = imports.gi.Gtk, _window = window) {
   this.app = this.app.bind(this);
   this.createElement = this.createElement.bind(this);
   this.domify = this.domify.bind(this);
   this.require = this.require.bind(this);
 
   this.document = _window;
+  this.GLib = GLib;
   this.Gtk = Gtk;
   this.window = _window;
 }
@@ -192,10 +194,26 @@ GtkDom.prototype.app = function({ on_activate, on_startup }) {
 };
 
 /**
- * Inits GTK. Assigns createElement on window. Points document and global to
- * window. Sets navigator and process.env to empty objects. Aliases print as
- * console.error, console.log and console.warn. Exports own `app` as static
- * function on this module.
+ * Returns environment variables.
+ */
+GtkDom.prototype.getEnv = function() {
+  /** @type {string[]} */
+  const pairs = this.GLib.get_environ();
+
+  /** @type {{ [name: string]: string }} */
+  const env = {};
+
+  for (const pair of pairs) {
+    const match = pair.match(/^([^=]+)=(.*)$/);
+    env[match[1]] = match[2];
+  }
+
+  return env;
+};
+
+/**
+ * Inits GTK. Sets console, document, global, navigator and process globals.
+ * Exports own `app` as static function.
  */
 GtkDom.prototype.require = function() {
   this.Gtk.init(null);
@@ -204,7 +222,7 @@ GtkDom.prototype.require = function() {
   window.document = window.global = window;
   window.createElement = this.createElement;
   window.navigator = {};
-  window.process = { env: {} };
+  window.process = { env: this.getEnv() };
   window.console = { error: print, log: print, warn: print };
 
   exports.app = this.app;
