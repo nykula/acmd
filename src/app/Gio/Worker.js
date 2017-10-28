@@ -1,4 +1,4 @@
-const Gio = imports.gi.Gio;
+const { FileCopyFlags, FileQueryInfoFlags, FileType } = imports.gi.Gio;
 const { WorkerError } = require("../../domain/Gio/WorkerError");
 const { WorkerProgress } = require("../../domain/Gio/WorkerProgress");
 const { WorkerProps } = require("../../domain/Gio/WorkerProps");
@@ -47,7 +47,7 @@ Worker.prototype.cp = function() {
   const data = this.prepare();
 
   data.files.forEach((file, totalDoneCount) => {
-    if (file.gFileInfo.get_file_type() === Gio.FileType.DIRECTORY) {
+    if (file.gFileInfo.get_file_type() === FileType.DIRECTORY) {
       this.cpDirNode(file);
       return;
     }
@@ -57,7 +57,7 @@ Worker.prototype.cp = function() {
 
     file.gFile.copy(
       file.dest,
-      Gio.FileCopyFlags.OVERWRITE + Gio.FileCopyFlags.NOFOLLOW_SYMLINKS + Gio.FileCopyFlags.ALL_METADATA,
+      FileCopyFlags.OVERWRITE + FileCopyFlags.NOFOLLOW_SYMLINKS + FileCopyFlags.ALL_METADATA,
       null,
       (doneSize, size) => {
         this.emit({
@@ -128,9 +128,9 @@ Worker.prototype.prepare = function() {
 
   const isDestExistingDir = dest.query_exists(null) && dest.query_info(
     "standard::*",
-    Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+    FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
     null,
-  ).get_file_type() === Gio.FileType.DIRECTORY;
+  ).get_file_type() === FileType.DIRECTORY;
 
   const willCreateDest = uris.length === 1 && !isDestExistingDir;
 
@@ -185,7 +185,7 @@ Worker.prototype.cpDirNode = function(file) {
 
   file.gFile.copy_attributes(
     file.dest,
-    Gio.FileCopyFlags.ALL_METADATA,
+    FileCopyFlags.ALL_METADATA,
     null,
   );
 };
@@ -200,7 +200,7 @@ Worker.prototype.flatten = function(gFile) {
     data.files.push(file);
     data.totalSize += file.gFileInfo.get_size();
 
-    if (file.gFileInfo.get_file_type() === Gio.FileType.DIRECTORY) {
+    if (file.gFileInfo.get_file_type() === FileType.DIRECTORY) {
       this.children(gFile, file.gFile).forEach(handleFile);
     }
   };
@@ -209,7 +209,7 @@ Worker.prototype.flatten = function(gFile) {
     gFile: gFile,
     gFileInfo: gFile.query_info(
       "standard::*",
-      Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+      FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
       null,
     ),
     relativePath: null,
@@ -227,7 +227,7 @@ Worker.prototype.flatten = function(gFile) {
 Worker.prototype.children = function(ancestor, parent) {
   const enumerator = parent.enumerate_children(
     "standard::*",
-    Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+    FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
     null,
   );
 

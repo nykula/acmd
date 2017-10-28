@@ -1,5 +1,5 @@
 const GLib = imports.gi.GLib;
-const Gio = imports.gi.Gio;
+const { SubprocessFlags } = imports.gi.Gio;
 const { WorkerError } = require("../../domain/Gio/WorkerError");
 const { WorkerProps } = require("../../domain/Gio/WorkerProps");
 const { WorkerProgress } = require("../../domain/Gio/WorkerProgress");
@@ -29,7 +29,7 @@ function WorkerService(Gio = imports.gi.Gio) {
 WorkerService.prototype.run = function(ev, emit) {
   const subprocess = new this.Gio.Subprocess({
     argv: ["gjs", __dirname + "/../../../bin/worker.js", JSON.stringify(ev)],
-    flags: Gio.SubprocessFlags.STDOUT_PIPE,
+    flags: SubprocessFlags.STDOUT_PIPE,
   });
 
   subprocess.init(null);

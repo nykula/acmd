@@ -164,7 +164,6 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
   }
 
   const { actionService, panelService, panelId } = this.props;
-  const tabId = this.tabId();
 
   switch (ev.which) {
     case Gdk.KEY_BackSpace:
@@ -246,13 +245,13 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
 
     case Gdk.KEY_t:
       if (ev.ctrlKey) {
-        actionService.createTab(panelId);
+        actionService.createTab();
       }
       break;
 
     case Gdk.KEY_w:
       if (ev.ctrlKey) {
-        panelService.removeTab(tabId);
+        actionService.removeTab();
       }
       break;
   }

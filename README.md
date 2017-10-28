@@ -110,7 +110,7 @@ yarn coverage && xdg-open coverage/index.html
 
 - [x] Hotkey for active panel volume list
 
-- [ ] Actions in menus
+- [x] Actions in menus
 
 - [x] Disable list view button
 

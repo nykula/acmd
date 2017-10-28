@@ -1,4 +1,4 @@
-const Gio = imports.gi.Gio;
+const { FileQueryInfoFlags } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const waterfall = require("async/waterfall");
 const find = require("lodash/find");
@@ -299,7 +299,7 @@ GioService.prototype.getHandlers = function(uri, callback) {
 
   gioAsync(file, "query_info",
     this.fileAttributes,
-    Gio.FileQueryInfoFlags.NONE,
+    FileQueryInfoFlags.NONE,
     GLib.PRIORITY_DEFAULT,
     null,
     (error, gFileInfo) => {

@@ -1,4 +1,5 @@
 const noop = require("lodash/noop");
+const { MenuItemWithSubmenu } = require("../Menu/MenuItemWithSubmenu");
 const { TreeView } = require("../TreeView/TreeView");
 const { TreeViewRow } = require("../TreeView/TreeViewRow");
 
@@ -156,6 +157,10 @@ GtkDom.prototype.domify = function(node) {
  * for it to be compatible with Inferno.
  */
 GtkDom.prototype.createElement = function(tagName) {
+  if (tagName === "menu-item-with-submenu") {
+    return new MenuItemWithSubmenu(this.domify(new this.Gtk.MenuItem()));
+  }
+
   if (tagName === "tree-view") {
     return new TreeView(this.domify(new this.Gtk.TreeView()));
   }

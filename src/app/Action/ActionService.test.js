@@ -246,7 +246,7 @@ describe("ActionService", () => {
     actionService.terminal();
   });
 
-  it("creates tab in panel, cloning active tab", () => {
+  it("creates tab, cloning active tab in active panel", () => {
     /** @type {*} */
     const tabService = {
       entities: {
@@ -268,6 +268,7 @@ describe("ActionService", () => {
     };
 
     const panelService = new PanelService(tabService);
+    panelService.activeId = 0;
     panelService.entities = {
       "0": {
         activeTabId: 0,
@@ -282,7 +283,7 @@ describe("ActionService", () => {
     const actionService = new ActionService();
     actionService.panelService = panelService;
     actionService.tabService = tabService;
-    actionService.createTab(0);
+    actionService.createTab();
 
     expect(panelService.entities).toMatch({
       "0": {
@@ -318,5 +319,31 @@ describe("ActionService", () => {
         sortedBy: "-date",
       },
     });
+  });
+
+  it("removes tab in active panel", () => {
+    /** @type {any} */
+    const panelService = {
+      getActiveTabId: () => 0,
+      removeTab: expect.createSpy(),
+    };
+
+    const actionService = new ActionService();
+    actionService.panelService = panelService;
+    actionService.removeTab();
+
+    expect(panelService.removeTab).toHaveBeenCalledWith(0);
+  });
+
+  it("reports issue", () => {
+    const Gtk = {
+      show_uri: expect.createSpy(),
+    };
+
+    const actionService = new ActionService();
+    actionService.Gtk = Gtk;
+
+    actionService.reportIssue();
+    expect(Gtk.show_uri.calls[0].arguments[1]).toMatch(/github/);
   });
 });

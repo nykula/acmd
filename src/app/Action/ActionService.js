@@ -1,10 +1,11 @@
 const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Gtk = imports.gi.Gtk;
+const { IconSize } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
 const { action, extendObservable, runInAction } = require("mobx");
+const { autoBind } = require("../Gjs/autoBind");
 const Fun = require("../Gjs/Fun").default;
 const { DialogService } = require("../Dialog/DialogService");
 const { GioService } = require("../Gio/GioService");
@@ -41,7 +42,10 @@ function ActionService(
   this.win = win;
   this.workerService = workerService;
 
+  autoBind(this, ActionService.prototype);
+
   extendObservable(this, {
+    createTab: action(this.createTab),
     showHidSys: action(this.showHidSys),
   });
 }
@@ -107,14 +111,14 @@ ActionService.prototype.cp = function(uris, destUri) {
     const urisStr = files.length === 1 ? uris[0] + " " : "\n" + uris.join("\n") + "\n";
 
     const dest = this.getDest();
-    const destUri = dest + "/" + (files.length === 1 ? files[0].name : "");
+    destUri = dest + "/" + (files.length === 1 ? files[0].name : "");
 
-    this.dialogService.prompt("Copy " + urisStr + "to:", destUri, destUri => {
-      if (!destUri) {
+    this.dialogService.prompt("Copy " + urisStr + "to:", destUri, finalDestUri => {
+      if (!finalDestUri) {
         return;
       }
 
-      this.cp(uris, destUri);
+      this.cp(uris, finalDestUri);
     });
 
     return;
@@ -136,7 +140,8 @@ ActionService.prototype.cp = function(uris, destUri) {
 /**
  * @param {number} panelId
  */
-ActionService.prototype.createTab = function(panelId) {
+ActionService.prototype.createTab = function() {
+  const panelId = this.panelService.activeId;
   const tabId = this.panelService.getNextTabId();
   const panel = this.panelService.entities[panelId];
   const prevTabId = panel.activeTabId;
@@ -189,7 +194,7 @@ ActionService.prototype.ctxMenu = function(props) {
         const box = new this.Gtk.Box();
         item.add(box);
 
-        const image = this.Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.MENU);
+        const image = this.Gtk.Image.new_from_icon_name(icon, IconSize.MENU);
         box.add(image);
 
         const label = new this.Gtk.Label({ label: displayName });
@@ -268,6 +273,10 @@ ActionService.prototype.forward = function() {
  * @param {number} panelId
  */
 ActionService.prototype.levelUp = function(panelId) {
+  if (typeof panelId !== "number") {
+    panelId = this.panelService.activeId;
+  }
+
   const tabId = this.panelService.entities[panelId].activeTabId;
   const location = this.tabService.entities[tabId].location;
   let nextLocation = location.replace(/\/[^/]+$/, "");
@@ -285,7 +294,7 @@ ActionService.prototype.levelUp = function(panelId) {
  * @param {number=} delta
  */
 ActionService.prototype.ls = function(tabId, uri, delta) {
-  if (typeof tabId === "undefined") {
+  if (typeof tabId !== "number") {
     this.dialogService.prompt("List files at URI: ", "", input => {
       const activeTabId = this.panelService.getActiveTabId();
 
@@ -299,11 +308,11 @@ ActionService.prototype.ls = function(tabId, uri, delta) {
         return;
       }
 
-      this.gioService.mount({ uri: input }, (error, uri) => {
+      this.gioService.mount({ uri: input }, (error, finalUri) => {
         if (error) {
           this.dialogService.alert(error.message, noop);
         } else {
-          this.ls(activeTabId, uri);
+          this.ls(activeTabId, finalUri);
           this.getPlaces();
         }
       });
@@ -349,7 +358,7 @@ ActionService.prototype.ls = function(tabId, uri, delta) {
  * @param {string=} uri
  */
 ActionService.prototype.mkdir = function(uri) {
-  if (typeof uri === "undefined") {
+  if (typeof uri !== "string") {
     const tabId = this.panelService.getActiveTabId();
     const location = this.tabService.entities[tabId].location;
 
@@ -436,13 +445,18 @@ ActionService.prototype.refresh = function() {
   this.getPlaces();
 };
 
+ActionService.prototype.removeTab = function() {
+  const tabId = this.panelService.getActiveTabId();
+  this.panelService.removeTab(tabId);
+};
+
 /**
  * @param {(string[])=} uris
  */
 ActionService.prototype.rm = function(uris) {
   if (!uris) {
     const files = this.getActiveFiles();
-    const uris = files.map(x => x.uri);
+    uris = files.map(x => x.uri);
     const urisStr = files.length === 1 ? uris[0] : "\n" + uris.join("\n") + "\n";
 
     this.dialogService.confirm("Are you sure you want to remove " + urisStr + "?", () => {
@@ -463,6 +477,11 @@ ActionService.prototype.rm = function(uris) {
       this.refresh();
     }
   });
+};
+
+ActionService.prototype.reportIssue = function() {
+  const time = Math.floor(Date.now() / 1000);
+  this.Gtk.show_uri(null, "https://github.com/makepost/acme-commander/issues", time);
 };
 
 /**
@@ -496,7 +515,7 @@ ActionService.prototype.terminal = function() {
  * @param {string} uri
  */
 ActionService.prototype.touch = function(uri) {
-  if (typeof uri === "undefined") {
+  if (typeof uri !== "string") {
     const location = this.tabService.entities[this.panelService.getActiveTabId()].location;
 
     this.dialogService.prompt("Name of the new file:", "", name => {

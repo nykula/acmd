@@ -13,16 +13,16 @@ exports.it = function(title, callback) {
     title = description ? `${description}: ${title}` : title;
   }
 
-  console.log(title + " STARTED");
+  print(title + " STARTED");
 
   try {
     callback();
   } catch (error) {
-    console.log(title + " ERROR");
+    print(title + " ERROR");
     throw error;
   }
 
-  console.log(title + " SUCCESS");
+  print(title + " SUCCESS");
 };
 
 exports.find = find;
