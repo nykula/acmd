@@ -2,6 +2,9 @@
   "name": "acme-commander",
   "version": "0.1.0",
   "description": "Twin-panel file manager",
+  "bin": "bin/acme-commander.sh",
+  "repository": "https://github.com/makepost/acme-commander",
+  "author": "makepost <makepost@firemail.cc>",
   "license": "MIT",
   "devDependencies": {
     "buffer": "5.0.8",
