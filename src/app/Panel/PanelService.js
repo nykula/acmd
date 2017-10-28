@@ -22,12 +22,7 @@ function PanelService(tabService) {
     replaceLocation: action(this.replaceLocation),
     setActiveId: action(this.setActiveId),
     setActiveTabId: action(this.setActiveTabId),
-    showHidSys: this.showHidSys,
     toggleActive: action(this.toggleActive),
-    visibleFiles: {
-      "0": computed(this.getVisibleFiles.bind(this, 0)),
-      "1": computed(this.getVisibleFiles.bind(this, 1)),
-    },
   });
 }
 
@@ -50,13 +45,6 @@ PanelService.prototype.entities = {
     tabIds: [1],
   },
 };
-
-PanelService.prototype.showHidSys = false;
-
-/**
- * @type {{ [id: string]: File[] }}
- */
-PanelService.prototype.visibleFiles = undefined;
 
 /**
  * @param {number} id
@@ -185,20 +173,6 @@ PanelService.prototype.getHistoryItem = function(tabId, delta) {
   }
 
   return history[nextNow];
-};
-
-/**
- * @param {number} panelId
- */
-PanelService.prototype.getVisibleFiles = function(panelId) {
-  const { activeTabId } = this.entities[panelId];
-  const { files } = this.tabService.entities[activeTabId];
-
-  if (this.showHidSys) {
-    return files.filter(file => file.name !== ".");
-  }
-
-  return files.filter(file => file.name[0] !== "." || file.name === "..");
 };
 
 exports.PanelService = PanelService;

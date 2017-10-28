@@ -1,6 +1,7 @@
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
+const { computed, extendObservable } = require("mobx");
 const { File } = require("../../domain/File/File");
 const autoBind = require("../Gjs/autoBind").default;
 const { PanelService } = require("../Panel/PanelService");
@@ -18,9 +19,18 @@ const { TabService } = require("../Tab/TabService");
 function Stats(props) {
   Component.call(this, props);
   autoBind(this, Stats.prototype);
+
+  extendObservable(this, {
+    data: computed(this.getData),
+  });
 }
 
 Stats.prototype = Object.create(Component.prototype);
+
+/**
+ * @type {{ selectedCount: number, selectedSize: number, totalCount: number, totalSize: number }}
+ */
+Stats.prototype.data = undefined;
 
 /**
  * @type {IProps}
@@ -31,7 +41,7 @@ Stats.prototype.getData = function() {
   const tabId = this.props.panelService.entities[this.props.panelId].activeTabId;
   const tab = this.props.tabService.entities[tabId];
 
-  const files = this.props.panelService.visibleFiles[this.props.panelId];
+  const files = this.props.tabService.visibleFiles[tabId];
   const selected = tab.selected;
 
   return {
@@ -43,7 +53,7 @@ Stats.prototype.getData = function() {
 };
 
 Stats.prototype.render = function() {
-  const { selectedCount, selectedSize, totalCount, totalSize } = this.getData();
+  const { selectedCount, selectedSize, totalCount, totalSize } = this.data;
 
   return (
     h("box", { border_width: 4 }, [

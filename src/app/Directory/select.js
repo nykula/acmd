@@ -1,10 +1,8 @@
 const assign = require("lodash/assign");
 const Gdk = imports.gi.Gdk;
 const range = require("lodash/range");
-// tslint:disable align
-/** @type {any} */ const uniq = require("uniq");
-// tslint:enable align
-const uniqSort = xs => uniq(xs.sort((a, b) => a - b), null, true);
+const sortedUniq = require("lodash/sortedUniq");
+const uniqSort = xs => sortedUniq(xs.sort((a, b) => a - b));
 
 /**
  * @typedef IState

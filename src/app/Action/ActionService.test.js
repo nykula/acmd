@@ -202,18 +202,18 @@ describe("ActionService", () => {
 
   it("toggles hidden file visibility", () => {
     /** @type {any} */
-    const panelService = {
+    const tabService = {
       showHidSys: undefined,
     };
 
     const actionService = new ActionService();
-    actionService.panelService = panelService;
+    actionService.tabService = tabService;
 
     actionService.showHidSys();
-    expect(panelService.showHidSys).toEqual(true);
+    expect(tabService.showHidSys).toEqual(true);
 
     actionService.showHidSys();
-    expect(panelService.showHidSys).toEqual(false);
+    expect(tabService.showHidSys).toEqual(false);
   });
 
   it("opens a terminal in the current directory", () => {
@@ -265,6 +265,7 @@ describe("ActionService", () => {
           sortedBy: "name",
         },
       },
+      getVisibleFiles: (tabId) => tabService.entities[tabId].files,
     };
 
     const panelService = new PanelService(tabService);

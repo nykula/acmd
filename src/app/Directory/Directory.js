@@ -36,8 +36,11 @@ function Directory(props) {
 
   extendObservable(this, {
     cols: computed(this.getCols),
+    files: computed(this.getFiles),
     node: observable.ref(undefined),
     ref: action(this.ref),
+    tab: computed(this.getTab),
+    tabId: computed(this.getTabId),
   });
 
   this.unsubscribeUpdate = autorun(this.focusIfActive);
@@ -60,26 +63,35 @@ Directory.prototype.cols = [
   { title: "Attr", name: "mode", type: TEXT, min_width: 45 },
 ];
 
+/** @type {File[]} */
+Directory.prototype.files = undefined;
+
 /** @type {{ grab_focus(): void }}} */
 Directory.prototype.node = undefined;
 
 /** @type {IProps} */
 Directory.prototype.props = undefined;
 
+/** @type {{ cursor: number, selected: number[], sortedBy: string }} */
+Directory.prototype.tab = undefined;
+
+/** @type {number} */
+Directory.prototype.tabId = undefined;
+
 Directory.prototype.componentWillUnmount = function() {
   this.unsubscribeUpdate();
 };
 
-Directory.prototype.tabId = function() {
+Directory.prototype.getTabId = function() {
   return this.props.panelService.entities[this.props.panelId].activeTabId;
 };
 
-Directory.prototype.tab = function() {
-  return this.props.tabService.entities[this.tabId()];
+Directory.prototype.getTab = function() {
+  return this.props.tabService.entities[this.tabId];
 };
 
-Directory.prototype.files = function() {
-  return this.props.panelService.visibleFiles[this.props.panelId];
+Directory.prototype.getFiles = function() {
+  return this.props.tabService.visibleFiles[this.tabId];
 };
 
 Directory.prototype.focusIfActive = function() {
@@ -106,7 +118,7 @@ Directory.prototype.handleActivated = function(index) {
 Directory.prototype.handleClicked = function(colName) {
   this.props.tabService.sorted({
     by: colName,
-    tabId: this.tabId(),
+    tabId: this.tabId,
   });
 };
 
@@ -116,11 +128,11 @@ Directory.prototype.handleClicked = function(colName) {
 Directory.prototype.handleCursor = function(ev) {
   const { index, mouseEvent } = ev;
 
-  if (this.tab().cursor !== index) {
+  if (this.tab.cursor !== index) {
     this.props.fileService.cursor({
       cursor: index,
       panelId: this.props.panelId,
-      tabId: this.tabId(),
+      tabId: this.tabId,
     });
   }
 
@@ -137,11 +149,11 @@ Directory.prototype.handleCursor = function(ev) {
  * @param {{ altKey: boolean, ctrlKey: boolean, limit: number, nativeEvent: any, rect: any, shiftKey: boolean, top: number, win: any, which: any }} ev
  */
 Directory.prototype.handleKeyPressEvent = function(ev) {
-  const { cursor, selected } = this.tab();
+  const { cursor, selected } = this.tab;
 
   const state = {
     limit: ev.limit,
-    indices: range(0, this.files().length),
+    indices: range(0, this.files.length),
     cursor: cursor,
     selected: selected,
     top: ev.top,
@@ -156,7 +168,7 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
       this.props.fileService.selected({
         panelId: this.props.panelId,
         selected: nextState.selected,
-        tabId: this.tabId(),
+        tabId: this.tabId,
       });
     }
 
@@ -268,7 +280,7 @@ Directory.prototype.handleLayout = function(node) {
  * @param {value} number
  */
 Directory.prototype.handleSelected = function(index) {
-  let { selected } = this.tab();
+  let { selected } = this.tab;
 
   selected = selected.indexOf(index) === -1
     ? selected.concat(index)
@@ -277,12 +289,12 @@ Directory.prototype.handleSelected = function(index) {
   this.props.fileService.selected({
     panelId: this.props.panelId,
     selected: selected,
-    tabId: this.tabId(),
+    tabId: this.tabId,
   });
 };
 
 Directory.prototype.prefixSort = function(col) {
-  const { sortedBy } = this.tab();
+  const { sortedBy } = this.tab;
 
   if (col.name === sortedBy) {
     return assign({}, col, { title: "↑" + col.title });
@@ -309,7 +321,7 @@ Directory.prototype.ref = function(node) {
 };
 
 Directory.prototype.render = function() {
-  const { cursor, selected } = this.tab();
+  const { cursor, selected } = this.tab;
 
   return (
     h("tree-view", {
@@ -321,7 +333,7 @@ Directory.prototype.render = function() {
       layoutCallback: this.handleLayout,
       ref: this.ref,
     },
-      this.files().map((file, index) => {
+      this.files.map((file, index) => {
         return h(DirectoryFile, {
           file,
           isSelected: selected.indexOf(index) !== -1,

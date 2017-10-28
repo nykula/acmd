@@ -11,8 +11,7 @@ describe("Stats", () => {
 
   it("counts total size of selected files", () => {
     const props = sampleProps();
-    const stateProps = new Stats(props).getData();
-    expect(stateProps).toEqual({
+    expect(new Stats(props).data).toEqual({
       selectedCount: 2,
       totalCount: 4,
       selectedSize: 20,
@@ -25,6 +24,14 @@ function sampleProps() {
   const panelService = {
     entities: {
       "0": { activeTabId: 0 },
+    },
+  };
+
+  const tabService = {
+    entities: {
+      "0": {
+        selected: [0, 2],
+      },
     },
     showHidSys: false,
     visibleFiles: {
@@ -46,14 +53,6 @@ function sampleProps() {
           size: 30,
         },
       ],
-    },
-  };
-
-  const tabService = {
-    entities: {
-      "0": {
-        selected: [0, 2],
-      },
     },
   };
 

@@ -13,14 +13,14 @@ describe("Toolbar", () => {
       },
     };
 
-    const panelService = {
+    const tabService = {
       showHidSys: false,
     };
 
     const tree = shallow(
       h(Toolbar, {
         actionService,
-        panelService,
+        tabService,
       }),
     );
 

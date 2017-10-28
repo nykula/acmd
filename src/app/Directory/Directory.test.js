@@ -15,6 +15,16 @@ describe("Directory", () => {
       entities: {
         "0": { activeTabId: 0 },
       },
+    };
+
+    const tabService = {
+      entities: {
+        "0": {
+          cursor: 0,
+          selected: [],
+          sortedBy: "-date",
+        },
+      },
 
       showHidSys: false,
 
@@ -27,16 +37,6 @@ describe("Directory", () => {
           name: "foo.bar",
           size: 1000,
         }],
-      },
-    };
-
-    const tabService = {
-      entities: {
-        "0": {
-          cursor: 0,
-          selected: [],
-          sortedBy: "-date",
-        },
       },
     };
 
@@ -123,13 +123,32 @@ describe("Directory", () => {
       activated: activated,
     };
 
+    /** @type {*} */
+    const panelService = {
+      activeId: 0,
+      entities: {
+        "0": {
+          activeTabId: 0,
+        },
+      },
+    };
+
+    /** @type {*} */
+    const tabService = {
+      entities: {
+        "0": {
+          files: [],
+        },
+      },
+    };
+
     const instance = new Directory({
-      actionService: actionService,
+      actionService,
       fileService: undefined,
       panelId: 0,
-      panelService: undefined,
+      panelService,
       refstore: undefined,
-      tabService: undefined,
+      tabService,
     });
 
     instance.handleActivated(2);
@@ -151,6 +170,7 @@ describe("Directory", () => {
     const tabService = {
       entities: {
         "0": {
+          cursor: 0,
           selected: [],
         },
       },
@@ -158,6 +178,7 @@ describe("Directory", () => {
 
     /** @type {*} */
     const panelService = {
+      activeId: 0,
       entities: {
         "0": { activeTabId: 0 },
       },
@@ -184,6 +205,7 @@ describe("Directory", () => {
 
     /** @type {*} */
     const panelService = {
+      activeId: 0,
       entities: {
         "0": { activeTabId: 0 },
       },

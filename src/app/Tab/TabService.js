@@ -1,7 +1,8 @@
 const { FileType } = imports.gi.Gio;
-const { action, extendObservable } = require("mobx");
+const { action, computed, extendObservable } = require("mobx");
 const orderBy = require("lodash/orderBy");
 const { autoBind } = require("../Gjs/autoBind");
+const { File } = require("../../domain/File/File");
 const { Tab } = require("../../domain/Tab/Tab");
 
 function TabService() {
@@ -11,7 +12,12 @@ function TabService() {
     cursor: action(this.cursor),
     entities: this.entities,
     set: action(this.set),
+    showHidSys: this.showHidSys,
     sorted: action(this.sorted),
+    visibleFiles: {
+      "0": computed(this.getVisibleFiles.bind(this, 0)),
+      "1": computed(this.getVisibleFiles.bind(this, 1)),
+    },
   });
 }
 
@@ -56,6 +62,13 @@ TabService.prototype.entities = {
   },
 };
 
+TabService.prototype.showHidSys = false;
+
+/**
+ * @type {{ [id: string]: File[] }}
+ */
+TabService.prototype.visibleFiles = undefined;
+
 /**
  * @param {{ cursor: number, tabId: number }} props
  */
@@ -77,10 +90,13 @@ TabService.prototype.set = function(props) {
   const tab = this.entities[props.id];
   const sortedBy = props.sortedBy || tab.sortedBy;
 
-  tab.cursor = Math.min(tab.cursor, props.files.length);
   tab.files = sortFiles(sortedBy, props.files);
   tab.location = props.location;
-  tab.selected = tab.selected.filter(x => x < props.files.length);
+
+  const visibleFiles = this.visibleFiles[props.id];
+
+  tab.cursor = Math.min(tab.cursor, visibleFiles.length);
+  tab.selected = tab.selected.filter(x => x < visibleFiles.length);
 };
 
 /**
@@ -94,6 +110,19 @@ TabService.prototype.sorted = function(props) {
 
   tab.sortedBy = by;
   tab.files = files;
+};
+
+/**
+ * @param {number} panelId
+ */
+TabService.prototype.getVisibleFiles = function(tabId) {
+  const { files } = this.entities[tabId];
+
+  if (this.showHidSys) {
+    return files.filter(file => file.name !== ".");
+  }
+
+  return files.filter(file => file.name[0] !== "." || file.name === "..");
 };
 
 exports.nextSort = nextSort;

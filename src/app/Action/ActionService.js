@@ -4,7 +4,7 @@ const GLib = imports.gi.GLib;
 const { IconSize } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
-const { action, extendObservable, runInAction } = require("mobx");
+const { action, computed, extendObservable, runInAction } = require("mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const Fun = require("../Gjs/Fun").default;
 const { DialogService } = require("../Dialog/DialogService");
@@ -58,7 +58,7 @@ ActionService.prototype.activated = function(props) {
   const tabId = this.panelService.entities[panelId].activeTabId;
   const { location } = this.tabService.entities[tabId];
 
-  const files = this.panelService.visibleFiles[panelId];
+  const files = this.tabService.visibleFiles[tabId];
   const file = files[index];
 
   const uri = location.replace(/\/?$/, "") + "/" + file.name;
@@ -157,6 +157,12 @@ ActionService.prototype.createTab = function() {
 
     return tabs;
   })(assign({}, this.tabService.entities));
+
+  extendObservable(this.tabService, (() => {
+    const visibleFiles = {};
+    visibleFiles[tabId] = computed(this.tabService.getVisibleFiles.bind(this.tabService, tabId));
+    return visibleFiles;
+  })());
 
   panel.tabIds.push(tabId);
   panel.activeTabId = tabId;
@@ -494,7 +500,7 @@ ActionService.prototype.root = function(panelId) {
 };
 
 ActionService.prototype.showHidSys = function() {
-  this.panelService.showHidSys = !this.panelService.showHidSys;
+  this.tabService.showHidSys = !this.tabService.showHidSys;
 };
 
 ActionService.prototype.terminal = function() {
@@ -570,7 +576,7 @@ ActionService.prototype.getCursor = function() {
   const activeTabId = this.panelService.getActiveTabId();
   const { cursor } = this.tabService.entities[activeTabId];
 
-  const files = this.panelService.visibleFiles[this.panelService.activeId];
+  const files = this.tabService.visibleFiles[activeTabId];
   const file = files[cursor];
 
   return file;
@@ -593,7 +599,7 @@ ActionService.prototype.getSelected = function() {
   const activeTabId = this.panelService.getActiveTabId();
   const { selected } = this.tabService.entities[activeTabId];
 
-  const files = this.panelService.visibleFiles[this.panelService.activeId];
+  const files = this.tabService.visibleFiles[activeTabId];
   return selected.map(index => files[index]);
 };
 

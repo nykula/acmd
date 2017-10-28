@@ -22,10 +22,6 @@
   version "8.0.46"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.46.tgz#6e1766b2d0ed06631d5b5f87bb8e72c8dbb6888e"
 
-"@types/uniq@^0.0.27":
-  version "0.0.27"
-  resolved "https://registry.yarnpkg.com/@types/uniq/-/uniq-0.0.27.tgz#b1060a7256f13d8dc82c9591e5732a6245912ea2"
-
 "@types/url-parse@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@types/url-parse/-/url-parse-1.1.0.tgz#61f8e1b52024d07fceb73fd7f8292e5ddd2b60a1"
@@ -468,10 +464,6 @@ tsutils@^2.12.1:
 typescript@^2.5.3:
   version "2.5.3"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.5.3.tgz#df3dcdc38f3beb800d4bc322646b04a3f6ca7f0d"
-
-uniq@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/uniq/-/uniq-1.0.1.tgz#b31c5ae8254844a3a8281541ce2b04b865a734ff"
 
 url-parse@^1.1.9:
   version "1.1.9"
