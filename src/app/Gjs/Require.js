@@ -367,6 +367,7 @@ Require.prototype.requireModule = function(parentFilename, path) {
   }
 
   const parts = filename
+    .replace(this.imports.searchPath[this.imports.searchPath.length - 2] + "/", "../")
     .replace(this.imports.searchPath[this.imports.searchPath.length - 1] + "/", "")
     .replace(/\.js$/, "")
     .split("/");

@@ -2,6 +2,8 @@
 // Sets up the environment and runs the application.
 
 const path = /^.*?@(.*):/.exec(new Error().stack)[1];
+const modules = imports.gi.Gio.File.new_for_path(path).get_parent().get_parent().get_parent().get_path();
+imports.searchPath.push(modules);
 const dirname = imports.gi.Gio.File.new_for_path(path).get_parent().get_parent().get_path();
 imports.searchPath.push(dirname);
 new imports.src.app.Gjs.Require.Require().require();
