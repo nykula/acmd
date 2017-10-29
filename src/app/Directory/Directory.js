@@ -316,8 +316,8 @@ Directory.prototype.getCols = function() {
 };
 
 Directory.prototype.ref = function(node) {
-  this.node = node;
   this.ref = noop;
+  this.node = node;
 };
 
 Directory.prototype.render = function() {

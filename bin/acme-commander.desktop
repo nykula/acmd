@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Acme Commander
+GenericName=File manager
+Comment=Move files between two panels
+Icon=media-floppy
+Type=Application
+Categories=System;Utility;Core;GTK;FileTools;FileManager;
+Exec=acme-commander
+StartupNotify=true
+Terminal=false

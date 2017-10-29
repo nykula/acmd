@@ -1,5 +1,6 @@
 // Runs the application.
 
+const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const { render } = require("inferno");
 const Component = require("inferno-component").default;
@@ -26,14 +27,19 @@ View.prototype.render = function() {
   return this.state.render();
 };
 
+const title = "Acme Commander";
+GLib.set_prgname(title);
+
 require("./Gjs/GtkDom").app({
   on_activate: ({ win }) => {
+    win.set_icon_name("media-floppy");
     win.set_keep_above(false);
   },
 
   on_startup: ({ win }) => {
     win.default_width = 800;
     win.default_height = 600;
+    win.title = title;
     win.window_position = Gtk.WindowPosition.CENTER;
 
     // Dependency injection container.
