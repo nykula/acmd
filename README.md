@@ -2,7 +2,7 @@
 
 Twin-panel file manager.
 
-![screenshot from 2017-10-28 01-41-49](https://user-images.githubusercontent.com/20999066/32127710-69f5080e-bb81-11e7-9fa7-e57f5103e4cb.png)
+![screenshot from 2017-10-29 16-32-37](https://user-images.githubusercontent.com/20999066/32144815-0734201e-bcc7-11e7-86c8-a990a9e7ff1e.png)
 
 ## Usage
 
@@ -30,6 +30,8 @@ acme-commander
 
 ## Development
 
+Also install [Node.js](https://nodejs.org/en/download/package-manager/) with npm. Get started:
+
 ```bash
 # clone repo
 git clone https://github.com/makepost/acme-commander
@@ -48,77 +50,7 @@ yarn format
 yarn coverage && xdg-open coverage/index.html
 ```
 
-## Todo
-
-- [x] Two-panel user interface
-
-- [x] Toggle active panel on tab press and navigate files using arrow keys
-
-- [x] Multiple tabs on each panel
-
-- [x] Gio back-end: Ls, cp, mv, mkdir and rm
-
-- [x] Sort files by name, ext or date
-
-- [x] Directories always first
-
-- [x] Show file permissions
-
-- [x] Icons for common file and medium (drive) types
-
-- [x] Toggle dotfiles visibility with a button
-
-- [x] Focus matching file as user types
-
-- [x] Select multiple files with keyboard
-
-- [x] List drives from /dev and their labels for udisks mount, open and unmount
-
-- [x] Create gvfs mount, list gvfs mounts for open and unmount
-
-- [x] Find out with xdg mime query how to open file in different ways
-
-- [x] Open terminal in current directory
-
-- [x] Run command in current directory
-
-- [x] Count total size of selected files
-
-- [x] Format size as 1 M, 23 k, 456 B
-
-- [x] Show free space on active mount
-
-- [x] Go to root of mount
-
-- [x] Return focus to tab after button press
-
-- [x] Only handle backspace when tab focused
-
-- [x] Go back and forward in panel history
-
-- [x] Create empty file in active dir
-
-- [x] Keep cursor if no search matches
-
-- [x] Dot dot if not root
-
-- [x] Click tab to switch
-
-- [x] Switch to next tab on close
-
-- [x] Ignore dots in dir names when sorting by ext
-
-- [x] Hotkey for active panel volume list
-
-- [x] Actions in menus
-
-- [x] Disable list view button
-
-- [x] Get viewer and editor from env
-
-- [ ] Remove extra slash when copying to root
-
-- [ ] Equal panel label height
+[VS Code](https://code.visualstudio.com/) will highlight mistakes and provide autocomplete, as long as you follow JSDoc [@param](http://usejsdoc.org/tags-param.html) and [@type](http://usejsdoc.org/tags-type.html).
 
 ## License
 
