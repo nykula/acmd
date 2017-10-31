@@ -66,6 +66,7 @@ GtkDom.prototype.domify = function(node) {
 
   node.removeChild = function(node) {
     this.remove(node);
+    return node;
   };
 
   Object.defineProperties(node, {
@@ -100,6 +101,8 @@ GtkDom.prototype.domify = function(node) {
     } else {
       this.add(newChild);
     }
+
+    return newChild;
   };
 
   node.replaceChild = function(newChild, oldChild) {
@@ -108,7 +111,7 @@ GtkDom.prototype.domify = function(node) {
     }
 
     this.insertBefore(newChild, oldChild);
-    this.remove(oldChild);
+    return this.remove(oldChild);
   };
 
   /**
