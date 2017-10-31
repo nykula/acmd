@@ -127,13 +127,11 @@ Directory.prototype.handleClicked = function(colName) {
 Directory.prototype.handleCursor = function(ev) {
   const { index, mouseEvent } = ev;
 
-  if (this.tab.cursor !== index) {
-    this.props.fileService.cursor({
-      cursor: index,
-      panelId: this.props.panelId,
-      tabId: this.tabId,
-    });
-  }
+  this.props.fileService.cursor({
+    cursor: index,
+    panelId: this.props.panelId,
+    tabId: this.tabId,
+  });
 
   if (mouseEvent) {
     const button = mouseEvent.get_button()[1];
