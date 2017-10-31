@@ -1,8 +1,11 @@
 const assign = require("lodash/assign");
 const { action, extendObservable, useStrict } = require("mobx");
 const { Place } = require("../../domain/Place/Place");
+const { autoBind } = require("../Gjs/autoBind");
 
 function PlaceService() {
+  autoBind(this, PlaceService.prototype);
+
   extendObservable(this, {
     entities: this.entities,
     names: this.names,

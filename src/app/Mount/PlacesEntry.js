@@ -4,6 +4,7 @@ const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { Place } = require("../../domain/Place/Place");
 const { ActionService } = require("../Action/ActionService");
+const { autoBind } = require("../Gjs/autoBind");
 const Icon = require("../Icon/Icon").default;
 const minLength = require("../MinLength/minLength").default;
 const getActiveMountUri = require("../Mount/getActiveMountUri").default;
@@ -24,7 +25,7 @@ const ToggleButton = require("../ToggleButton/ToggleButton").default;
  */
 function PlacesEntry(props) {
   Component.call(this, props);
-  this.handleClicked = this.handleClicked.bind(this);
+  autoBind(this, PlacesEntry.prototype);
 }
 
 PlacesEntry.prototype = Object.create(Component.prototype);

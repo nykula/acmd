@@ -3,6 +3,7 @@ const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { ActionService } = require("../Action/ActionService");
+const { autoBind } = require("../Gjs/autoBind");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 
@@ -16,7 +17,7 @@ const { TabService } = require("../Tab/TabService");
  */
 function Prompt(props) {
   Component.call(this, props);
-  this.activate = this.activate.bind(this);
+  autoBind(this, Prompt.prototype);
 }
 
 Prompt.prototype = Object.create(Component.prototype);

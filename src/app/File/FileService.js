@@ -1,4 +1,5 @@
 const { action, extendObservable } = require("mobx");
+const { autoBind } = require("../Gjs/autoBind");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 
@@ -7,12 +8,14 @@ const { TabService } = require("../Tab/TabService");
  * @param {TabService} tabService
  */
 function FileService(panelService, tabService) {
+  autoBind(this, FileService.prototype);
+
   this.panelService = panelService;
   this.tabService = tabService;
 
   extendObservable(this, {
-    cursor: action(this.cursor.bind(this)),
-    selected: action(this.selected.bind(this)),
+    cursor: action(this.cursor),
+    selected: action(this.selected),
   });
 }
 

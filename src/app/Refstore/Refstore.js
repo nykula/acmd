@@ -1,6 +1,7 @@
+const { autoBind } = require("../Gjs/autoBind");
+
 function Refstore() {
-  this.get = this.get.bind(this);
-  this.set = this.set.bind(this);
+  autoBind(this, Refstore.prototype);
 
   /**
    * @type {{ [key: string]: any }}

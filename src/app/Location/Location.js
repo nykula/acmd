@@ -3,6 +3,7 @@ const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const h = require("inferno-hyperscript").default;
 const { action, autorun, extendObservable, observable } = require("mobx");
+const { autoBind } = require("../Gjs/autoBind");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 
@@ -17,9 +18,7 @@ const { TabService } = require("../Tab/TabService");
 function Location(props) {
   Component.call(this, props);
 
-  this.refList = this.refList.bind(this);
-  this.refRow = this.refRow.bind(this);
-  this.updateSelection = this.updateSelection.bind(this);
+  autoBind(this, Location.prototype);
 
   extendObservable(this, {
     list: observable.ref(undefined),

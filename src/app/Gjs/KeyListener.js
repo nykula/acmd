@@ -1,9 +1,8 @@
 const Gdk = imports.gi.Gdk;
+const { autoBind } = require("./autoBind");
 
 function KeyListener(node) {
-  this.handleKeyPress = this.handleKeyPress.bind(this);
-  this.handleKeyRelease = this.handleKeyRelease.bind(this);
-  this.on = this.on.bind(this);
+  autoBind(this, KeyListener.prototype);
 
   this.node = node;
   this.onKeyPress = undefined;
