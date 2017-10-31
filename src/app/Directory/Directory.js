@@ -53,7 +53,6 @@ Directory.prototype.cols = [
     title: null,
     name: "isSelected",
     type: CHECKBOX,
-    on_toggled: this.handleSelected,
   },
   { title: null, name: "icon", type: GICON },
   { title: "Name", name: "filename", type: TEXT, expand: true },
@@ -312,7 +311,8 @@ Directory.prototype.getCols = function() {
     .map(this.prefixSort)
     .map(col => assign({}, col, {
       on_clicked: () => this.handleClicked(col.name),
-    }));
+      on_toggled: col.name === "isSelected" ? this.handleSelected : undefined,
+  }));
 };
 
 Directory.prototype.ref = function(node) {
