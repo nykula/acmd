@@ -2,6 +2,7 @@ const noop = require("lodash/noop");
 const { MenuItemWithSubmenu } = require("../Menu/MenuItemWithSubmenu");
 const { TreeView } = require("../TreeView/TreeView");
 const { TreeViewRow } = require("../TreeView/TreeViewRow");
+const { setTimeout } = require("./setTimeout");
 
 function getFirstChild() {
   const children = this.get_children();
@@ -227,6 +228,7 @@ GtkDom.prototype.require = function() {
   window.navigator = {};
   window.process = { env: this.getEnv() };
   window.console = { error: print, log: print, warn: print };
+  window.setTimeout = setTimeout;
 
   exports.app = this.app;
 };

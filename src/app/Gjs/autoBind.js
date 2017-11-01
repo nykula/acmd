@@ -1,15 +1,18 @@
 const groupBy = require("lodash/groupBy");
+const throttle = require("lodash/throttle");
 const perf = {};
 
-function toArray(_perf) {
-  return Object.keys(_perf)
+const reportPerf = throttle(function() {
+  const data = Object.keys(perf)
     .map(location => ({
       location,
-      time: _perf[location],
+      time: perf[location],
     }))
     .sort((a, b) => b.time - a.time)
     .slice(0, 10);
-}
+
+  print(JSON.stringify(data));
+}, 10000);
 
 exports.default = exports.autoBind = function(self, prototype) {
   const keys = Object.getOwnPropertyNames(prototype);
@@ -32,7 +35,7 @@ exports.default = exports.autoBind = function(self, prototype) {
           if (match) {
             perf[match[1]] = (perf[match[1]] || 0) + Date.now() - start;
           }
-          print(JSON.stringify(toArray(perf)));
+          reportPerf();
           return result;
         };
       }
