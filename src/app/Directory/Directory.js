@@ -16,8 +16,7 @@ const { CHECKBOX, GICON, TEXT } = require("../ListStore/ListStore");
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
 const { TabService } = require("../Tab/TabService");
-const { TreeViewBody } = require("../TreeView/TreeViewBody");
-const { DirectoryFile } = require("./DirectoryFile");
+const DirectoryFiles = require("./DirectoryFiles").default;
 const select = require("./select").default;
 
 /**
@@ -62,9 +61,6 @@ Directory.prototype.cols = [
   { title: "Date", name: "mtime", type: TEXT, min_width: 125 },
   { title: "Attr", name: "mode", type: TEXT, min_width: 45 },
 ];
-
-/** @type {File[]} */
-Directory.prototype.files = undefined;
 
 /** @type {{ grab_focus(): void }}} */
 Directory.prototype.node = undefined;
@@ -151,7 +147,7 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
 
   const state = {
     limit: ev.limit,
-    indices: range(0, this.files.length),
+    indices: range(0, this.getFiles().length),
     cursor: cursor,
     selected: selected,
     top: ev.top,
@@ -320,7 +316,7 @@ Directory.prototype.ref = function(node) {
 };
 
 Directory.prototype.render = function() {
-  const { cursor, selected } = this.tab;
+  const { cursor } = this.tab;
 
   return (
     h("tree-view", {
@@ -331,17 +327,7 @@ Directory.prototype.render = function() {
       keyPressEventCallback: this.handleKeyPressEvent,
       layoutCallback: this.handleLayout,
       ref: this.ref,
-    }, [
-      h(TreeViewBody,
-        this.files.map((file, index) => {
-          return h(DirectoryFile, {
-            file,
-            isSelected: selected.indexOf(index) !== -1,
-            key: file.name,
-          });
-        }),
-      ),
-    ])
+    }, h(DirectoryFiles, { tabId: this.tabId }))
   );
 };
 
