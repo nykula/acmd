@@ -17,7 +17,7 @@ const gioAsync = require("./gioAsync").default;
  * @param {any} Gtk
  */
 function GioService(Gio, Gtk) {
-  autoBind(this, GioService.prototype);
+  autoBind(this, GioService.prototype, __filename);
 
   this.fileAttributes = "standard::*,time::*,unix::*";
   this.Gio = Gio;

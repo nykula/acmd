@@ -18,7 +18,7 @@ const { TabService } = require("../Tab/TabService");
 function Location(props) {
   Component.call(this, props);
 
-  autoBind(this, Location.prototype);
+  autoBind(this, Location.prototype, __filename);
 
   extendObservable(this, {
     list: observable.ref(undefined),

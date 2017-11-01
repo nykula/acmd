@@ -32,7 +32,7 @@ const select = require("./select").default;
  */
 function Directory(props) {
   Component.call(this, props);
-  autoBind(this, Directory.prototype);
+  autoBind(this, Directory.prototype, __filename);
 
   extendObservable(this, {
     cols: computed(this.getCols),

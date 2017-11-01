@@ -17,7 +17,7 @@ const { TabService } = require("../Tab/TabService");
  */
 function Prompt(props) {
   Component.call(this, props);
-  autoBind(this, Prompt.prototype);
+  autoBind(this, Prompt.prototype, __filename);
 }
 
 Prompt.prototype = Object.create(Component.prototype);

@@ -16,7 +16,7 @@ const ToggleButton = require("../ToggleButton/ToggleButton").default;
  */
 function Toolbar(props) {
   Component.call(this, props);
-  autoBind(this, Toolbar.prototype);
+  autoBind(this, Toolbar.prototype, __filename);
 }
 
 Toolbar.prototype = Object.create(Component.prototype);

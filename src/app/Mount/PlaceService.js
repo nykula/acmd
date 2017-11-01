@@ -4,7 +4,7 @@ const { Place } = require("../../domain/Place/Place");
 const { autoBind } = require("../Gjs/autoBind");
 
 function PlaceService() {
-  autoBind(this, PlaceService.prototype);
+  autoBind(this, PlaceService.prototype, __filename);
 
   extendObservable(this, {
     entities: this.entities,

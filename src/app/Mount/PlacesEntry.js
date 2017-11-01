@@ -25,7 +25,7 @@ const ToggleButton = require("../ToggleButton/ToggleButton").default;
  */
 function PlacesEntry(props) {
   Component.call(this, props);
-  autoBind(this, PlacesEntry.prototype);
+  autoBind(this, PlacesEntry.prototype, __filename);
 }
 
 PlacesEntry.prototype = Object.create(Component.prototype);

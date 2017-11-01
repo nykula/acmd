@@ -6,7 +6,7 @@ const { File } = require("../../domain/File/File");
 const { Tab } = require("../../domain/Tab/Tab");
 
 function TabService() {
-  autoBind(this, TabService.prototype);
+  autoBind(this, TabService.prototype, __filename);
 
   extendObservable(this, {
     cursor: action(this.cursor),

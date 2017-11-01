@@ -8,7 +8,7 @@ const { TabService } = require("../Tab/TabService");
  * @param {TabService} tabService
  */
 function FileService(panelService, tabService) {
-  autoBind(this, FileService.prototype);
+  autoBind(this, FileService.prototype, __filename);
 
   this.panelService = panelService;
   this.tabService = tabService;

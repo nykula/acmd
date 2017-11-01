@@ -20,7 +20,7 @@ const ToggleButton = require("../ToggleButton/ToggleButton").default;
  */
 function TabListItem(props) {
   Component.call(this, props);
-  autoBind(this, TabListItem.prototype);
+  autoBind(this, TabListItem.prototype, __filename);
 }
 
 TabListItem.prototype = Object.create(Component.prototype);

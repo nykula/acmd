@@ -14,7 +14,7 @@ const TabListItem = require("./TabListItem").default;
  */
 function TabList(props) {
   Component.call(this, props);
-  autoBind(this, TabList.prototype);
+  autoBind(this, TabList.prototype, __filename);
 }
 
 TabList.prototype = Object.create(Component.prototype);

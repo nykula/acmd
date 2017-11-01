@@ -16,7 +16,7 @@ const autoBind = require("../Gjs/autoBind").default;
  */
 function ToggleButton(props) {
   Component.call(this, props);
-  autoBind(this, ToggleButton.prototype);
+  autoBind(this, ToggleButton.prototype, __filename);
 }
 
 ToggleButton.prototype = Object.create(Component.prototype);

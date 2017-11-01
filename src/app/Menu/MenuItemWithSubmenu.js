@@ -21,7 +21,7 @@ MenuItemWithSubmenu.prototype.document = undefined;
 MenuItemWithSubmenu.prototype.submenu = undefined;
 
 MenuItemWithSubmenu.prototype.useNodeAsThis = function() {
-  autoBind(this, MenuItemWithSubmenu.prototype);
+  autoBind(this, MenuItemWithSubmenu.prototype, __filename);
 
   this.submenu = this.document.createElement("menu");
   this.set_submenu(this.submenu);

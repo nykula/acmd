@@ -2,7 +2,7 @@ const Gdk = imports.gi.Gdk;
 const { autoBind } = require("./autoBind");
 
 function KeyListener(node) {
-  autoBind(this, KeyListener.prototype);
+  autoBind(this, KeyListener.prototype, __filename);
 
   this.node = node;
   this.onKeyPress = undefined;

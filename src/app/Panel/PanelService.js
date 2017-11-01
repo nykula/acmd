@@ -10,7 +10,7 @@ const { TabService } = require("../Tab/TabService");
 function PanelService(tabService) {
   this.tabService = tabService;
 
-  autoBind(this, PanelService.prototype);
+  autoBind(this, PanelService.prototype, __filename);
 
   extendObservable(this, {
     activeId: this.activeId,

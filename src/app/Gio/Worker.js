@@ -16,7 +16,7 @@ function Worker(props, emit, Gio = imports.gi.Gio) {
   this.emit = emit;
   this.Gio = Gio;
   this.props = props;
-  autoBind(this, Worker.prototype);
+  autoBind(this, Worker.prototype, __filename);
 }
 
 /**

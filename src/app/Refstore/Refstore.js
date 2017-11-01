@@ -1,7 +1,7 @@
 const { autoBind } = require("../Gjs/autoBind");
 
 function Refstore() {
-  autoBind(this, Refstore.prototype);
+  autoBind(this, Refstore.prototype, __filename);
 
   /**
    * @type {{ [key: string]: any }}

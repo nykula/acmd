@@ -14,7 +14,7 @@ const reportPerf = throttle(function() {
   print(JSON.stringify(data));
 }, 10000);
 
-exports.default = exports.autoBind = function(self, prototype) {
+exports.default = exports.autoBind = function(self, prototype, filename) {
   const keys = Object.getOwnPropertyNames(prototype);
 
   for (let i = 0; i < keys.length; i++) {
@@ -29,13 +29,14 @@ exports.default = exports.autoBind = function(self, prototype) {
 
         self[key] = function() {
           const args = Array.prototype.slice.call(arguments);
-          const match = /.*app\/(.*)/.exec(new Error().stack.split("\n")[1]);
+          const perfKey = `${/([^/]*).js$/.exec(filename)[1]}.${key}`;
+
           const start = Date.now();
           const result = bound.apply(self, args);
-          if (match) {
-            perf[match[1]] = (perf[match[1]] || 0) + Date.now() - start;
-          }
+          perf[perfKey] = (perf[perfKey] || 0) + Date.now() - start;
+
           reportPerf();
+
           return result;
         };
       }

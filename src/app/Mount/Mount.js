@@ -29,7 +29,7 @@ const { TabService } = require("../Tab/TabService");
  */
 function Mount(props) {
   Component.call(this, props);
-  autoBind(this, Mount.prototype);
+  autoBind(this, Mount.prototype, __filename);
 }
 
 Mount.prototype = Object.create(Component.prototype);

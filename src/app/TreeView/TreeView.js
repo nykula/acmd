@@ -80,7 +80,7 @@ TreeView.prototype.useNodeAsThis = function() {
   this.rows = [];
   this.shouldReactToCursorChanges = true;
 
-  autoBind(this, TreeView.prototype);
+  autoBind(this, TreeView.prototype, __filename);
 
   Object.defineProperties(this, {
     activatedCallback: { set: callback => this.setActivatedCallback(callback) },

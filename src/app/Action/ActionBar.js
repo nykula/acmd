@@ -23,7 +23,7 @@ const actions = [
  */
 function ActionBar(props) {
   Component.call(this, props);
-  autoBind(this, ActionBar.prototype);
+  autoBind(this, ActionBar.prototype, __filename);
 }
 
 ActionBar.prototype = Object.create(Component.prototype);

@@ -15,7 +15,7 @@ const formatSize = require("../Size/formatSize").default;
  */
 function DirectoryFile(props) {
   Component.call(this, props);
-  autoBind(this, DirectoryFile.prototype);
+  autoBind(this, DirectoryFile.prototype, __filename);
 }
 
 DirectoryFile.prototype = Object.create(Component.prototype);

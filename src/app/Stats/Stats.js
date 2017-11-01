@@ -18,7 +18,7 @@ const { TabService } = require("../Tab/TabService");
  */
 function Stats(props) {
   Component.call(this, props);
-  autoBind(this, Stats.prototype);
+  autoBind(this, Stats.prototype, __filename);
 
   extendObservable(this, {
     data: computed(this.getData),

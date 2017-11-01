@@ -10,7 +10,7 @@ const autoBind = require("../Gjs/autoBind").default;
  * Spawns, stops, continues and interrupts Gio subprocesses.
  */
 function WorkerService(Gio = imports.gi.Gio) {
-  autoBind(this, WorkerService.prototype);
+  autoBind(this, WorkerService.prototype, __filename);
 
   this.Gio = Gio;
 

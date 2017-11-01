@@ -21,7 +21,7 @@ const ListStore = require("../ListStore/ListStore");
  */
 function Select(props) {
   Component.call(this, props);
-  autoBind(this, Select.prototype);
+  autoBind(this, Select.prototype, __filename);
 }
 
 Select.prototype = Object.create(Component.prototype);

@@ -42,7 +42,7 @@ function ActionService(
   this.win = win;
   this.workerService = workerService;
 
-  autoBind(this, ActionService.prototype);
+  autoBind(this, ActionService.prototype, __filename);
 
   extendObservable(this, {
     createTab: action(this.createTab),
