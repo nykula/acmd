@@ -11,7 +11,11 @@ describe("GioService", () => {
     const Gio = {
       File: {
         new_for_uri: () => ({
-          query_filesystem_info: () => ({
+          query_filesystem_info_async: function() {
+            arguments[arguments.length - 1]();
+          },
+
+          query_filesystem_info_finish: () => ({
             get_attribute_as_string: () => "1024",
           }),
         }),
@@ -51,7 +55,11 @@ describe("GioService", () => {
     const Gio = {
       File: {
         new_for_uri: () => ({
-          query_filesystem_info: () => ({
+          query_filesystem_info_async: function() {
+            arguments[arguments.length - 1]();
+          },
+
+          query_filesystem_info_finish: () => ({
             get_attribute_as_string: () => "1024",
           }),
         }),
@@ -99,7 +107,11 @@ describe("GioService", () => {
             get_name: () => "System",
             get_root: () => ({
               get_uri: () => "file:///media/System",
-              query_filesystem_info: () => ({
+              query_filesystem_info_async: function() {
+                arguments[arguments.length - 1]();
+              },
+
+              query_filesystem_info_finish: () => ({
                 get_attribute_as_string: () => "23423",
               }),
             }),
@@ -114,7 +126,11 @@ describe("GioService", () => {
         get_name: () => "System",
         get_root: () => ({
           get_uri: () => "file:///media/System",
-          query_filesystem_info: () => ({
+          query_filesystem_info_async: function() {
+            arguments[arguments.length - 1]();
+          },
+
+          query_filesystem_info_finish: () => ({
             get_attribute_as_string: () => "23423",
           }),
         }),
@@ -124,7 +140,11 @@ describe("GioService", () => {
     const Gio = {
       File: {
         new_for_uri: () => ({
-          query_filesystem_info: () => ({
+          query_filesystem_info_async: function() {
+            arguments[arguments.length - 1]();
+          },
+
+          query_filesystem_info_finish: () => ({
             get_attribute_as_string: () => "1024",
           }),
         }),
@@ -170,7 +190,11 @@ describe("GioService", () => {
         get_name: () => "foo on bar.example.com",
         get_root: () => ({
           get_uri: () => "sftp:///foo@bar.example.com/",
-          query_filesystem_info: () => ({
+          query_filesystem_info_async: function() {
+            arguments[arguments.length - 1]();
+          },
+
+          query_filesystem_info_finish: () => ({
             get_attribute_as_string: () => null,
           }),
         }),
@@ -180,7 +204,11 @@ describe("GioService", () => {
     const Gio = {
       File: {
         new_for_uri: () => ({
-          query_filesystem_info: () => ({
+          query_filesystem_info_async: function() {
+            arguments[arguments.length - 1]();
+          },
+
+          query_filesystem_info_finish: () => ({
             get_attribute_as_string: () => "1024",
           }),
         }),

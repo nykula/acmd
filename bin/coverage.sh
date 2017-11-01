@@ -6,7 +6,7 @@ dir="$(realpath "$(dirname "$0")/..")"
 rm -rf "$dir"/coverage
 
 # Gjs coverage uses absolute paths.
-gjs \
+NODE_ENV=production gjs \
   --coverage-prefix="$dir"/src \
   --coverage-output="$dir"/coverage \
   "$dir"/bin/test.js

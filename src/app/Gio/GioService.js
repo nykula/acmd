@@ -1,6 +1,6 @@
 const { FileQueryInfoFlags } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const waterfall = require("async/waterfall");
+const { map, waterfall } = require("async");
 const find = require("lodash/find");
 const uniqBy = require("lodash/uniqBy");
 const Uri = require("url-parse");
@@ -22,6 +22,7 @@ function GioService(Gio, Gtk) {
   this.fileAttributes = "standard::*,time::*,unix::*";
   this.Gio = Gio;
   this.Gtk = Gtk;
+  this.placeAttributes = "filesystem::*";
 }
 
 /**
@@ -46,39 +47,74 @@ GioService.prototype.getPlaces = function(callback) {
   /** @type {Place[]} */
   let places = [];
 
-  for (const gDrive of this.gVolMon.get_connected_drives()) {
-    for (const gVolume of gDrive.get_volumes()) {
+  const fromDrives = (_callback) => {
+    /** @type {any[]} */
+    const gVolumes = [];
+
+    for (const gDrive of this.gVolMon.get_connected_drives()) {
+      for (const gVolume of gDrive.get_volumes()) {
+        gVolumes.push(gVolume);
+      }
+    }
+
+    map(gVolumes, (gVolume, __callback) => {
       const label = gVolume.get_identifier("label");
       const uuid = gVolume.get_identifier("uuid");
       const gMount = gVolume.get_mount();
 
-      places.push(gMount ? this._serializeMount(gMount) : {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "drive-harddisk",
-        iconType: "ICON_NAME",
-        name: label || uuid,
-        rootUri: null,
-        uuid,
-      });
-    }
-  }
+      if (gMount) {
+        this._serializeMount(gMount, __callback);
+      } else {
+        __callback(null, {
+          filesystemFree: 0,
+          filesystemSize: 0,
+          icon: "drive-harddisk",
+          iconType: "ICON_NAME",
+          name: label || uuid,
+          rootUri: null,
+          uuid,
+        });
+      }
+    }, (_, _places) => {
+      places = places.concat(_places);
+      _callback();
+    });
+  };
 
-  places = places.concat(this.gVolMon.get_mounts().map(this._serializeMount));
-  places = uniqBy(places, mount => mount.uuid || mount.name);
+  const fromMounts = (_callback) => {
+    map(this.gVolMon.get_mounts(), this._serializeMount, (_, _places) => {
+      places = places.concat(_places);
+      places = uniqBy(places, mount => mount.uuid || mount.name);
+      _callback();
+    });
+  };
 
-  const rootInfo = this.Gio.File.new_for_uri("file:///").query_filesystem_info("*", null);
-  places.unshift({
-    filesystemFree: Number(rootInfo.get_attribute_as_string("filesystem::free")),
-    filesystemSize: Number(rootInfo.get_attribute_as_string("filesystem::size")),
-    icon: "computer",
-    iconType: "ICON_NAME",
-    name: "/",
-    rootUri: "file:///",
-    uuid: null,
-  });
+  const fromFilesystem = (_callback) => {
+    gioAsync(this.Gio.File.new_for_uri("file:///"), "query_filesystem_info",
+      this.placeAttributes,
+      GLib.PRIORITY_DEFAULT,
+      null,
+      (_, rootInfo) => {
+        places.unshift({
+          filesystemFree: Number(rootInfo.get_attribute_as_string("filesystem::free")),
+          filesystemSize: Number(rootInfo.get_attribute_as_string("filesystem::size")),
+          icon: "computer",
+          iconType: "ICON_NAME",
+          name: "/",
+          rootUri: "file:///",
+          uuid: null,
+        });
 
-  callback(null, places);
+        _callback(null, places);
+      },
+    );
+  };
+
+  waterfall([
+    fromDrives,
+    fromMounts,
+    fromFilesystem,
+  ], callback);
 };
 
 /**
@@ -149,22 +185,31 @@ GioService.prototype.unmount = function(uri, callback) {
   });
 };
 
-GioService.prototype._serializeMount = function(gMount) {
+/**
+ * @param {any} gMount
+ * @param {(error: Error, place: Place) => void} callback
+ */
+GioService.prototype._serializeMount = function(gMount, callback) {
   const root = gMount.get_root();
-  const rootInfo = root.query_filesystem_info("*", null);
 
-  /** @type {Place} */
-  const place = {
-    filesystemFree: Number(rootInfo.get_attribute_as_string("filesystem::free")),
-    filesystemSize: Number(rootInfo.get_attribute_as_string("filesystem::size")),
-    icon: gMount.get_icon().to_string(),
-    iconType: "GICON",
-    name: gMount.get_name(),
-    rootUri: root ? root.get_uri() : null,
-    uuid: null,
-  };
+  gioAsync(root, "query_filesystem_info",
+    this.placeAttributes,
+    GLib.PRIORITY_DEFAULT,
+    null,
+    (_, rootInfo) => {
+      /** @type {Place} */
+      const place = {
+        filesystemFree: Number(rootInfo.get_attribute_as_string("filesystem::free")),
+        filesystemSize: Number(rootInfo.get_attribute_as_string("filesystem::size")),
+        icon: gMount.get_icon().to_string(),
+        iconType: "GICON",
+        name: gMount.get_name(),
+        rootUri: root.get_uri(),
+        uuid: null,
+      };
 
-  return place;
+      callback(null, place);
+    });
 };
 
 /**
