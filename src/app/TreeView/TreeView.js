@@ -34,12 +34,23 @@ function Col() {
  */
 
 /**
+ * @typedef IBody
+ * @property {any[]} rows
+ * @property {GtkListStore} store
+ */
+
+/**
  * @param {TreeView} node
  */
 function TreeView(node) {
   this.useNodeAsThis.call(node);
   return node;
 }
+
+/**
+ * @type {{ rows: any[], store: any }}
+ */
+TreeView.prototype.body = undefined;
 
 /**
  * Cursor row index.
@@ -60,11 +71,6 @@ TreeView.prototype.limit = undefined;
 TreeView.prototype.mouseEvent = undefined;
 
 /**
- * @type {TreeViewRow[]}
- */
-TreeView.prototype.rows = undefined;
-
-/**
  * @type {boolean}
  */
 TreeView.prototype.shouldReactToCursorChanges = undefined;
@@ -77,7 +83,6 @@ TreeView.prototype.store = undefined;
 TreeView.prototype.useNodeAsThis = function() {
   this._cursor = 0;
   this.limit = 0;
-  this.rows = [];
   this.shouldReactToCursorChanges = true;
 
   autoBind(this, TreeView.prototype, __filename);
@@ -87,10 +92,9 @@ TreeView.prototype.useNodeAsThis = function() {
     cols: { set: value => this.setCols(value) },
     cursor: { set: value => this.setCursor(value) },
     cursorCallback: { set: callback => this.setCursorCallback(callback) },
-    firstChild: { get: () => this.rows[0] },
+    firstChild: { get: () => this.body },
     keyPressEventCallback: { set: callback => this.setKeyPressEventCallback(callback) },
     layoutCallback: { set: callback => this.setLayoutCallback(callback) },
-    textContent: { set: () => this.clear() },
   });
 
   this.connect("button_press_event", (_, ev) => {
@@ -144,90 +148,14 @@ TreeView.prototype.setCols = function(cols) {
  */
 TreeView.prototype.didMount = function() {
   this.didMount = noop;
-
-  for (const row of this.rows) {
-    this.ensureInit(row);
-  }
+  this.body.store = this.store;
 };
 
 /**
- * @param {TreeViewRow} row
- */
-TreeView.prototype.ensureInit = function(row) {
-  if (row.iter) {
-    return;
-  }
-
-  Object.defineProperties(row, {
-    nextSibling: {
-      get: () => this.rows[this.rows.indexOf(row) + 1],
-    },
-  });
-
-  row.iter = this.store.append();
-  row.parentNode = this;
-
-  const setAttribute = (name, value) => {
-    setValue(this.store, row.iter, name, value);
-  };
-
-  for (const name of Object.keys(row)) {
-    setAttribute(name, row[name]);
-  }
-
-  row.setAttribute = setAttribute;
-};
-
-/**
- * @param {TreeViewRow} newChild
- * @param {TreeViewRow=} existingChild
- */
-TreeView.prototype.insertBefore = function(newChild, existingChild) {
-  this.ensureInit(newChild);
-  this.store.move_before(newChild.iter, existingChild ? existingChild.iter : null);
-  const index = this.rows.indexOf(existingChild);
-
-  if (index === -1) {
-    this.rows.push(newChild);
-  } else {
-    this.rows.splice(index, 0, newChild);
-  }
-
-  return newChild;
-};
-
-/**
- * @param {TreeViewRow} newChild
+ * @param {IBody} newChild
  */
 TreeView.prototype.appendChild = function(newChild) {
-  if (this.store) {
-    this.insertBefore(newChild);
-  } else {
-    this.rows.push(newChild);
-  }
-};
-
-/**
- * @param {TreeViewRow} row
- */
-TreeView.prototype.removeChild = function(row) {
-  this.store.remove(row.iter);
-  this.rows.splice(this.rows.indexOf(row), 1);
-  return row;
-};
-
-/**
- * @param {TreeViewRow} newChild
- * @param {TreeViewRow} oldChild
- */
-TreeView.prototype.replaceChild = function(newChild, oldChild) {
-  this.insertBefore(newChild, oldChild);
-  return this.removeChild(oldChild);
-};
-
-TreeView.prototype.clear = function() {
-  this.store.clear();
-  this.rows.splice(0);
+  this.body = newChild;
 };
 
 /**
@@ -331,8 +259,8 @@ TreeView.prototype.shouldSearchSkip = function(store, _, input, iter) {
   const index = Number(store.get_string_from_iter(iter));
 
   if (index === this._cursor) {
-    for (let i = 0; i < this.rows.length; i++) {
-      if (i !== index && !this.rows[i].shouldSearchSkip(input)) {
+    for (let i = 0; i < this.body.rows.length; i++) {
+      if (i !== index && !this.body.rows[i].shouldSearchSkip(input)) {
         return true;
       }
     }
@@ -340,7 +268,7 @@ TreeView.prototype.shouldSearchSkip = function(store, _, input, iter) {
     return false;
   }
 
-  return this.rows[index].shouldSearchSkip(input);
+  return this.body.rows[index].shouldSearchSkip(input);
 };
 
 /**

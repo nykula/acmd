@@ -16,6 +16,7 @@ const { CHECKBOX, GICON, TEXT } = require("../ListStore/ListStore");
 const { PanelService } = require("../Panel/PanelService");
 const Refstore = require("../Refstore/Refstore").default;
 const { TabService } = require("../Tab/TabService");
+const { TreeViewBody } = require("../TreeView/TreeViewBody");
 const { DirectoryFile } = require("./DirectoryFile");
 const select = require("./select").default;
 
@@ -330,15 +331,17 @@ Directory.prototype.render = function() {
       keyPressEventCallback: this.handleKeyPressEvent,
       layoutCallback: this.handleLayout,
       ref: this.ref,
-    },
-      this.files.map((file, index) => {
-        return h(DirectoryFile, {
-          file,
-          isSelected: selected.indexOf(index) !== -1,
-          key: file.name,
-        });
-      }),
-    )
+    }, [
+      h(TreeViewBody,
+        this.files.map((file, index) => {
+          return h(DirectoryFile, {
+            file,
+            isSelected: selected.indexOf(index) !== -1,
+            key: file.name,
+          });
+        }),
+      ),
+    ])
   );
 };
 

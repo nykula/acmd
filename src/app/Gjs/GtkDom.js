@@ -3,6 +3,7 @@ const { MenuItemWithSubmenu } = require("../Menu/MenuItemWithSubmenu");
 const { TreeView } = require("../TreeView/TreeView");
 const { TreeViewRow } = require("../TreeView/TreeViewRow");
 const { setTimeout } = require("./setTimeout");
+const { Stub } = require("./Stub");
 
 function getFirstChild() {
   const children = this.get_children();
@@ -165,6 +166,10 @@ GtkDom.prototype.domify = function(node) {
 GtkDom.prototype.createElement = function(tagName) {
   if (tagName === "menu-item-with-submenu") {
     return new MenuItemWithSubmenu(this.domify(new this.Gtk.MenuItem()));
+  }
+
+  if (tagName === "stub") {
+    return new Stub(this.domify({}));
   }
 
   if (tagName === "tree-view") {
