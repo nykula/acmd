@@ -71,7 +71,7 @@ DirectoryFile.prototype.render = function() {
   const { file, isSelected } = this.props;
   const [filename, ext] = this.name();
 
-  return h("tree-view-row", {
+  return h("stub", {
     ext,
     filename,
     icon: file,

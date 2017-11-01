@@ -1,8 +1,8 @@
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
+const { TreeViewRow } = require("../../domain/TreeView/TreeViewRow");
 const autoBind = require("../Gjs/autoBind").default;
 const { setValue } = require("../ListStore/ListStore");
-const { TreeViewRow } = require("./TreeViewRow");
 
 function Col() {
   this.name = "";
@@ -67,7 +67,6 @@ TreeViewBody.prototype.ensureInit = function(row) {
   });
 
   row.iter = this._store.append();
-  row.parentNode = this;
 
   const setAttribute = (name, value) => {
     setValue(this._store, row.iter, name, value);

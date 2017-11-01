@@ -1,10 +1,10 @@
 const Gtk = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
+const { TreeViewRow } = require("../../domain/TreeView/TreeViewRow");
 const autoBind = require("../Gjs/autoBind").default;
 const KeyListener = require("../Gjs/KeyListener").default;
 const { configureColumn, setCols, setValue } = require("../ListStore/ListStore");
-const { TreeViewRow } = require("./TreeViewRow");
 
 function Col() {
   this.name = "";

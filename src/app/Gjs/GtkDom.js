@@ -1,7 +1,6 @@
 const noop = require("lodash/noop");
 const { MenuItemWithSubmenu } = require("../Menu/MenuItemWithSubmenu");
 const { TreeView } = require("../TreeView/TreeView");
-const { TreeViewRow } = require("../TreeView/TreeViewRow");
 const { setTimeout } = require("./setTimeout");
 const { Stub } = require("./Stub");
 
@@ -169,15 +168,11 @@ GtkDom.prototype.createElement = function(tagName) {
   }
 
   if (tagName === "stub") {
-    return new Stub(this.domify({}));
+    return new Stub();
   }
 
   if (tagName === "tree-view") {
     return new TreeView(this.domify(new this.Gtk.TreeView()));
-  }
-
-  if (tagName === "tree-view-row") {
-    return new TreeViewRow();
   }
 
   tagName = tagName.replace(/(?:^|-)(.)/g, (_, x) => x.toUpperCase());
