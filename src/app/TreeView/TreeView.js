@@ -48,7 +48,7 @@ function TreeView(node) {
 }
 
 /**
- * @type {{ rows: any[], store: any }}
+ * @type {{ rows: TreeViewRow[], store: GtkListStore }}
  */
 TreeView.prototype.body = undefined;
 
@@ -139,7 +139,6 @@ TreeView.prototype.setCols = function(cols) {
     this.insert_column(tvCol, i);
   }
 
-  this.set_model(store);
   this.store = store;
 };
 
@@ -156,6 +155,10 @@ TreeView.prototype.didMount = function() {
  */
 TreeView.prototype.appendChild = function(newChild) {
   this.body = newChild;
+
+  Object.defineProperties(this.body, {
+    parentNode: { value: this },
+  });
 };
 
 /**
@@ -335,12 +338,6 @@ TreeView.prototype.insert_column = undefined;
  * @type {(path: GtkTreeViewPath, columnIter: any, startEdit: boolean) => void} set_cursor
  */
 TreeView.prototype.set_cursor = undefined;
-
-/**
- * Native method. Sets store as model.
- * @type {(store: GtkListStore) => void}
- */
-TreeView.prototype.set_model = undefined;
 
 /**
  * Native method. Sets function called for every row during search.

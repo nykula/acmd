@@ -43,6 +43,15 @@ TreeViewBody.prototype.rows = undefined;
 /** @type {GtkListStore} */
 TreeViewBody.prototype._store = undefined;
 
+/** @type {{ parentNode: { get_model(): GtkListStore, set_model(store: GtkListStore): void } }} */
+TreeViewBody.prototype.stub = undefined;
+
+TreeViewBody.prototype.componentDidUpdate = function() {
+  if (this._store && !this.stub.parentNode.get_model()) {
+    this.stub.parentNode.set_model(this._store);
+  }
+};
+
 /**
  * @param {TreeViewRow} row
  */
@@ -119,6 +128,7 @@ TreeViewBody.prototype.replaceChild = function(newChild, oldChild) {
 };
 
 TreeViewBody.prototype.clear = function() {
+  this.stub.parentNode.set_model(null);
   this._store.clear();
   this.rows.splice(0);
 };
@@ -132,17 +142,19 @@ TreeViewBody.prototype.setStore = function(store) {
   for (const row of this.rows) {
     this.ensureInit(row);
   }
+
+  this.stub.parentNode.set_model(this._store);
 };
 
-TreeViewBody.prototype.ref = function(node) {
-  this.rows = node.children;
+TreeViewBody.prototype.ref = function(stub) {
+  this.rows = stub.children;
 
-  node.appendChild = this.appendChild;
-  node.insertBefore = this.insertBefore;
-  node.removeChild = this.removeChild;
-  node.replaceChild = this.replaceChild;
+  stub.appendChild = this.appendChild;
+  stub.insertBefore = this.insertBefore;
+  stub.removeChild = this.removeChild;
+  stub.replaceChild = this.replaceChild;
 
-  Object.defineProperties(node, {
+  Object.defineProperties(stub, {
     firstChild: { get: () => this.rows[0] },
     store: {
       get: () => this._store,
@@ -150,6 +162,8 @@ TreeViewBody.prototype.ref = function(node) {
     },
     textContent: { set: () => this.clear() },
   });
+
+  this.stub = stub;
 };
 
 TreeViewBody.prototype.render = function() {
