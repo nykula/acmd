@@ -4,7 +4,7 @@ const GLib = imports.gi.GLib;
 const { IconSize } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
-const { action, computed, extendObservable, runInAction } = require("mobx");
+const { action, computed, extendObservable, observable, runInAction } = require("mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const Fun = require("../Gjs/Fun").default;
 const { DialogService } = require("../Dialog/DialogService");
@@ -151,7 +151,7 @@ ActionService.prototype.createTab = function() {
   this.tabService.entities = (tabs => {
     tabs[tabId] = {
       cursor: 0,
-      files: tabs[prevTabId].files,
+      files: observable.shallowArray(tabs[prevTabId].files.slice()),
       location: tabs[prevTabId].location,
       selected: [],
       sortedBy: tabs[prevTabId].sortedBy,

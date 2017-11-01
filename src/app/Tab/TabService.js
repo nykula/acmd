@@ -1,5 +1,5 @@
 const { FileType } = imports.gi.Gio;
-const { action, computed, extendObservable } = require("mobx");
+const { action, computed, extendObservable, observable } = require("mobx");
 const orderBy = require("lodash/orderBy");
 const { autoBind } = require("../Gjs/autoBind");
 const { File } = require("../../domain/File/File");
@@ -10,7 +10,22 @@ function TabService() {
 
   extendObservable(this, {
     cursor: action(this.cursor),
-    entities: this.entities,
+    entities: {
+      0: {
+        cursor: 0,
+        files: observable.shallowArray(sampleFiles),
+        location: "file:///",
+        selected: [],
+        sortedBy: "ext",
+      },
+      1: {
+        cursor: 0,
+        files: observable.shallowArray(sampleFiles),
+        location: "file:///",
+        selected: [],
+        sortedBy: "ext",
+      },
+    },
     set: action(this.set),
     showHidSys: this.showHidSys,
     sorted: action(this.sorted),
@@ -45,22 +60,7 @@ const sampleFiles = [
 /**
  * @type {{ [ id: number ]: Tab }}
  */
-TabService.prototype.entities = {
-  0: {
-    cursor: 0,
-    files: sampleFiles,
-    location: "file:///",
-    selected: [],
-    sortedBy: "ext",
-  },
-  1: {
-    cursor: 0,
-    files: sampleFiles,
-    location: "file:///",
-    selected: [],
-    sortedBy: "ext",
-  },
-};
+TabService.prototype.entities = undefined;
 
 TabService.prototype.showHidSys = false;
 
@@ -90,7 +90,7 @@ TabService.prototype.set = function(props) {
   const tab = this.entities[props.id];
   const sortedBy = props.sortedBy || tab.sortedBy;
 
-  tab.files = sortFiles(sortedBy, props.files);
+  tab.files = observable.shallowArray(sortFiles(sortedBy, props.files));
   tab.location = props.location;
 
   const visibleFiles = this.visibleFiles[props.id];
