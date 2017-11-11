@@ -35,7 +35,7 @@ function Col() {
 
 /**
  * @typedef IBody
- * @property {any[]} rows
+ * @property {any[]} children
  * @property {GtkListStore} store
  */
 
@@ -48,7 +48,7 @@ function TreeView(node) {
 }
 
 /**
- * @type {{ rows: TreeViewRow[], store: GtkListStore }}
+ * @type {IBody}
  */
 TreeView.prototype.body = undefined;
 
@@ -262,8 +262,8 @@ TreeView.prototype.shouldSearchSkip = function(store, _, input, iter) {
   const index = Number(store.get_string_from_iter(iter));
 
   if (index === this._cursor) {
-    for (let i = 0; i < this.body.rows.length; i++) {
-      if (i !== index && !this.body.rows[i].shouldSearchSkip(input)) {
+    for (let i = 0; i < this.body.children.length; i++) {
+      if (i !== index && !this.body.children[i].shouldSearchSkip(input)) {
         return true;
       }
     }
@@ -271,7 +271,7 @@ TreeView.prototype.shouldSearchSkip = function(store, _, input, iter) {
     return false;
   }
 
-  return this.body.rows[index].shouldSearchSkip(input);
+  return this.body.children[index].shouldSearchSkip(input);
 };
 
 /**

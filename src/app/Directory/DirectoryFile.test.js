@@ -94,7 +94,7 @@ describe("DirectoryFile", () => {
     };
 
     const treeView = {
-      body: { rows },
+      body: { children: rows },
       _cursor: 1,
       store,
     };
