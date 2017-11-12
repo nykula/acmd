@@ -243,6 +243,12 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
       }
       break;
 
+    case Gdk.KEY_c:
+      if (ev.ctrlKey) {
+        actionService.copy();
+      }
+      break;
+
     case Gdk.KEY_l:
       if (ev.ctrlKey) {
         actionService.ls();
@@ -255,9 +261,21 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
       }
       break;
 
+    case Gdk.KEY_v:
+      if (ev.ctrlKey) {
+        actionService.paste();
+      }
+      break;
+
     case Gdk.KEY_w:
       if (ev.ctrlKey) {
         actionService.removeTab();
+      }
+      break;
+
+    case Gdk.KEY_x:
+      if (ev.ctrlKey) {
+        actionService.cut();
       }
       break;
   }

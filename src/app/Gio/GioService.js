@@ -1,4 +1,4 @@
-const { FileQueryInfoFlags } = imports.gi.Gio;
+const { FileQueryInfoFlags, SubprocessFlags } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const { map, waterfall } = require("async");
 const find = require("lodash/find");
@@ -422,12 +422,39 @@ GioService.prototype.touch = function(uri, callback) {
 
 /**
  * Spawns a subprocess in a given working directory.
+ *
+ * @param {{ argv: string[], cwd?: string }} props
  */
-GioService.prototype.spawn = function({ argv, cwd }) {
+GioService.prototype.spawn = function(props) {
+  const { argv, cwd } = props;
   const launcher = new this.Gio.SubprocessLauncher();
-  launcher.set_cwd(cwd);
-  launcher.set_flags(this.Gio.SubprocessFlags.NONE);
+
+  if (cwd) {
+    launcher.set_cwd(cwd);
+  }
+
+  launcher.set_flags(SubprocessFlags.NONE);
   return launcher.spawnv(argv);
+};
+
+/**
+ * Runs a subprocess and returns its output.
+ *
+ * @param {string[]} argv
+ * @param {(error: Error, stdout: string) => void} callback
+ */
+GioService.prototype.communicate = function(argv, callback) {
+  const subprocess = new this.Gio.Subprocess({
+    argv,
+    flags: SubprocessFlags.STDOUT_PIPE,
+  });
+
+  subprocess.init(null);
+
+  gioAsync(subprocess, "communicate_utf8", null, null, (_, result) => {
+    const stdout = result[1];
+    callback(null, stdout);
+  });
 };
 
 exports.GioService = GioService;

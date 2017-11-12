@@ -1,3 +1,4 @@
+const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const { ActionService } = require("./Action/ActionService");
@@ -29,6 +30,7 @@ function Services(win) {
 
   this.actionService = new ActionService(
     this.dialogService,
+    Gdk,
     this.gioService,
     Gtk,
     this.logService,

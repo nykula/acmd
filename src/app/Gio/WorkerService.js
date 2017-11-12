@@ -28,7 +28,7 @@ function WorkerService(Gio = imports.gi.Gio) {
  */
 WorkerService.prototype.run = function(ev, emit) {
   const subprocess = new this.Gio.Subprocess({
-    argv: ["gjs", __dirname + "/../../../bin/worker.js", JSON.stringify(ev)],
+    argv: [__dirname + "/../../../bin/worker.js", JSON.stringify(ev)],
     flags: SubprocessFlags.STDOUT_PIPE,
   });
 

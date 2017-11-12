@@ -8,6 +8,7 @@ const { action, computed, extendObservable, observable, runInAction } = require(
 const { autoBind } = require("../Gjs/autoBind");
 const Fun = require("../Gjs/Fun").default;
 const { DialogService } = require("../Dialog/DialogService");
+const gioAsync = require("../Gio/gioAsync").default;
 const { GioService } = require("../Gio/GioService");
 const { WorkerService } = require("../Gio/WorkerService");
 const { LogService } = require("../Log/LogService");
@@ -20,6 +21,7 @@ const { TabService } = require("../Tab/TabService");
 // tslint:disable align
 function ActionService(
   /** @type {DialogService} */ dialogService,
+  /** @type {any} */           Gdk,
   /** @type {GioService} */    gioService,
   /** @type {any} */           Gtk,
   /** @type {LogService} */    logService,
@@ -32,6 +34,7 @@ function ActionService(
 ) {
   // tslint:enable align
   this.dialogService = dialogService;
+  this.Gdk = Gdk;
   this.gioService = gioService;
   this.Gtk = Gtk;
   this.logService = logService;
@@ -100,6 +103,14 @@ ActionService.prototype.back = function() {
   if (uri) {
     this.ls(tabId, uri, -1);
   }
+};
+
+ActionService.prototype.copy = function() {
+  const uris = this.getActiveFiles().map(x => x.uri);
+
+  this.gioService.spawn({
+    argv: [__dirname.replace(/src.app.Action$/, "bin/clipboard.py"), "copy"].concat(uris),
+  });
 };
 
 /**
@@ -227,6 +238,14 @@ ActionService.prototype.ctxMenu = function(props) {
       const menuAnchor = Gdk.Gravity.STATIC;
       menu.popup_at_rect(win, rect, rectAnchor, menuAnchor, keyEvent);
     }
+  });
+};
+
+ActionService.prototype.cut = function() {
+  const uris = this.getActiveFiles().map(x => x.uri);
+
+  this.gioService.spawn({
+    argv: [__dirname.replace(/src.app.Action$/, "bin/clipboard.py"), "cut"].concat(uris),
   });
 };
 
@@ -455,6 +474,31 @@ ActionService.prototype.mv = function(uris, destUri) {
       this.dialogService.alert(ev.message, noop);
     } else if (ev.type === "success") {
       this.refresh();
+    }
+  });
+};
+
+ActionService.prototype.paste = function() {
+  this.gioService.communicate([__dirname + "/../../../bin/clipboard.py", "paste"], (_, text) => {
+    if (!text) {
+      this.dialogService.alert("No text in clipboard.");
+      return;
+    }
+
+    const uris = text.split("\n").filter(x => !!x.length);
+    const action = uris.shift();
+
+    if (action !== "copy" && action !== "cut") {
+      this.dialogService.alert("No files have been copied or cut.");
+      return;
+    }
+
+    const { location } = this.tabService.entities[this.panelService.getActiveTabId()];
+
+    if (action === "copy") {
+      this.cp(uris, location);
+    } else {
+      this.mv(uris, location);
     }
   });
 };

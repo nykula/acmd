@@ -6,14 +6,11 @@ Twin-panel file manager.
 
 ## Usage
 
-Make sure you have a GNOME JavaScript runtime, v1.50 or newer:
+Make sure you have a GNOME JavaScript runtime, v1.50 or newer, and PyGTK:
 
 ```bash
 # Ubuntu 17.10
-sudo apt update && sudo apt install gjs
-
-# macOS (not much works besides UI)
-brew update && brew install gjs
+sudo apt update && sudo apt install gjs python-gtk2
 ```
 
 Then install with [Yarn](https://yarnpkg.com/en/docs/install#linux-tab):
