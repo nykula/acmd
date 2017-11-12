@@ -1,4 +1,10 @@
-function Stub() {
+function Stub(node) {
+  if (node) {
+    Stub.call(node);
+    node.appendChild = this.appendChild;
+    return node;
+  }
+
   this.children = [];
 
   Object.defineProperties(this, {

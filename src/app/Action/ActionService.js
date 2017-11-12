@@ -8,6 +8,7 @@ const { action, computed, extendObservable, observable, runInAction } = require(
 const { autoBind } = require("../Gjs/autoBind");
 const Fun = require("../Gjs/Fun").default;
 const { DialogService } = require("../Dialog/DialogService");
+const { FileService } = require("../File/FileService");
 const gioAsync = require("../Gio/gioAsync").default;
 const { GioService } = require("../Gio/GioService");
 const { WorkerService } = require("../Gio/WorkerService");
@@ -21,6 +22,7 @@ const { TabService } = require("../Tab/TabService");
 // tslint:disable align
 function ActionService(
   /** @type {DialogService} */ dialogService,
+  /** @type {FileService} */   fileService,
   /** @type {any} */           Gdk,
   /** @type {GioService} */    gioService,
   /** @type {any} */           Gtk,
@@ -34,6 +36,7 @@ function ActionService(
 ) {
   // tslint:enable align
   this.dialogService = dialogService;
+  this.fileService = fileService;
   this.Gdk = Gdk;
   this.gioService = gioService;
   this.Gtk = Gtk;
@@ -188,8 +191,6 @@ ActionService.prototype.ctxMenu = function(props) {
   const { keyEvent, mouseEvent, rect, win } = props;
   const { uri } = this.getCursor();
 
-  const menu = new this.Gtk.Menu();
-
   this.gioService.getHandlers(uri, (error, result) => {
     if (error) {
       this.dialogService.alert(error.message, noop);
@@ -203,33 +204,8 @@ ActionService.prototype.ctxMenu = function(props) {
       return;
     }
 
-    for (const handler of handlers) {
-      const { displayName, icon } = handler;
-      let item;
-
-      if (icon) {
-        item = new this.Gtk.MenuItem();
-
-        const box = new this.Gtk.Box();
-        item.add(box);
-
-        const image = this.Gtk.Image.new_from_icon_name(icon, IconSize.MENU);
-        box.add(image);
-
-        const label = new this.Gtk.Label({ label: displayName });
-        box.add(label);
-      } else {
-        item = new this.Gtk.MenuItem({ label: displayName });
-      }
-
-      item.connect("activate", () => {
-        this.gioService.launch(handler, [uri]);
-      });
-
-      menu.add(item);
-    }
-
-    menu.show_all();
+    this.fileService.setHandlers(handlers);
+    const menu = this.refstore.get("ctxMenu");
 
     if (mouseEvent) {
       menu.popup_at_pointer(mouseEvent);

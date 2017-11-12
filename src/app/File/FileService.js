@@ -1,4 +1,5 @@
 const { action, extendObservable } = require("mobx");
+const { FileHandler } = require("../../domain/File/FileHandler");
 const { autoBind } = require("../Gjs/autoBind");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
@@ -15,9 +16,16 @@ function FileService(panelService, tabService) {
 
   extendObservable(this, {
     cursor: action(this.cursor),
+    handlers: [],
     selected: action(this.selected),
+    setHandlers: action(this.setHandlers),
   });
 }
+
+/**
+ * @type {FileHandler[]}
+ */
+FileService.prototype.handlers = [];
 
 /**
  * @param {{ panelId: number, tabId: number, cursor: number }} props
@@ -45,6 +53,13 @@ FileService.prototype.selected = function(props) {
     selected: selected,
     tabId: tabId,
   });
+};
+
+/**
+ * @param {FileHandler[]} handlers
+ */
+FileService.prototype.setHandlers = function(handlers) {
+  this.handlers = handlers;
 };
 
 exports.FileService = FileService;

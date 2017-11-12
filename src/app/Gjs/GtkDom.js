@@ -171,6 +171,10 @@ GtkDom.prototype.createElement = function(tagName) {
     return new Stub();
   }
 
+  if (tagName === "stub-box") {
+    return new Stub(this.domify(new this.Gtk.Box()));
+  }
+
   if (tagName === "tree-view") {
     return new TreeView(this.domify(new this.Gtk.TreeView()));
   }

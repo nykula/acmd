@@ -28,8 +28,11 @@ function Services(win) {
 
   this.panelService = new PanelService(this.tabService);
 
+  this.fileService = new FileService(this.panelService, this.tabService);
+
   this.actionService = new ActionService(
     this.dialogService,
+    this.fileService,
     Gdk,
     this.gioService,
     Gtk,
@@ -41,8 +44,6 @@ function Services(win) {
     this.win,
     this.workerService,
   );
-
-  this.fileService = new FileService(this.panelService, this.tabService);
 }
 
 exports.Services = Services;

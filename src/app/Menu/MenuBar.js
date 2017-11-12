@@ -8,13 +8,23 @@ const menus = [
   {
     children: [
       { action: "createTab", label: "New tab" },
-      { action: "touch", label: "Create file" }, ,
+      { action: "touch", label: "Create file" },
       { action: "terminal", label: "Open terminal" },
       { action: "removeTab", label: "Close tab" },
       { action: "exit", label: "Exit" },
     ],
 
     label: "File",
+  },
+
+  {
+    children: [
+      { action: "cut", label: "Cut" },
+      { action: "copy", label: "Copy" },
+      { action: "paste", label: "Paste" },
+    ],
+
+    label: "Edit",
   },
 
   {
