@@ -240,24 +240,17 @@ Require.prototype.require = function() {
   exports.Require = Require;
 };
 
-/** @type {number[]} */
-let times = []; // FIXME: Delete.
 /**
  * Gets a normalized local pathname. Understands Dot and Dot Dot, or looks into
  * node_modules up to the root. Adds '.js' suffix if omitted.
  */
 Require.prototype.resolve = function(parentFilename, path) {
-  const start = Date.now();
   let gFile = this.Gio.file_new_for_path(parentFilename).get_parent();
   const parentDirname = gFile.get_path();
   const cache = this.resolvedPaths[parentDirname];
 
-  if (cache) {
-    if (cache[path]) {
-      times.push(Date.now() - start);
-      print((times.reduce((prev, x) => prev + x, 0) / times.length).toFixed(1));
-      return cache[path];
-    }
+  if (cache && cache[path]) {
+    return cache[path];
   }
 
   const dirnames = [];
@@ -333,9 +326,6 @@ Require.prototype.resolve = function(parentFilename, path) {
       }
 
       this.resolvedPaths[parentDirname][path] = resolvedPath;
-
-      times.push(Date.now() - start);
-      print((times.reduce((prev, x) => prev + x, 0) / times.length).toFixed(1));
 
       return resolvedPath;
     }
