@@ -244,7 +244,7 @@ ActionService.prototype.editor = function() {
     return;
   }
 
-  this.terminal(["-e", editor, match[1]]);
+  this.terminal(["-e", editor, decodeURIComponent(match[1])]);
 };
 
 /**
@@ -605,7 +605,7 @@ ActionService.prototype.view = function() {
     return;
   }
 
-  this.terminal(["-e", pager, match[1]]);
+  this.terminal(["-e", pager, decodeURIComponent(match[1])]);
 };
 
 /**
