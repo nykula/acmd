@@ -113,7 +113,7 @@ TabService.prototype.sorted = function(props) {
 };
 
 /**
- * @param {number} panelId
+ * @param {number} tabId
  */
 TabService.prototype.getVisibleFiles = function(tabId) {
   const { files } = this.entities[tabId];
