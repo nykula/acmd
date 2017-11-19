@@ -153,9 +153,6 @@ ActionService.prototype.cp = function(uris, destUri) {
   });
 };
 
-/**
- * @param {number} panelId
- */
 ActionService.prototype.createTab = function() {
   const panelId = this.panelService.activeId;
   const tabId = this.panelService.getNextTabId();
@@ -501,8 +498,10 @@ ActionService.prototype.rm = function(uris) {
     uris = files.map(x => x.uri);
     const urisStr = files.length === 1 ? uris[0] : "\n" + uris.join("\n") + "\n";
 
-    this.dialogService.confirm("Are you sure you want to remove " + urisStr + "?", () => {
-      this.rm(uris);
+    this.dialogService.confirm("Are you sure you want to remove " + urisStr + "?", (response) => {
+      if (response) {
+        this.rm(uris);
+      }
     });
 
     return;
