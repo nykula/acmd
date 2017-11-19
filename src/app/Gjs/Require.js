@@ -18,6 +18,12 @@ function Require(
   this.resolve = this.resolve.bind(this);
 
   /**
+   * Filenames, indexed by parent dirname and path.
+   * @type {{ [parentDirname: string]: { [path: string]: string } }}
+   */
+  this.resolvedPaths = {};
+
+  /**
    * Object where filenames of the modules that have ever been required are keys.
    */
   this.filenames = {};
@@ -242,21 +248,32 @@ let times = []; // FIXME: Delete.
  */
 Require.prototype.resolve = function(parentFilename, path) {
   const start = Date.now();
-  let gFile;
+  let gFile = this.Gio.file_new_for_path(parentFilename).get_parent();
+  const parentDirname = gFile.get_path();
+  const cache = this.resolvedPaths[parentDirname];
+
+  if (cache) {
+    if (cache[path]) {
+      times.push(Date.now() - start);
+      print((times.reduce((prev, x) => prev + x, 0) / times.length).toFixed(1));
+      return cache[path];
+    }
+  }
+
   const dirnames = [];
 
   if (
     path === "." || path === ".." ||
     path.indexOf("./") === 0 || path.indexOf("../") === 0
   ) {
-    dirnames.push(this.Gio.file_new_for_path(parentFilename).get_parent().get_path());
+    dirnames.push(parentDirname);
   } else {
-    gFile = this.Gio.file_new_for_path(parentFilename);
-
-    while ((gFile = gFile.get_parent())) {
+    while (gFile) {
       if (gFile.get_child("node_modules").query_exists(null)) {
         dirnames.push(gFile.get_child("node_modules").get_path());
       }
+
+      gFile = gFile.get_parent();
     }
   }
 
@@ -309,9 +326,18 @@ Require.prototype.resolve = function(parentFilename, path) {
         continue;
       }
 
+      const resolvedPath = gFile.get_path();
+
+      if (!this.resolvedPaths[parentDirname]) {
+        this.resolvedPaths[parentDirname] = {};
+      }
+
+      this.resolvedPaths[parentDirname][path] = resolvedPath;
+
       times.push(Date.now() - start);
       print((times.reduce((prev, x) => prev + x, 0) / times.length).toFixed(1));
-      return gFile.get_path();
+
+      return resolvedPath;
     }
   }
 
