@@ -13,7 +13,7 @@ declare namespace imports {
 
       FileType: {
         REGULAR: 1,
-        DIRECTORY: 3
+        DIRECTORY: 2
       }
     }
   };

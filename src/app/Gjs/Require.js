@@ -317,8 +317,8 @@ Require.prototype.resolve = function(parentFilename, path) {
       }
 
       const gFileInfo = gFile.query_info(
-        "standard::*",
-        this.Gio.FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+        "standard::type",
+        this.Gio.FileQueryInfoFlags.NONE,
         null,
       );
 
