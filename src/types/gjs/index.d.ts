@@ -8,6 +8,19 @@ declare namespace imports {
   const gi: {
     [moduleName: string]: any,
 
+    Gdk: {
+      [key: string]: any,
+
+      DragAction: {
+        COPY: 2,
+        MOVE: 4
+      },
+
+      ModifierType: {
+        BUTTON1_MASK: 256
+      }
+    },
+
     Gio: {
       [key: string]: any,
 

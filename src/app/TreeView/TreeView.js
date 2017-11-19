@@ -1,3 +1,4 @@
+const { ModifierType } = imports.gi.Gdk;
 const Gtk = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
@@ -92,6 +93,7 @@ TreeView.prototype.useNodeAsThis = function() {
     cols: { set: value => this.setCols(value) },
     cursor: { set: value => this.setCursor(value) },
     cursorCallback: { set: callback => this.setCursorCallback(callback) },
+    dragAction: { set: value => this.setDragAction(value) },
     firstChild: { get: () => this.body },
     keyPressEventCallback: { set: callback => this.setKeyPressEventCallback(callback) },
     layoutCallback: { set: callback => this.setLayoutCallback(callback) },
@@ -197,7 +199,7 @@ TreeView.prototype.setCursorCallback = function(callback) {
 };
 
 /**
- * @param {(ev: { limit: number, top: number }) => boolean} shouldPreventDefault
+ * @param {(ev: { limit: number, top: number }) => boolean} callback
  */
 TreeView.prototype.setKeyPressEventCallback = function(callback) {
   this.setKeyPressEventCallback = noop;
@@ -254,6 +256,17 @@ TreeView.prototype.setLayoutCallback = function(callback) {
 };
 
 /**
+ * @param {number} dragAction
+ */
+TreeView.prototype.setDragAction = function(dragAction) {
+  this.enable_model_drag_source(ModifierType.BUTTON1_MASK, [], dragAction);
+  this.drag_source_add_uri_targets();
+
+  this.enable_model_drag_dest([], dragAction);
+  this.drag_dest_add_uri_targets();
+};
+
+/**
  * @param {GtkListStore} store
  * @param {string} input
  * @param {any} iter
@@ -279,6 +292,30 @@ TreeView.prototype.shouldSearchSkip = function(store, _, input, iter) {
  * @type {(evName: string, callback: Function) => void}
  */
 TreeView.prototype.connect = undefined;
+
+/**
+ * Native method. Adds uri list as possible drop target.
+ * @type {() => void}
+ */
+TreeView.prototype.drag_dest_add_uri_targets = undefined;
+
+/**
+ * Native method. Adds uri list as possible drag target.
+ * @type {() => void}
+ */
+TreeView.prototype.drag_source_add_uri_targets = undefined;
+
+/**
+ * Native method. Enables drop.
+ * @type {(targets: any[], dragAction: number) => void}
+ */
+TreeView.prototype.enable_model_drag_dest = undefined;
+
+/**
+ * Native method. Enables drag.
+ * @type {(buttonMask: number, targets: any[], dragAction: number) => void}
+ */
+TreeView.prototype.enable_model_drag_source = undefined;
 
 /**
  * Native method. Returns area of one row.
@@ -335,7 +372,7 @@ TreeView.prototype.insert_column = undefined;
 
 /**
  * Native method. Sets path as cursor.
- * @type {(path: GtkTreeViewPath, columnIter: any, startEdit: boolean) => void} set_cursor
+ * @type {(path: GtkTreeViewPath, columnIter: any, startEdit: boolean) => void}
  */
 TreeView.prototype.set_cursor = undefined;
 

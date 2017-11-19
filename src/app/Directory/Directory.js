@@ -68,7 +68,7 @@ Directory.prototype.node = undefined;
 /** @type {IProps} */
 Directory.prototype.props = undefined;
 
-/** @type {{ cursor: number, selected: number[], sortedBy: string }} */
+/** @type {{ cursor: number, location: string, selected: number[], sortedBy: string }} */
 Directory.prototype.tab = undefined;
 
 /** @type {number} */
@@ -136,6 +136,35 @@ Directory.prototype.handleCursor = function(ev) {
     if (button === Gdk.BUTTON_SECONDARY) {
       this.props.actionService.ctxMenu({ mouseEvent });
     }
+  }
+};
+
+/**
+ * @param {*} _node
+ * @param {*} _dragContext
+ * @param {{ set_uris(uris: string[]): void }} selectionData
+ */
+Directory.prototype.handleDrag = function(_node, _dragContext, selectionData) {
+  const uris = this.props.actionService.getActiveFiles().map(x => x.uri);
+  selectionData.set_uris(uris);
+};
+
+/**
+ * @param {*} _node
+ * @param {{ get_selected_action(): number }} dragContext
+ * @param {number} _x
+ * @param {number} _y
+ * @param {{ get_uris(): string[] }} selectionData
+ */
+Directory.prototype.handleDrop = function(_node, dragContext, _x, _y, selectionData) {
+  const action = dragContext.get_selected_action();
+  const uris = selectionData.get_uris();
+  const { location } = this.tab;
+
+  if (action === Gdk.DragAction.MOVE) {
+    this.props.actionService.mv(uris, location);
+  } else {
+    this.props.actionService.cp(uris, location);
   }
 };
 
@@ -289,7 +318,7 @@ Directory.prototype.handleLayout = function(node) {
 };
 
 /**
- * @param {value} number
+ * @param {number} index
  */
 Directory.prototype.handleSelected = function(index) {
   let { selected } = this.tab;
@@ -325,11 +354,10 @@ Directory.prototype.getCols = function() {
     .map(col => assign({}, col, {
       on_clicked: () => this.handleClicked(col.name),
       on_toggled: col.name === "isSelected" ? this.handleSelected : undefined,
-  }));
+    }));
 };
 
 Directory.prototype.ref = function(node) {
-  this.ref = noop;
   this.node = node;
 };
 
@@ -342,8 +370,11 @@ Directory.prototype.render = function() {
       cols: this.cols,
       cursor,
       cursorCallback: this.handleCursor,
+      dragAction: Gdk.DragAction.COPY + Gdk.DragAction.MOVE,
       keyPressEventCallback: this.handleKeyPressEvent,
       layoutCallback: this.handleLayout,
+      on_drag_data_get: this.handleDrag,
+      on_drag_data_received: this.handleDrop,
       ref: this.ref,
     }, h(DirectoryFiles, { tabId: this.tabId }))
   );

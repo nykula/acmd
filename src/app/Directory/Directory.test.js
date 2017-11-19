@@ -194,7 +194,7 @@ describe("Directory", () => {
     });
 
     instance.handleCursor({ index: 1 });
-    instance.handleSelected([1]);
+    instance.handleSelected(1);
 
     expect(cursor.calls.length).toBe(1);
     expect(selected.calls.length).toBe(1);
