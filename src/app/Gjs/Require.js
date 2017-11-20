@@ -1,3 +1,5 @@
+const { FileQueryInfoFlags, FileType } = imports.gi.Gio;
+
 function Require(
   Gio = imports.gi.Gio,
   GLib = imports.gi.GLib,
@@ -9,17 +11,20 @@ function Require(
   this.imports = _imports;
   this.window = _window;
 
-  this.accept = this.accept.bind(this);
-  this.flatten = this.flatten.bind(this);
-  this.getOrCreate = this.getOrCreate.bind(this);
-  this.require = this.require.bind(this);
-  this.requireClosure = this.requireClosure.bind(this);
-  this.requireModule = this.requireModule.bind(this);
-  this.resolve = this.resolve.bind(this);
+  const keys = Object.getOwnPropertyNames(Require.prototype);
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    const val = this[key];
+
+    if (key !== "constructor" && typeof val === "function") {
+      this[key] = val.bind(this);
+    }
+  }
 
   /**
-   * Filenames, indexed by parent dirname and path.
-   * @type {{ [parentDirname: string]: { [path: string]: string } }}
+   * Filenames, indexed by dirname and relative path.
+   * @type {{ [dirname: string]: { [path: string]: string } }}
    */
   this.resolvedPaths = {};
 
@@ -64,9 +69,13 @@ function Require(
 
 /**
  * Invalidates cache and calls a function when a module file is changed.
+ *
+ * @param {string} dirname
+ * @param {string} path
+ * @param {() => void} callback
  */
-Require.prototype.accept = function(parentFilename, path, callback) {
-  const filename = this.resolve(parentFilename, path);
+Require.prototype.accept = function(dirname, path, callback) {
+  const filename = this.resolve(dirname, path);
   let lastContents = {};
   let isVerifyingChange = false;
 
@@ -128,6 +137,8 @@ Require.prototype.accept = function(parentFilename, path, callback) {
 
 /**
  * Gets pathnames of a cached module and all its dependencies.
+ *
+ * @param {string} filename
  */
 Require.prototype.flatten = function(filename) {
   let result = [filename];
@@ -148,12 +159,16 @@ Require.prototype.flatten = function(filename) {
 
 /**
  * Returns a cached module or creates an empty one. Normalizes the path.
+ *
+ * @param {string} path
  */
 Require.prototype.getOrCreate = function(path) {
-  const filename = this.Gio.File.new_for_path(path).get_path();
+  const gFile = this.Gio.File.new_for_path(path);
+  const dirname = gFile.get_parent().get_path();
+  const filename = gFile.get_path();
 
   const module = this.cache[filename] || (this.cache[filename] = {
-    hot: { accept: this.accept.bind(null, filename) },
+    hot: { accept: this.accept.bind(null, dirname) },
     filename: filename,
     exports: {},
   });
@@ -226,133 +241,229 @@ Require.prototype.require = function() {
      */
     get: () => {
       const parentPath = this.RE.exec(new Error().stack)[1];
-      const parentFilename = this.Gio.File.new_for_path(parentPath).get_path();
+      const gFile = this.Gio.File.new_for_path(parentPath);
+      const parentFilename = gFile.get_path();
 
       const require = this.requireModule.bind(null, parentFilename);
       require.cache = this.cache;
-      require.resolve = this.resolve.bind(null, parentFilename);
+      require.resolve = this.resolve.bind(null, gFile.get_parent().get_path());
       return require;
     },
   });
 
   this.Fun = require("./Fun").default;
 
-  exports.Require = Require;
+  // exports.Require = Require; // FIXME
+};
+
+/** @type {{ [location: string]: number }} */
+let perf = {}; // FIXME: Delete.
+
+const reportPerf = function() {
+  const data = Object.keys(perf)
+    .map(location => ({
+      location,
+      time: perf[location],
+    }))
+    .sort((a, b) => b.time - a.time)
+    .slice(0, 10);
+
+  print(JSON.stringify(data));
 };
 
 /**
- * Gets a normalized local pathname. Understands Dot and Dot Dot, or looks into
- * node_modules up to the root. Adds '.js' suffix if omitted.
+ * Require(X) from module at path Y.
+ *
+ * @see https://nodejs.org/api/modules.html#modules_all_together
+ *
+ * @param {string} X
+ * @param {string} Y
  */
-Require.prototype.resolve = function(parentFilename, path) {
-  let gFile = this.Gio.file_new_for_path(parentFilename).get_parent();
-  const parentDirname = gFile.get_path();
-  const cache = this.resolvedPaths[parentDirname];
-
-  if (cache && cache[path]) {
-    return cache[path];
+Require.prototype.REQUIRE = function(X, Y) {
+  if (X[0] === "/") {
+    Y = "/"; // filesystem root
   }
 
-  const dirnames = [];
+  if (X.slice(0, 2) === "./" || X[0] === "/" || X.slice(0, 3) === "../") {
+    const result = this.LOAD_AS_FILE(`${Y}/${X}`) || this.LOAD_AS_DIRECTORY(`${Y}/${X}`);
 
-  if (
-    path === "." || path === ".." ||
-    path.indexOf("./") === 0 || path.indexOf("../") === 0
-  ) {
-    dirnames.push(parentDirname);
-  } else {
-    while (gFile) {
-      if (gFile.get_child("node_modules").query_exists(null)) {
-        dirnames.push(gFile.get_child("node_modules").get_path());
-      }
-
-      gFile = gFile.get_parent();
+    if (result) {
+      return result;
     }
   }
 
-  if (!dirnames.length) {
-    throw new Error("Path cannot be resolved: " + path);
-  }
+  const result = this.LOAD_NODE_MODULES(X, this.DIRNAME(Y));
 
-  let suffices = [
-    "",
-    ".js",
-    "/index.js",
-  ];
-
-  if (path.indexOf("/") === -1) {
-    suffices = dirnames.reduce((prev, dirname) => {
-      gFile = this.Gio.file_new_for_path(dirname + "/" + path);
-      gFile = gFile.get_child("package.json");
-
-      if (!gFile.query_exists(null)) {
-        return prev;
-      }
-
-      const contents = String(this.GLib.file_get_contents(gFile.get_path())[1]);
-      const data = JSON.parse(contents);
-
-      if (!data.main) {
-        return prev;
-      }
-
-      return prev.concat(suffices.map(x => "/" + data.main + x));
-    }, suffices);
-  }
-
-  for (let i = 0; i < dirnames.length; i++) {
-    for (let j = 0; j < suffices.length; j++) {
-      const filename = dirnames[i] + "/" + path.replace(/\/$/, "") + suffices[j];
-      gFile = this.Gio.file_new_for_path(filename);
-
-      if (!gFile.query_exists(null)) {
-        continue;
-      }
-
-      const gFileInfo = gFile.query_info(
-        "standard::type",
-        this.Gio.FileQueryInfoFlags.NONE,
-        null,
-      );
-
-      if (gFileInfo.get_file_type() === this.Gio.FileType.DIRECTORY) {
-        continue;
-      }
-
-      const resolvedPath = gFile.get_path();
-
-      if (!this.resolvedPaths[parentDirname]) {
-        this.resolvedPaths[parentDirname] = {};
-      }
-
-      this.resolvedPaths[parentDirname][path] = resolvedPath;
-
-      return resolvedPath;
-    }
+  if (result) {
+    return result;
   }
 
   throw new Error("Module not found: " + path);
 };
 
 /**
+ * @param {string} X
+ */
+Require.prototype.LOAD_AS_FILE = function(X) {
+  if (this.IS_FILE(X)) {
+    return X;
+  }
+
+  if (this.IS_FILE(`${X}.js`)) {
+    return `${X}.js`;
+  }
+
+  if (this.IS_FILE(`${X}.json`)) {
+    return `${X}.json`;
+  }
+};
+
+Require.prototype.LOAD_INDEX = function(X) {
+  if (this.IS_FILE(`${X}/index.js`)) {
+    return `${X}/index.js`;
+  }
+
+  if (this.IS_FILE(`${X}/index.json`)) {
+    return `${X}/index.json`;
+  }
+};
+
+/**
+ * @param {string} X
+ */
+Require.prototype.LOAD_AS_DIRECTORY = function(X) {
+  if (this.IS_FILE(`${X}/package.json`)) {
+    const contents = String(this.GLib.file_get_contents(`${X}/package.json`)[1]);
+    const M = `${X}/${JSON.parse(contents).main}`;
+    const result = this.LOAD_AS_FILE(M) || this.LOAD_INDEX(M);
+
+    if (result) {
+      return result;
+    }
+  }
+
+  return this.LOAD_INDEX(X);
+};
+
+/**
+ * @param {string} X
+ * @param {string} START
+ */
+Require.prototype.LOAD_NODE_MODULES = function(X, START) {
+  const DIRS = this.NODE_MODULES_PATHS(START);
+
+  for (const DIR of DIRS) {
+    const result = this.LOAD_AS_FILE(`${DIR}/${X}`) || this.LOAD_AS_DIRECTORY(`${DIR}/${X}`);
+
+    if (result) {
+      return result;
+    }
+  }
+};
+
+/**
+ * @param {string} START
+ */
+Require.prototype.NODE_MODULES_PATHS = function(START) {
+  const PARTS = START.split("/");
+  let I = PARTS.length - 1;
+
+  /** @type {string[]} */
+  const DIRS = [];
+
+  while (I >= 0) {
+    if (PARTS[I] !== "node_modules") {
+      DIRS.push(PARTS.slice(0, I + 1).concat("node_modules").join("/"));
+    }
+
+    I = I - 1;
+  }
+
+  return DIRS;
+};
+
+/**
+ * @param {string} X
+ */
+Require.prototype.IS_FILE = function(X) {
+  const gFile = this.Gio.file_new_for_path(X);
+
+  if (!gFile.query_exists(null)) {
+    return false;
+  }
+
+  const gFileInfo = gFile.query_info(
+    "standard::type",
+    FileQueryInfoFlags.NONE,
+    null,
+  );
+
+  return gFileInfo.get_file_type() === FileType.REGULAR;
+};
+
+/**
+ * @param {string} X
+ */
+Require.prototype.DIRNAME = function(X) {
+  return this.Gio.file_new_for_path(X).get_parent().get_path();
+};
+
+/**
+ * Gets a normalized local pathname. Understands Dot and Dot Dot, or looks into
+ * node_modules up to the root. Adds '.js' suffix if omitted.
+ *
+ * @param {string} dirname
+ * @param {string} path
+ */
+Require.prototype.resolve = function(dirname, path) {
+  const start = Date.now();
+  const cache = this.resolvedPaths[dirname];
+
+  if (cache) {
+    if (cache[path]) {
+      perf[cache[path]] = (perf[cache[path]] || 0) + Date.now() - start;
+      reportPerf();
+
+      return cache[path];
+    }
+  }
+
+  const resolvedPath = this.REQUIRE(path, dirname);
+
+  if (!this.resolvedPaths[dirname]) {
+    this.resolvedPaths[dirname] = {};
+  }
+
+  this.resolvedPaths[dirname][path] = resolvedPath;
+
+  perf[resolvedPath] = (perf[resolvedPath] || 0) + Date.now() - start;
+  reportPerf();
+
+  return resolvedPath;
+};
+
+/**
  * Loads a module by evaluating file contents in a closure. For example, this
  * can be used to require lodash/toString, which Gjs can't import natively. Or
  * to reload a module that has been deleted from cache.
+ *
+ * @param {string} parentFilename
+ * @param {string} path
  */
 Require.prototype.requireClosure = function(parentFilename, path) {
-  const filename = this.resolve(parentFilename, path);
+  const dirname = this.Gio.file_new_for_path(parentFilename).get_parent().get_path();
+  const filename = this.resolve(dirname, path);
 
   if (this.cache[filename]) {
     return this.cache[filename].exports;
   }
 
   const contents = String(this.GLib.file_get_contents(filename)[1]);
-  const dirname = this.Gio.file_new_for_path(parentFilename).get_parent().get_path();
   const module = this.getOrCreate(filename);
 
   const require = this.requireModule.bind(null, filename);
   require.cache = this.cache;
-  require.resolve = this.resolve.bind(null, filename);
+  require.resolve = this.resolve.bind(null, dirname);
 
   this.Fun("exports", "require", "module", "__filename", "__dirname",
     contents,
@@ -369,9 +480,13 @@ Require.prototype.requireClosure = function(parentFilename, path) {
 
 /**
  * Loads a module and returns its exports. Caches the module.
+ *
+ * @param {string} parentFilename
+ * @param {string} path
  */
 Require.prototype.requireModule = function(parentFilename, path) {
-  const filename = this.resolve(parentFilename, path);
+  const dirname = this.Gio.File.new_for_path(parentFilename).get_parent().get_path();
+  const filename = this.resolve(dirname, path);
 
   if (this.cache[filename]) {
     return this.cache[filename].exports;
