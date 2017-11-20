@@ -28,6 +28,18 @@ declare namespace imports {
         REGULAR: 1,
         DIRECTORY: 2
       }
+    },
+
+    Gtk: {
+      [key: string]: any,
+      
+      DestDefaults: {
+        ALL: 7
+      },
+
+      ReliefStyle: {
+        NONE: 2
+      }
     }
   };
 
