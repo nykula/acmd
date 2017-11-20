@@ -294,7 +294,7 @@ Require.prototype.REQUIRE = function(X, Y) {
   }
 
   if (X.slice(0, 2) === "./" || X[0] === "/" || X.slice(0, 3) === "../") {
-    const result = this.LOAD_AS_FILE(`${Y}/${X}`) || this.LOAD_AS_DIRECTORY(`${Y}/${X}`);
+    const result = this.LOAD_AS_FILE(this.JOIN(Y, X)) || this.LOAD_AS_DIRECTORY(this.JOIN(Y, X));
 
     if (result) {
       return result;
@@ -328,12 +328,12 @@ Require.prototype.LOAD_AS_FILE = function(X) {
 };
 
 Require.prototype.LOAD_INDEX = function(X) {
-  if (this.IS_FILE(`${X}/index.js`)) {
-    return `${X}/index.js`;
+  if (this.IS_FILE(this.JOIN(X, "index.js"))) {
+    return this.JOIN(X, "index.js");
   }
 
-  if (this.IS_FILE(`${X}/index.json`)) {
-    return `${X}/index.json`;
+  if (this.IS_FILE(this.JOIN(X, "index.json"))) {
+    return this.JOIN(X, "index.json");
   }
 };
 
@@ -341,9 +341,9 @@ Require.prototype.LOAD_INDEX = function(X) {
  * @param {string} X
  */
 Require.prototype.LOAD_AS_DIRECTORY = function(X) {
-  if (this.IS_FILE(`${X}/package.json`)) {
-    const contents = String(this.GLib.file_get_contents(`${X}/package.json`)[1]);
-    const M = `${X}/${JSON.parse(contents).main}`;
+  if (this.IS_FILE(this.JOIN(X, "package.json"))) {
+    const contents = String(this.GLib.file_get_contents(this.JOIN(X, "package.json"))[1]);
+    const M = this.JOIN(X, JSON.parse(contents).main);
     const result = this.LOAD_AS_FILE(M) || this.LOAD_INDEX(M);
 
     if (result) {
@@ -362,7 +362,7 @@ Require.prototype.LOAD_NODE_MODULES = function(X, START) {
   const DIRS = this.NODE_MODULES_PATHS(START);
 
   for (const DIR of DIRS) {
-    const result = this.LOAD_AS_FILE(`${DIR}/${X}`) || this.LOAD_AS_DIRECTORY(`${DIR}/${X}`);
+    const result = this.LOAD_AS_FILE(this.JOIN(DIR, X)) || this.LOAD_AS_DIRECTORY(this.JOIN(DIR, X));
 
     if (result) {
       return result;
@@ -382,7 +382,7 @@ Require.prototype.NODE_MODULES_PATHS = function(START) {
 
   while (I >= 0) {
     if (PARTS[I] !== "node_modules") {
-      DIRS.push(PARTS.slice(0, I + 1).concat("node_modules").join("/"));
+      DIRS.push(PARTS.slice(0, I + 1).concat("node_modules").reduce(this.JOIN));
     }
 
     I = I - 1;
@@ -415,6 +415,14 @@ Require.prototype.IS_FILE = function(X) {
  */
 Require.prototype.DIRNAME = function(X) {
   return this.Gio.file_new_for_path(X).get_parent().get_path();
+};
+
+/**
+ * @param {string} X
+ * @param {string} Y
+ */
+Require.prototype.JOIN = function(X, Y) {
+  return this.Gio.file_new_for_path(X).resolve_relative_path(Y).get_path();
 };
 
 /**
