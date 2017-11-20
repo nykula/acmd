@@ -251,6 +251,15 @@ Require.prototype.require = function() {
     },
   });
 
+  this.REQUIRE = memoize(this.REQUIRE);
+  this.LOAD_AS_FILE = memoize(this.LOAD_AS_FILE);
+  this.LOAD_INDEX = memoize(this.LOAD_INDEX);
+  this.LOAD_AS_DIRECTORY = memoize(this.LOAD_AS_DIRECTORY);
+  this.LOAD_NODE_MODULES = memoize(this.LOAD_NODE_MODULES);
+  this.NODE_MODULES_PATHS = memoize(this.NODE_MODULES_PATHS);
+  this.IS_FILE = memoize(this.IS_FILE);
+  this.DIRNAME = memoize(this.DIRNAME);
+
   this.Fun = require("./Fun").default;
 
   // exports.Require = Require; // FIXME
@@ -526,3 +535,43 @@ Require.prototype.requireModule = function(parentFilename, path) {
 
   return module.exports;
 };
+
+/**
+ * Caches results of unary or binary function.
+ *
+ * @param {(arg1: any, arg2?: any) => any} fun
+ * @param {({ [key: string]: any })=} cache
+ */
+function memoize(fun, cache) {
+  if (!cache) {
+    cache = {};
+  }
+
+  if (fun.length === 1) {
+    return (arg) => {
+      if (cache[arg]) {
+        return cache[arg];
+      }
+
+      const result = fun(arg);
+      cache[arg] = result;
+      return result;
+    };
+  }
+
+  return (arg1, arg2) => {
+    if (cache[arg1] && cache[arg1][arg2]) {
+      return cache[arg1][arg2];
+    }
+
+    const result = fun(arg1, arg2);
+
+    if (!cache[arg1]) {
+      cache[arg1] = {};
+    }
+
+    cache[arg1][arg2] = result;
+
+    return result;
+  };
+}
