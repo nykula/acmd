@@ -23,12 +23,6 @@ function Require(
   }
 
   /**
-   * Filenames, indexed by dirname and relative path.
-   * @type {{ [dirname: string]: { [path: string]: string } }}
-   */
-  this.resolvedPaths = {};
-
-  /**
    * Object where filenames of the modules that have ever been required are keys.
    */
   this.filenames = {};
@@ -418,21 +412,7 @@ Require.prototype.JOIN = function(X, Y) {
  * @param {string} path
  */
 Require.prototype.resolve = function(dirname, path) {
-  const cache = this.resolvedPaths[dirname];
-
-  if (cache && cache[path]) {
-      return cache[path];
-  }
-
-  const resolvedPath = this.REQUIRE(path, dirname);
-
-  if (!this.resolvedPaths[dirname]) {
-    this.resolvedPaths[dirname] = {};
-  }
-
-  this.resolvedPaths[dirname][path] = resolvedPath;
-
-  return resolvedPath;
+  return this.REQUIRE(path, dirname);
 };
 
 /**
