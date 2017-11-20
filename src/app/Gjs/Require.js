@@ -286,7 +286,7 @@ Require.prototype.REQUIRE = function(X, Y) {
     return result;
   }
 
-  throw new Error("Module not found: " + path);
+  throw new Error("Module not found: " + Y);
 };
 
 /**
@@ -355,6 +355,7 @@ Require.prototype.LOAD_NODE_MODULES = function(X, START) {
 Require.prototype.NODE_MODULES_PATHS = function(START) {
   const PARTS = START.split("/");
   let I = PARTS.length - 1;
+  PARTS[0] = "/";
 
   /** @type {string[]} */
   const DIRS = [];
