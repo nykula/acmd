@@ -98,7 +98,7 @@ Require.prototype.accept = function(parentFilename, path, callback) {
       });
 
       isVerifyingChange = false;
-    }, null);
+    });
   };
 
   this.flatten(filename).forEach(_filename => {
