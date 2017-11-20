@@ -265,21 +265,6 @@ Require.prototype.require = function() {
   // exports.Require = Require; // FIXME
 };
 
-/** @type {{ [location: string]: number }} */
-let perf = {}; // FIXME: Delete.
-
-const reportPerf = function() {
-  const data = Object.keys(perf)
-    .map(location => ({
-      location,
-      time: perf[location],
-    }))
-    .sort((a, b) => b.time - a.time)
-    .slice(0, 10);
-
-  print(JSON.stringify(data));
-};
-
 /**
  * Require(X) from module at path Y.
  *
@@ -433,16 +418,10 @@ Require.prototype.JOIN = function(X, Y) {
  * @param {string} path
  */
 Require.prototype.resolve = function(dirname, path) {
-  const start = Date.now();
   const cache = this.resolvedPaths[dirname];
 
-  if (cache) {
-    if (cache[path]) {
-      perf[cache[path]] = (perf[cache[path]] || 0) + Date.now() - start;
-      reportPerf();
-
+  if (cache && cache[path]) {
       return cache[path];
-    }
   }
 
   const resolvedPath = this.REQUIRE(path, dirname);
@@ -452,9 +431,6 @@ Require.prototype.resolve = function(dirname, path) {
   }
 
   this.resolvedPaths[dirname][path] = resolvedPath;
-
-  perf[resolvedPath] = (perf[resolvedPath] || 0) + Date.now() - start;
-  reportPerf();
 
   return resolvedPath;
 };
