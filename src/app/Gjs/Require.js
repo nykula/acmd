@@ -253,6 +253,7 @@ Require.prototype.require = function() {
   this.NODE_MODULES_PATHS = memoize(this.NODE_MODULES_PATHS);
   this.IS_FILE = memoize(this.IS_FILE);
   this.DIRNAME = memoize(this.DIRNAME);
+  this.JOIN = memoize(this.JOIN);
 
   this.Fun = require("./Fun").default;
 
@@ -514,7 +515,7 @@ function memoize(fun, cache) {
 
   if (fun.length === 1) {
     return (arg) => {
-      if (cache[arg]) {
+      if (arg in cache) {
         return cache[arg];
       }
 
@@ -525,7 +526,7 @@ function memoize(fun, cache) {
   }
 
   return (arg1, arg2) => {
-    if (cache[arg1] && cache[arg1][arg2]) {
+    if (cache[arg1] && arg2 in cache[arg1]) {
       return cache[arg1][arg2];
     }
 

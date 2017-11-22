@@ -1,4 +1,3 @@
-const groupBy = require("lodash/groupBy");
 const throttle = require("lodash/throttle");
 const perf = {};
 
