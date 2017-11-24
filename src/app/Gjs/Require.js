@@ -433,12 +433,16 @@ Require.prototype.requireClosure = function(parentFilename, path) {
     return this.cache[filename].exports;
   }
 
-  const contents = String(this.GLib.file_get_contents(filename)[1]);
+  let contents = String(this.GLib.file_get_contents(filename)[1]);
   const module = this.getOrCreate(filename);
 
   const require = this.requireModule.bind(null, filename);
   require.cache = this.cache;
   require.resolve = this.resolve.bind(null, dirname);
+
+  if (contents.indexOf("//# sourceURL=") === -1) {
+    contents += `\n//# sourceURL=${filename}`;
+  }
 
   this.Fun("exports", "require", "module", "__filename", "__dirname",
     contents,
@@ -474,6 +478,11 @@ Require.prototype.requireModule = function(parentFilename, path) {
       this.dependencies[filename].splice(0);
     }
 
+    return this.requireClosure(parentFilename, path);
+  }
+
+  if (this.GLib.getenv("NODE_ENV") === "production" && this.Fun) {
+    // Faster than importing dirs.
     return this.requireClosure(parentFilename, path);
   }
 
