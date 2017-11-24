@@ -13,10 +13,10 @@ Make sure you have a GNOME JavaScript runtime, v1.50 or newer, and PyGTK:
 sudo apt update && sudo apt install gjs python-gtk2
 ```
 
-Then install with [Yarn](https://yarnpkg.com/en/docs/install#linux-tab):
+Then install with [npm](https://nodejs.org/en/download/):
 
 ```bash
-yarn global add acme-commander
+npm i -g acme-commander
 ```
 
 Run:
@@ -27,7 +27,7 @@ acme-commander
 
 ## Development
 
-Also install [Node.js](https://nodejs.org/en/download/package-manager/) with npm. Get started:
+Also install [Yarn](https://yarnpkg.com/en/docs/install#linux-tab). Get started:
 
 ```bash
 # clone repo
