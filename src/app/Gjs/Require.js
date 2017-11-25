@@ -281,13 +281,13 @@ Require.prototype.REQUIRE = function(X, Y) {
     }
   }
 
-  const result = this.LOAD_NODE_MODULES(X, this.DIRNAME(Y));
+  const result = this.LOAD_NODE_MODULES(X, Y);
 
   if (result) {
     return result;
   }
 
-  throw new Error("Module not found: " + Y);
+  throw new Error("Module not found: " + X);
 };
 
 /**
