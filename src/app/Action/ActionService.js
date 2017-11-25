@@ -157,25 +157,21 @@ ActionService.prototype.createTab = function() {
   const panelId = this.panelService.activeId;
   const tabId = this.panelService.getNextTabId();
   const panel = this.panelService.entities[panelId];
-  const prevTabId = panel.activeTabId;
+  const activeTab = this.tabService.entities[panel.activeTabId];
 
-  this.tabService.entities = (tabs => {
-    tabs[tabId] = {
-      cursor: 0,
-      files: observable.shallowArray(tabs[prevTabId].files.slice()),
-      location: tabs[prevTabId].location,
-      selected: [],
-      sortedBy: tabs[prevTabId].sortedBy,
-    };
+  const entities = {};
+  entities[tabId] = {
+    cursor: activeTab.cursor,
+    files: observable.shallowArray(activeTab.files.slice()),
+    location: activeTab.location,
+    selected: [],
+    sortedBy: activeTab.sortedBy,
+  };
+  extendObservable(this.tabService.entities, entities);
 
-    return tabs;
-  })(assign({}, this.tabService.entities));
-
-  extendObservable(this.tabService, (() => {
-    const visibleFiles = {};
-    visibleFiles[tabId] = computed(this.tabService.getVisibleFiles.bind(this.tabService, tabId));
-    return visibleFiles;
-  })());
+  const visibleFiles = {};
+  visibleFiles[tabId] = computed(this.tabService.getVisibleFiles.bind(this.tabService, tabId));
+  extendObservable(this.tabService.visibleFiles, visibleFiles);
 
   panel.tabIds.push(tabId);
   panel.activeTabId = tabId;

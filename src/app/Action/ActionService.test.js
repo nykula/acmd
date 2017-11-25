@@ -3,6 +3,7 @@ const expect = require("expect");
 const noop = require("lodash/noop");
 const { GioService } = require("../Gio/GioService");
 const { PanelService } = require("../Panel/PanelService");
+const { TabService } = require("../Tab/TabService");
 const { ActionService } = require("./ActionService");
 
 describe("ActionService", () => {
@@ -247,38 +248,25 @@ describe("ActionService", () => {
   });
 
   it("creates tab, cloning active tab in active panel", () => {
-    /** @type {*} */
-    const tabService = {
-      entities: {
-        "0": {
-          cursor: 1,
-          files: [{ name: "foo" }, { name: "bar" }],
-          location: "file:///",
-          selected: [],
-          sortedBy: "-date",
-        },
-        "1": {
-          cursor: 0,
-          files: [{ name: "foo" }, { name: "bar" }],
-          location: "file:///",
-          selected: [],
-          sortedBy: "name",
-        },
-      },
-      getVisibleFiles: (tabId) => tabService.entities[tabId].files,
+    /** @type {any[]} */
+    const files = [{ name: "foo" }, { name: "bar" }];
+
+    const tabService = new TabService();
+    tabService.entities[0] = {
+      cursor: 1,
+      files,
+      location: "file:///",
+      selected: [],
+      sortedBy: "-date",
     };
 
     const panelService = new PanelService(tabService);
     panelService.activeId = 0;
-    panelService.entities = {
-      "0": {
-        activeTabId: 0,
-        tabIds: [0],
-      },
-      "1": {
-        activeTabId: 1,
-        tabIds: [1],
-      },
+    panelService.entities[0] = {
+      activeTabId: 0,
+      history: [],
+      now: 0,
+      tabIds: [0],
     };
 
     const actionService = new ActionService();
@@ -286,39 +274,17 @@ describe("ActionService", () => {
     actionService.tabService = tabService;
     actionService.createTab();
 
-    expect(panelService.entities).toMatch({
-      "0": {
-        activeTabId: 2,
-        tabIds: [0, 2],
-      },
-      "1": {
-        activeTabId: 1,
-        tabIds: [1],
-      },
+    expect(panelService.entities[0]).toMatch({
+      activeTabId: 2,
+      tabIds: [0, 2],
     });
 
-    expect(tabService.entities).toMatch({
-      "0": {
-        cursor: 1,
-        files: [{ name: "foo" }, { name: "bar" }],
-        location: "file:///",
-        selected: [],
-        sortedBy: "-date",
-      },
-      "1": {
-        cursor: 0,
-        files: [{ name: "foo" }, { name: "bar" }],
-        location: "file:///",
-        selected: [],
-        sortedBy: "name",
-      },
-      "2": {
-        cursor: 0,
-        files: [{ name: "foo" }, { name: "bar" }],
-        location: "file:///",
-        selected: [],
-        sortedBy: "-date",
-      },
+    expect(JSON.parse(JSON.stringify(tabService.entities[2]))).toMatch({
+      cursor: 1,
+      files,
+      location: "file:///",
+      selected: [],
+      sortedBy: "-date",
     });
   });
 
