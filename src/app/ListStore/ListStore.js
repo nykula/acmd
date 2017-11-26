@@ -1,8 +1,7 @@
 const Gio = imports.gi.Gio;
-const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
+const { EllipsizeMode } = imports.gi.Pango;
 const Icon = require("../Icon/Icon").default;
-const Pango = imports.gi.Pango;
 
 const CHECKBOX = exports.CHECKBOX = "CHECKBOX";
 const GICON = exports.GICON = "GICON";
@@ -38,10 +37,10 @@ const setCols = exports.setCols = function(store, cols) {
     }
 
     if (col.type === CHECKBOX) {
-      return GObject.TYPE_BOOLEAN;
+      return Boolean;
     }
 
-    return GObject.TYPE_STRING;
+    return String;
   }));
 };
 
@@ -82,7 +81,7 @@ exports.configureColumn = function(node, col, i) {
   if (col.type === TEXT) {
     attribute = "text";
     renderer = new Gtk.CellRendererText({
-      ellipsize: Pango.EllipsizeMode.MIDDLE,
+      ellipsize: EllipsizeMode.MIDDLE,
     });
   }
 

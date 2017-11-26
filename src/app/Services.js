@@ -1,6 +1,5 @@
-const Gdk = imports.gi.Gdk;
-const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
+const { Window } = Gtk;
 const { ActionService } = require("./Action/ActionService");
 const { DialogService } = require("./Dialog/DialogService");
 const { FileService } = require("./File/FileService");
@@ -13,13 +12,13 @@ const { PanelService } = require("./Panel/PanelService");
 const { TabService } = require("./Tab/TabService");
 
 /**
- * @param {any} win
+ * @param {Window} win
  */
 function Services(win) {
   this.win = win;
 
-  this.dialogService = new DialogService(Gtk, this.win);
-  this.gioService = new GioService(Gio, Gtk);
+  this.dialogService = new DialogService(this.win);
+  this.gioService = new GioService();
   this.logService = new LogService();
   this.placeService = new PlaceService();
   this.refstore = new Refstore();
@@ -33,7 +32,6 @@ function Services(win) {
   this.actionService = new ActionService(
     this.dialogService,
     this.fileService,
-    Gdk,
     this.gioService,
     Gtk,
     this.logService,

@@ -1,4 +1,4 @@
-const Gtk = imports.gi.Gtk;
+const { ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
@@ -106,13 +106,13 @@ Mount.prototype.render = function() {
       h("box", [
         h("button", {
           on_clicked: this.handleRoot,
-          relief: Gtk.ReliefStyle.NONE,
+          relief: ReliefStyle.NONE,
         }, [
           h("label", { label: "\\" }),
         ]),
         h("button", {
           on_clicked: this.handleLevelUp,
-          relief: Gtk.ReliefStyle.NONE,
+          relief: ReliefStyle.NONE,
         }, [
           h("label", { label: ".." }),
         ]),

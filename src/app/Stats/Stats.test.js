@@ -21,12 +21,14 @@ describe("Stats", () => {
 });
 
 function sampleProps() {
+  /** @type {*} */
   const panelService = {
     entities: {
       "0": { activeTabId: 0 },
     },
   };
 
+  /** @type {*} */
   const tabService = {
     entities: {
       "0": {

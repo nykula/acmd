@@ -4,6 +4,7 @@ const { Services } = require("./Services");
 
 describe("App", () => {
   it("creates sevices without crashing", () => {
+    /** @type {any} */
     const win = { destroy: noop };
     const services = new Services(win);
     services.win.destroy();

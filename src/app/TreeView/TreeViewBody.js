@@ -1,25 +1,9 @@
+const { ListStore } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { TreeViewRow } = require("../../domain/TreeView/TreeViewRow");
 const autoBind = require("../Gjs/autoBind").default;
 const { setValue } = require("../ListStore/ListStore");
-
-function Col() {
-  this.name = "";
-  this.type = "";
-}
-
-/**
- * @typedef GtkListStore
- * @property {() => any} append
- * @property {() => void} clear
- * @property {(iter: any) => string} get_string_from_iter
- * @property {Col[]} cols Non-standard property.
- * @property {(iter: any, sibling: any | null) => void} move_before
- * @property {(iter: any) => void} remove
- * @property {(types: any[]) => void} set_column_types
- * @property {(iter: any, column: number, value: any) => void} set_value
- */
 
 /**
  * @typedef IProps
@@ -40,10 +24,10 @@ TreeViewBody.prototype.props = undefined;
 /** @type {TreeViewRow[]} */
 TreeViewBody.prototype.rows = undefined;
 
-/** @type {GtkListStore} */
+/** @type {ListStore} */
 TreeViewBody.prototype._store = undefined;
 
-/** @type {{ parentNode: { get_model(): GtkListStore, set_model(store: GtkListStore): void } }} */
+/** @type {{ parentNode: { get_model(): ListStore, set_model(store: ListStore): void } }} */
 TreeViewBody.prototype.stub = undefined;
 
 TreeViewBody.prototype.componentDidUpdate = function() {
@@ -133,7 +117,7 @@ TreeViewBody.prototype.clear = function() {
 };
 
 /**
- * @param {GtkListStore} store
+ * @param {ListStore} store
  */
 TreeViewBody.prototype.setStore = function(store) {
   this._store = store;

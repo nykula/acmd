@@ -49,6 +49,7 @@ PlacesEntry.prototype.handleClicked = function() {
   const { place } = this.props;
   const isActive = place.rootUri === this.activeUri();
 
+  /** @type {any} FIXME */
   const menu = new Gtk.Menu();
   let item;
 

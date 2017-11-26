@@ -14,7 +14,7 @@ const { TabService } = require("../Tab/TabService");
  * @property {PanelService} panelService
  * @property {TabService} tabService
  *
- * @param {IProps} param0
+ * @param {IProps} props
  */
 function Stats(props) {
   Component.call(this, props);

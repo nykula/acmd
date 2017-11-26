@@ -1,4 +1,4 @@
-const GLib = imports.gi.GLib;
+const { PRIORITY_DEFAULT } = imports.gi.GLib;
 const expect = require("expect");
 const gioAsync = require("./gioAsync").default;
 
@@ -8,7 +8,7 @@ describe("gioAsync", () => {
 
     const existingDir = new GioFile(true);
     gioAsync(existingDir, "make_directory",
-      GLib.PRIORITY_DEFAULT,
+      PRIORITY_DEFAULT,
       null,
       (error, result) => {
         expect(error.message).toBe("Directory exists.");
@@ -18,7 +18,7 @@ describe("gioAsync", () => {
 
     const dir = new GioFile(false);
     gioAsync(dir, "make_directory",
-      GLib.PRIORITY_DEFAULT,
+      PRIORITY_DEFAULT,
       null,
       (error, result) => {
         expect(error).toNotExist();

@@ -1,4 +1,4 @@
-const Gtk = imports.gi.Gtk;
+const { StateFlags } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
@@ -45,9 +45,9 @@ ToggleButton.prototype.ref = function(node) {
 
 ToggleButton.prototype.resetActive = function() {
   if (this.node && this.props.active) {
-    this.node.set_state_flags(Gtk.StateFlags.CHECKED, false);
+    this.node.set_state_flags(StateFlags.CHECKED, false);
   } else if (this.node) {
-    this.node.unset_state_flags(Gtk.StateFlags.CHECKED);
+    this.node.unset_state_flags(StateFlags.CHECKED);
   }
 };
 

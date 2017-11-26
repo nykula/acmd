@@ -1,3 +1,4 @@
+const { ComboBox } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const isEqual = require("lodash/isEqual");
@@ -13,10 +14,6 @@ const ListStore = require("../ListStore/ListStore");
  * @property {any[]} rows
  * @property {string} value
  *
- * @typedef INode
- * @property {Function} set_active
- * @property {Function} set_model
- *
  * @param {IProps} props
  */
 function Select(props) {
@@ -27,7 +24,7 @@ function Select(props) {
 Select.prototype = Object.create(Component.prototype);
 
 /**
- * @type {INode}
+ * @type {ComboBox}
  */
 Select.prototype.node = undefined;
 
@@ -37,15 +34,18 @@ Select.prototype.node = undefined;
 Select.prototype.props = undefined;
 
 /**
- * @param {INode} node
+ * @param {ComboBox} node
  */
 Select.prototype.init = function(node) {
   if (!node || this.node) {
     return;
   }
 
+  /** @type {any} FIXME */
+  const store = ListStore.fromProps(this.props);
+
   this.node = node;
-  node.set_model(ListStore.fromProps(this.props));
+  node.set_model(store);
   this.props.cols.forEach((col, i) => ListStore.configureColumn(node, col, i));
   this.updateActive();
   this.props.on_layout(node);
@@ -59,7 +59,10 @@ Select.prototype.shouldComponentUpdate = function(nextProps) {
 };
 
 Select.prototype.componentDidUpdate = function() {
-  this.node.set_model(ListStore.fromProps(this.props));
+  /** @type {any} FIXME */
+  const store = ListStore.fromProps(this.props);
+
+  this.node.set_model(store);
   this.updateActive();
 };
 

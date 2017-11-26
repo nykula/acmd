@@ -1,4 +1,4 @@
-const Pango = imports.gi.Pango;
+const { EllipsizeMode } = imports.gi.Pango;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
@@ -42,7 +42,7 @@ Prompt.prototype.render = function() {
     h("box", { expand: false }, [
       h("box", { border_width: 4 }),
       h("label", {
-        ellipsize: Pango.EllipsizeMode.MIDDLE,
+        ellipsize: EllipsizeMode.MIDDLE,
         label: location.replace(/^file:\/\//, "") + "$",
       }),
       h("box", { border_width: 4 }),

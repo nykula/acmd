@@ -25,11 +25,6 @@ function removeAllChildren() {
   });
 }
 
-/**
- * @param {any} GLib
- * @param {any} Gtk
- * @param {any} _window
- */
 function GtkDom(GLib = imports.gi.GLib, Gtk = imports.gi.Gtk, _window = window) {
   this.app = this.app.bind(this);
   this.createElement = this.createElement.bind(this);
@@ -226,6 +221,7 @@ GtkDom.prototype.getEnv = function() {
 GtkDom.prototype.require = function() {
   this.Gtk.init(null);
 
+  /** @type {any} */
   const window = this.window;
   window.document = window.global = window;
   window.createElement = this.createElement;

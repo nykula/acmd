@@ -1,7 +1,7 @@
-const Gdk = imports.gi.Gdk;
-const Gio = imports.gi.Gio;
+const { Event, Gravity, Rectangle } = imports.gi.Gdk;
+const { FileType } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const { IconSize } = imports.gi.Gtk;
+const { IconSize, Window } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
 const { action, computed, extendObservable, observable, runInAction } = require("mobx");
@@ -23,7 +23,6 @@ const { TabService } = require("../Tab/TabService");
 function ActionService(
   /** @type {DialogService} */ dialogService,
   /** @type {FileService} */   fileService,
-  /** @type {any} */           Gdk,
   /** @type {GioService} */    gioService,
   /** @type {any} */           Gtk,
   /** @type {LogService} */    logService,
@@ -31,13 +30,12 @@ function ActionService(
   /** @type {PanelService} */  panelService,
   /** @type {Refstore} */      refstore,
   /** @type {TabService} */    tabService,
-  /** @type {any} */           win,
+  /** @type {Window} */        win,
   /** @type {WorkerService} */ workerService,
 ) {
   // tslint:enable align
   this.dialogService = dialogService;
   this.fileService = fileService;
-  this.Gdk = Gdk;
   this.gioService = gioService;
   this.Gtk = Gtk;
   this.logService = logService;
@@ -71,7 +69,7 @@ ActionService.prototype.activated = function(props) {
 
   const uri = location.replace(/\/?$/, "") + "/" + file.name;
 
-  if (file.fileType !== Gio.FileType.DIRECTORY) {
+  if (file.fileType !== FileType.DIRECTORY) {
     this.gioService.getHandlers(uri, (error, result) => {
       if (error) {
         this.dialogService.alert(error.message, noop);
@@ -178,7 +176,7 @@ ActionService.prototype.createTab = function() {
 };
 
 /**
- * @param {{ keyEvent?: any, mouseEvent?: any, rect?: any, win?: any }} props
+ * @param {{ keyEvent?: Event, mouseEvent?: Event, rect?: Rectangle, win?: Window }} props
  */
 ActionService.prototype.ctxMenu = function(props) {
   const { keyEvent, mouseEvent, rect, win } = props;
@@ -203,8 +201,8 @@ ActionService.prototype.ctxMenu = function(props) {
     if (mouseEvent) {
       menu.popup_at_pointer(mouseEvent);
     } else {
-      const rectAnchor = Gdk.Gravity.SOUTH_EAST;
-      const menuAnchor = Gdk.Gravity.STATIC;
+      const rectAnchor = Gravity.SOUTH_EAST;
+      const menuAnchor = Gravity.STATIC;
       menu.popup_at_rect(win, rect, rectAnchor, menuAnchor, keyEvent);
     }
   });

@@ -1,4 +1,3 @@
-const Gio = imports.gi.Gio;
 const expect = require("expect");
 const h = require("inferno-hyperscript").default;
 const assign = require("lodash/assign");

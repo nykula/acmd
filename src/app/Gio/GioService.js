@@ -1,5 +1,19 @@
-const { FileQueryInfoFlags, SubprocessFlags } = imports.gi.Gio;
-const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
+const {
+  AppInfo,
+  AppInfoCreateFlags,
+  FileCreateFlags,
+  FileQueryInfoFlags,
+  Mount,
+  MountMountFlags,
+  MountOperationResult,
+  MountUnmountFlags,
+  SubprocessFlags,
+  Volume,
+  VolumeMonitor,
+} = Gio;
+const { MAXINT32, PRIORITY_DEFAULT } = imports.gi.GLib;
+const { MountOperation } = imports.gi.Gtk;
 const { map, waterfall } = require("async");
 const find = require("lodash/find");
 const uniqBy = require("lodash/uniqBy");
@@ -12,22 +26,19 @@ const gioAsync = require("./gioAsync").default;
 
 /**
  * Let the front-end use drives.
- *
- * @param {any} Gio
- * @param {any} Gtk
  */
-function GioService(Gio, Gtk) {
+function GioService(_Gio = Gio, _MountOperation = MountOperation) {
   autoBind(this, GioService.prototype, __filename);
 
   this.fileAttributes = "standard::*,time::*,unix::*";
-  this.Gio = Gio;
-  this.Gtk = Gtk;
+  this.Gio = _Gio;
+  this.MountOperation = _MountOperation;
   this.placeAttributes = "filesystem::*";
 }
 
 /**
  * Native volume monitor.
- * @type {{ get_connected_drives: () => any[], get_mounts: () => any[], get_volumes: () => any[] }}
+ * @type {VolumeMonitor}
  */
 GioService.prototype.gVolMon = undefined;
 
@@ -39,7 +50,7 @@ GioService.prototype.ensureGVolMon = function() {
 
 /**
  * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Drive.html
- * @param {(error: null, places: Place[]) => void} callback
+ * @param {(error: Error | undefined, places: Place[]) => void} callback
  */
 GioService.prototype.getPlaces = function(callback) {
   this.ensureGVolMon();
@@ -48,7 +59,7 @@ GioService.prototype.getPlaces = function(callback) {
   let places = [];
 
   const fromDrives = (_callback) => {
-    /** @type {any[]} */
+    /** @type {Volume[]} */
     const gVolumes = [];
 
     for (const gDrive of this.gVolMon.get_connected_drives()) {
@@ -92,7 +103,7 @@ GioService.prototype.getPlaces = function(callback) {
   const fromFilesystem = (_callback) => {
     gioAsync(this.Gio.File.new_for_uri("file:///"), "query_filesystem_info",
       this.placeAttributes,
-      GLib.PRIORITY_DEFAULT,
+      PRIORITY_DEFAULT,
       null,
       (_, rootInfo) => {
         places.unshift({
@@ -132,9 +143,9 @@ GioService.prototype.mount = function(props, callback) {
       return _gVolume.get_identifier(identifier.type) === identifier.value;
     });
 
-    mountOperation = new this.Gtk.MountOperation();
+    mountOperation = new this.MountOperation();
 
-    gVolume.mount(this.Gio.MountMountFlags.NONE, mountOperation, null, () => {
+    gVolume.mount(MountMountFlags.NONE, mountOperation, null, () => {
       callback();
     });
   } else {
@@ -153,15 +164,15 @@ GioService.prototype.mount = function(props, callback) {
         mountOperation.set_domain(host);
         mountOperation.set_username(username);
         mountOperation.set_password(password);
-        mountOperation.reply(this.Gio.MountOperationResult.HANDLED);
+        mountOperation.reply(MountOperationResult.HANDLED);
       });
     } else {
-      mountOperation = new this.Gtk.MountOperation();
+      mountOperation = new this.MountOperation();
     }
 
     uri.set("password", "");
     const gFile = this.Gio.File.new_for_uri(uri.toString());
-    gFile.mount_enclosing_volume(this.Gio.MountMountFlags.NONE, mountOperation, null, (_, result) => {
+    gFile.mount_enclosing_volume(MountMountFlags.NONE, mountOperation, null, (_, result) => {
       try {
         gFile.mount_enclosing_volume_finish(result);
       } catch (error) {
@@ -180,13 +191,13 @@ GioService.prototype.unmount = function(uri, callback) {
   const gFile = this.Gio.File.new_for_uri(uri);
   const gMount = gFile.find_enclosing_mount(null);
 
-  gMount.unmount(this.Gio.MountUnmountFlags.NONE, null, () => {
+  gMount.unmount(MountUnmountFlags.NONE, null, () => {
     callback();
   });
 };
 
 /**
- * @param {any} gMount
+ * @param {Mount} gMount
  * @param {(error: Error, place: Place) => void} callback
  */
 GioService.prototype._serializeMount = function(gMount, callback) {
@@ -194,7 +205,7 @@ GioService.prototype._serializeMount = function(gMount, callback) {
 
   gioAsync(root, "query_filesystem_info",
     this.placeAttributes,
-    GLib.PRIORITY_DEFAULT,
+    PRIORITY_DEFAULT,
     null,
     (_, rootInfo) => {
       /** @type {Place} */
@@ -219,7 +230,7 @@ GioService.prototype.launch = function(handler, uris) {
   const gAppInfo = this.Gio.AppInfo.create_from_commandline(
     handler.commandline,
     null,
-    this.Gio.AppInfoCreateFlags.NONE,
+    AppInfoCreateFlags.NONE,
   );
 
   const gFiles = uris.map(x => this.Gio.File.new_for_uri(x));
@@ -234,14 +245,14 @@ GioService.prototype.launch = function(handler, uris) {
  */
 GioService.prototype.ls = function(uri, callback) {
   let files = [];
-  const dir = this.Gio.file_new_for_uri(uri);
+  const dir = this.Gio.File.new_for_uri(uri);
   const parent = dir.get_parent();
 
   const handleRequest = callback => {
     gioAsync(dir, "query_info",
       this.fileAttributes,
-      this.Gio.FileQueryInfoFlags.NONE,
-      GLib.PRIORITY_DEFAULT,
+      FileQueryInfoFlags.NONE,
+      PRIORITY_DEFAULT,
       null,
       callback,
     );
@@ -262,8 +273,8 @@ GioService.prototype.ls = function(uri, callback) {
 
     gioAsync(parent, "query_info",
       this.fileAttributes,
-      this.Gio.FileQueryInfoFlags.NONE,
-      GLib.PRIORITY_DEFAULT,
+      FileQueryInfoFlags.NONE,
+      PRIORITY_DEFAULT,
       null,
       callback,
     );
@@ -282,8 +293,8 @@ GioService.prototype.ls = function(uri, callback) {
 
     gioAsync(dir, "enumerate_children",
       this.fileAttributes,
-      this.Gio.FileQueryInfoFlags.NONE,
-      GLib.PRIORITY_DEFAULT,
+      FileQueryInfoFlags.NONE,
+      PRIORITY_DEFAULT,
       null,
       callback,
     );
@@ -291,8 +302,8 @@ GioService.prototype.ls = function(uri, callback) {
 
   const handleChildren = (enumerator, callback) => {
     gioAsync(enumerator, "next_files",
-      GLib.MAXINT32,
-      GLib.PRIORITY_DEFAULT,
+      MAXINT32,
+      PRIORITY_DEFAULT,
       null,
       callback,
     );
@@ -336,16 +347,16 @@ GioService.prototype.ls = function(uri, callback) {
 /**
  * Gets content type of a given file, and apps that can open it.
  *
- * @param {string} url
+ * @param {string} uri
  * @param {(error: Error, result: { contentType: string, handlers: FileHandler[] }) => void} callback
  */
 GioService.prototype.getHandlers = function(uri, callback) {
-  const file = this.Gio.file_new_for_uri(uri);
+  const file = this.Gio.File.new_for_uri(uri);
 
   gioAsync(file, "query_info",
     this.fileAttributes,
     FileQueryInfoFlags.NONE,
-    GLib.PRIORITY_DEFAULT,
+    PRIORITY_DEFAULT,
     null,
     (error, gFileInfo) => {
       if (error) {
@@ -355,7 +366,7 @@ GioService.prototype.getHandlers = function(uri, callback) {
 
       const contentType = gFileInfo.get_content_type();
 
-      /** @type {any[]} */
+      /** @type {AppInfo[]} */
       const gAppInfos = this.Gio.AppInfo.get_all_for_type(contentType);
 
       const def = this.Gio.AppInfo.get_default_for_type(contentType, false);
@@ -401,8 +412,8 @@ GioService.prototype.getMountUri = function(gFile) {
  * Creates a directory.
  */
 GioService.prototype.mkdir = function(uri, callback) {
-  gioAsync(this.Gio.file_new_for_uri(uri), "make_directory",
-    GLib.PRIORITY_DEFAULT,
+  gioAsync(this.Gio.File.new_for_uri(uri), "make_directory",
+    PRIORITY_DEFAULT,
     null,
     callback,
   );
@@ -413,8 +424,8 @@ GioService.prototype.mkdir = function(uri, callback) {
  */
 GioService.prototype.touch = function(uri, callback) {
   gioAsync(this.Gio.File.new_for_uri(uri), "create",
-    this.Gio.FileCreateFlags.NONE,
-    GLib.PRIORITY_DEFAULT,
+    FileCreateFlags.NONE,
+    PRIORITY_DEFAULT,
     null,
     callback,
   );

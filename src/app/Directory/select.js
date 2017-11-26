@@ -1,5 +1,5 @@
-const assign = require("lodash/assign");
 const Gdk = imports.gi.Gdk;
+const assign = require("lodash/assign");
 const range = require("lodash/range");
 const sortedUniq = require("lodash/sortedUniq");
 const uniqSort = xs => sortedUniq(xs.sort((a, b) => a - b));

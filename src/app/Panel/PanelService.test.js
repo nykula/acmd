@@ -8,9 +8,10 @@ describe("PanelService", () => {
 
     const panelService = new PanelService(tabService);
 
-    panelService.entities = {
+    const entities = {
       "0": { activeTabId: 0 },
     };
+    panelService.entities = entities;
 
     panelService.setActiveTabId({
       id: 0,
@@ -28,12 +29,13 @@ describe("PanelService", () => {
 
     const panelService = new PanelService(tabService);
 
-    panelService.entities = {
+    const entities = {
       "0": {
         activeTabId: 0,
         tabIds: [0, 2, 8],
       },
     };
+    panelService.entities = entities;
 
     panelService.nextTab(0);
     expect(panelService.entities[0].activeTabId).toBe(2);
@@ -51,12 +53,13 @@ describe("PanelService", () => {
 
     const panelService = new PanelService(tabService);
 
-    panelService.entities = {
+    const entities = {
       "0": {
         activeTabId: 0,
         tabIds: [0, 2, 8],
       },
     };
+    panelService.entities = entities;
 
     panelService.prevTab(0);
     expect(panelService.entities[0].activeTabId).toBe(8);
@@ -74,7 +77,7 @@ describe("PanelService", () => {
 
     const panelService = new PanelService(tabService);
 
-    panelService.entities = {
+    const entities = {
       "0": {
         activeTabId: 0,
         tabIds: [0],
@@ -84,6 +87,7 @@ describe("PanelService", () => {
         tabIds: [1, 2],
       },
     };
+    panelService.entities = entities;
 
     panelService.removeTab(1);
 

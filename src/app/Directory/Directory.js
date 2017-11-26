@@ -1,5 +1,5 @@
 const Gdk = imports.gi.Gdk;
-const Gtk = imports.gi.Gtk;
+const { DragAction } = Gdk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
@@ -161,7 +161,7 @@ Directory.prototype.handleDrop = function(_node, dragContext, _x, _y, selectionD
   const uris = selectionData.get_uris();
   const { location } = this.tab;
 
-  if (action === Gdk.DragAction.MOVE) {
+  if (action === DragAction.MOVE) {
     this.props.actionService.mv(uris, location);
   } else {
     this.props.actionService.cp(uris, location);
@@ -370,7 +370,7 @@ Directory.prototype.render = function() {
       cols: this.cols,
       cursor,
       cursorCallback: this.handleCursor,
-      dragAction: Gdk.DragAction.COPY + Gdk.DragAction.MOVE,
+      dragAction: DragAction.COPY + DragAction.MOVE,
       keyPressEventCallback: this.handleKeyPressEvent,
       layoutCallback: this.handleLayout,
       on_drag_data_get: this.handleDrag,

@@ -1,4 +1,4 @@
-const Gtk = imports.gi.Gtk;
+const { IconSize, ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
@@ -47,13 +47,13 @@ TabListItem.prototype.render = function() {
       active: active,
       can_focus: false,
       on_clicked: this.handleClicked,
-      relief: Gtk.ReliefStyle.NONE,
+      relief: ReliefStyle.NONE,
     }, [
         h("box", { spacing: 4 }, [
           icon ? (
             h("image", {
               icon_name: icon + "-symbolic",
-              icon_size: Gtk.IconSize.SMALL_TOOLBAR,
+              icon_size: IconSize.SMALL_TOOLBAR,
             })
           ) : null,
           h("label", { label: text }),

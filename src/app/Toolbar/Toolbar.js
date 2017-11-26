@@ -1,4 +1,4 @@
-const Gtk = imports.gi.Gtk;
+const { IconSize, ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
@@ -62,14 +62,14 @@ Toolbar.prototype.render = function() {
             active: !!item.active,
             can_focus: false,
             key: item.icon_name,
-            relief: Gtk.ReliefStyle.NONE,
+            relief: ReliefStyle.NONE,
             on_pressed: "type" in item ? this.handlePressed(item.type) : null,
             sensitive: "sensitive" in item ? item.sensitive : null,
             tooltip_text: item.tooltip_text,
           }, [
             h("image", {
               icon_name: item.icon_name + "-symbolic",
-              icon_size: Gtk.IconSize.SMALL_TOOLBAR,
+              icon_size: IconSize.SMALL_TOOLBAR,
             }),
           ])
         );

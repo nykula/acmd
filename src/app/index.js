@@ -1,7 +1,8 @@
 // Runs the application.
 
+require("ts-for-gjs");
 const GLib = imports.gi.GLib;
-const Gtk = imports.gi.Gtk;
+const { WindowPosition } = imports.gi.Gtk;
 const { render } = require("inferno");
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
@@ -40,7 +41,7 @@ require("./Gjs/GtkDom").app({
     win.default_width = 800;
     win.default_height = 600;
     win.title = title;
-    win.window_position = Gtk.WindowPosition.CENTER;
+    win.window_position = WindowPosition.CENTER;
 
     // Dependency injection container.
     const services = new Services(win);

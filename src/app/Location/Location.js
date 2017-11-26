@@ -1,4 +1,4 @@
-const Pango = imports.gi.Pango;
+const { EllipsizeMode } = imports.gi.Pango;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const h = require("inferno-hyperscript").default;
@@ -90,7 +90,7 @@ Location.prototype.render = function() {
           h("box", { border_width: 2 }),
           h("label", {
             label: label,
-            ellipsize: Pango.EllipsizeMode.MIDDLE,
+            ellipsize: EllipsizeMode.MIDDLE,
           }),
         ]),
       ]),

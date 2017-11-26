@@ -529,6 +529,10 @@ tmatch@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/tmatch/-/tmatch-2.0.1.tgz#0c56246f33f30da1b8d3d72895abaf16660f38cf"
 
+"ts-for-gjs@https://github.com/makepost/ts-for-gjs":
+  version "1.0.0"
+  resolved "https://github.com/makepost/ts-for-gjs#906ef5ef14946d2c62872c8b0ca13043328ae837"
+
 tslib@^1.7.1:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.8.0.tgz#dc604ebad64bcbf696d613da6c954aa0e7ea1eb6"

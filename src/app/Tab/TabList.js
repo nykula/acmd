@@ -10,7 +10,7 @@ const TabListItem = require("./TabListItem").default;
  * @property {number} panelId
  * @property {PanelService} panelService
  *
- * @param {IProps} IProps
+ * @param {IProps} props
  */
 function TabList(props) {
   Component.call(this, props);

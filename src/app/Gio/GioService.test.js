@@ -8,6 +8,7 @@ describe("GioService", () => {
       get_mounts: () => [],
     };
 
+    /** @type {any} */
     const Gio = {
       File: {
         new_for_uri: () => ({
@@ -52,6 +53,7 @@ describe("GioService", () => {
       get_mounts: () => [],
     };
 
+    /** @type {any} */
     const Gio = {
       File: {
         new_for_uri: () => ({
@@ -137,6 +139,7 @@ describe("GioService", () => {
       }],
     };
 
+    /** @type {any} */
     const Gio = {
       File: {
         new_for_uri: () => ({
@@ -201,6 +204,7 @@ describe("GioService", () => {
       }],
     };
 
+    /** @type {any} */
     const Gio = {
       File: {
         new_for_uri: () => ({
@@ -283,18 +287,21 @@ describe("GioService", () => {
       }),
     };
 
+    /** @type {any} */
     const Gio = {
       AppInfo,
 
-      file_new_for_uri: () => ({
-        query_info_async: function() {
-          arguments[arguments.length - 1]();
-        },
+      File: {
+        new_for_uri: () => ({
+          query_info_async: function() {
+            arguments[arguments.length - 1]();
+          },
 
-        query_info_finish: () => ({
-          get_content_type: () => "text/plain",
+          query_info_finish: () => ({
+            get_content_type: () => "text/plain",
+          }),
         }),
-      }),
+      },
     };
 
     const callback = expect.createSpy();

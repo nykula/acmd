@@ -1,4 +1,4 @@
-const Gio = imports.gi.Gio;
+const { FileType } = imports.gi.Gio;
 const expect = require("expect");
 const h = require("inferno-hyperscript").default;
 const assign = require("lodash/assign");
@@ -30,7 +30,7 @@ describe("Directory", () => {
 
       visibleFiles: {
         "0": [{
-          fileType: Gio.FileType.REGULAR,
+          fileType: FileType.REGULAR,
           icon: "some gio icon",
           iconType: "GICON",
           modificationTime: 1490397889,

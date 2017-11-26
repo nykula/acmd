@@ -1,5 +1,6 @@
-const { ModifierType } = imports.gi.Gdk;
+const { ModifierType, Rectangle } = imports.gi.Gdk;
 const Gtk = imports.gi.Gtk;
+const { ListStore, TreeModel } = Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
 const { TreeViewRow } = require("../../domain/TreeView/TreeViewRow");
@@ -7,37 +8,20 @@ const autoBind = require("../Gjs/autoBind").default;
 const KeyListener = require("../Gjs/KeyListener").default;
 const { configureColumn, setCols, setValue } = require("../ListStore/ListStore");
 
-function Col() {
-  this.name = "";
-  this.type = "";
-}
-
 /**
- * @typedef GdkRectangle
- * @property {number} height
- */
-
-/**
- * @typedef GtkListStore
- * @property {() => any} append
- * @property {() => void} clear
- * @property {(iter: any) => string} get_string_from_iter
- * @property {Col[]} cols Non-standard property.
- * @property {(iter: any, sibling: any | null) => void} move_before
- * @property {(iter: any) => void} remove
- * @property {(types: any[]) => void} set_column_types
- * @property {(iter: any, column: number, value: any) => void} set_value
- */
-
-/**
- * @typedef GtkTreeViewPath
- * @property {() => number[]} get_indices
+ * @typedef Col
+ * @property {boolean=} expand
+ * @property {number=} min_width
+ * @property {string} name
+ * @property {any=} on_clicked
+ * @property {string=} title
+ * @property {string} type
  */
 
 /**
  * @typedef IBody
  * @property {any[]} children
- * @property {GtkListStore} store
+ * @property {ListStore} store
  */
 
 /**
@@ -77,7 +61,7 @@ TreeView.prototype.mouseEvent = undefined;
 TreeView.prototype.shouldReactToCursorChanges = undefined;
 
 /**
- * @type {GtkListStore}
+ * @type {ListStore}
  */
 TreeView.prototype.store = undefined;
 
@@ -120,8 +104,8 @@ TreeView.prototype.setCols = function(cols) {
   const store = new Gtk.ListStore();
   setCols(store, cols);
 
-  for (let i = 0; i < store.cols.length; i++) {
-    const col = store.cols[i];
+  for (let i = 0; i < cols.length; i++) {
+    const col = cols[i];
     const tvCol = new Gtk.TreeViewColumn({ title: col.title });
     configureColumn(tvCol, col, i);
 
@@ -192,7 +176,9 @@ TreeView.prototype.setCursorCallback = function(callback) {
       const mouseEvent = this.mouseEvent;
       this.mouseEvent = undefined;
 
+      /** @type {any} FIXME */
       const index = cursor[0].get_indices()[0];
+
       callback({ index, mouseEvent });
     }
   });
@@ -267,7 +253,7 @@ TreeView.prototype.setDragAction = function(dragAction) {
 };
 
 /**
- * @param {GtkListStore} store
+ * @param {TreeModel} store
  * @param {string} input
  * @param {any} iter
  */
@@ -295,19 +281,19 @@ TreeView.prototype.connect = undefined;
 
 /**
  * Native method. Adds uri list as possible drop target.
- * @type {() => void}
+ * @type {typeof Gtk.TreeView.prototype.drag_dest_add_uri_targets}
  */
 TreeView.prototype.drag_dest_add_uri_targets = undefined;
 
 /**
  * Native method. Adds uri list as possible drag target.
- * @type {() => void}
+ * @type {typeof Gtk.TreeView.prototype.drag_source_add_uri_targets}
  */
 TreeView.prototype.drag_source_add_uri_targets = undefined;
 
 /**
  * Native method. Enables drop.
- * @type {(targets: any[], dragAction: number) => void}
+ * @type {typeof Gtk.TreeView.prototype.enable_model_drag_dest}
  */
 TreeView.prototype.enable_model_drag_dest = undefined;
 
@@ -319,66 +305,67 @@ TreeView.prototype.enable_model_drag_source = undefined;
 
 /**
  * Native method. Returns area of one row.
- * @type {(path: GtkTreeViewPath, column: null) => GdkRectangle}
+ * @type {typeof Gtk.TreeView.prototype.get_background_area}
  */
 TreeView.prototype.get_background_area = undefined;
 
 /**
  * Native method. Returns position of row in visible window ara.
- * @type {(path: GtkTreeViewPath, column: null) => GdkRectangle}
+ * @type {typeof Gtk.TreeView.prototype.get_cell_area}
  */
 TreeView.prototype.get_cell_area = undefined;
 
 /**
  * Native method. Returns column nodes.
- * @type {() => { clickable: boolean, connect(evName: string, callback: Function): void, title: string }[]}
+ * @type {typeof Gtk.TreeView.prototype.get_columns}
  */
 TreeView.prototype.get_columns = undefined;
 
 /**
  * Native method. Returns paths in cursor.
- * @type {() => GtkTreeViewPath[]}
+ * @type {typeof Gtk.TreeView.prototype.get_cursor}
  */
 TreeView.prototype.get_cursor = undefined;
 
 /**
  * Native method. Returns selection object.
- * @type {() => { select_path(path: GtkTreeViewPath): void, unselect_all(): void }}
+ * @type {typeof Gtk.TreeView.prototype.get_selection}
  */
 TreeView.prototype.get_selection = undefined;
 
 /**
  * Native method. Returns visible paths.
- * @type {() => GtkTreeViewPath[]}
+ * @type {typeof Gtk.TreeView.prototype.get_visible_range}
  */
 TreeView.prototype.get_visible_range = undefined;
 
 /**
  * Native method. Returns visible area.
- * @type {() => GdkRectangle}
+ * @type {typeof Gtk.TreeView.prototype.get_visible_rect}
  */
 TreeView.prototype.get_visible_rect = undefined;
 
 /**
  * Native method. Returns host window.
+ * @type {typeof Gtk.TreeView.prototype.get_window}
  */
 TreeView.prototype.get_window = undefined;
 
 /**
  * Native method. Assigns column to position.
- * @type {(gtkTreeViewColumn: any, columnIndex: number) => void}
+ * @type {typeof Gtk.TreeView.prototype.insert_column}
  */
 TreeView.prototype.insert_column = undefined;
 
 /**
  * Native method. Sets path as cursor.
- * @type {(path: GtkTreeViewPath, columnIter: any, startEdit: boolean) => void}
+ * @type {typeof Gtk.TreeView.prototype.set_cursor}
  */
 TreeView.prototype.set_cursor = undefined;
 
 /**
  * Native method. Sets function called for every row during search.
- * @type {(shouldSkipRow: (store: GtkListStore, column: number, input: string, iter: any) => boolean) => void}
+ * @type {typeof Gtk.TreeView.prototype.set_search_equal_func}
  */
 TreeView.prototype.set_search_equal_func = undefined;
 

@@ -79,9 +79,11 @@ describe("ActionService", () => {
       }),
     };
 
+    /** @type {any} */
     const Gio = {
-      FileQueryInfoFlags: { NONE: 0 },
-      file_new_for_uri: () => dirGFile,
+      File: {
+        new_for_uri: () => dirGFile,
+      },
     };
 
     const pushLocation = expect.createSpy().andReturn(undefined);
@@ -135,13 +137,16 @@ describe("ActionService", () => {
   });
 
   it("creates a directory", () => {
+    /** @type {any} */
     const Gio = {
-      file_new_for_uri: () => ({
-        make_directory_async: function() {
-          arguments[arguments.length - 1]();
-        },
-        make_directory_finish: noop,
-      }),
+      File: {
+        new_for_uri: () => ({
+          make_directory_async: function() {
+            arguments[arguments.length - 1]();
+          },
+          make_directory_finish: noop,
+        }),
+      },
     };
 
     const actionService = new ActionService();
@@ -162,17 +167,16 @@ describe("ActionService", () => {
       }],
     };
 
+    /** @type {any} */
     const Gio = {
-      MountMountFlags: { NONE: 0 },
       VolumeMonitor: { get: () => gVolMon },
     };
 
-    const Gtk = {
-      MountOperation: function() { },
-    };
+    /** @type {any} */
+    const MountOperation = function() { };
 
     const actionService = new ActionService();
-    actionService.gioService = new GioService(Gio, Gtk);
+    actionService.gioService = new GioService(Gio, MountOperation);
     actionService.refresh = expect.createSpy().andReturn(undefined);
 
     actionService.mount("random-uuid");
@@ -180,6 +184,7 @@ describe("ActionService", () => {
   });
 
   it("unmounts a volume", () => {
+    /** @type {any} */
     const Gio = {
       File: {
         new_for_uri: () => ({
@@ -190,7 +195,6 @@ describe("ActionService", () => {
           }),
         }),
       },
-      MountUnmountFlags: { NONE: 0 },
     };
 
     const actionService = new ActionService();
@@ -230,8 +234,8 @@ describe("ActionService", () => {
       },
     };
 
+    /** @type {any} */
     const Gio = {
-      SubprocessFlags: { NONE: 0 },
       SubprocessLauncher: function() {
         this.set_cwd = noop;
         this.set_flags = noop;

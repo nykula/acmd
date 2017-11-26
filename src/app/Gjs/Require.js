@@ -101,6 +101,7 @@ Require.prototype.accept = function(dirname, path, callback) {
       });
 
       isVerifyingChange = false;
+      return false;
     });
   };
 
