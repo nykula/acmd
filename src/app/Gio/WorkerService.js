@@ -45,6 +45,8 @@ WorkerService.prototype.run = function(ev, emit) {
 
   this.subprocesses[pid] = subprocess;
   this.onJson(pid, emit);
+
+  return pid;
 };
 
 /**

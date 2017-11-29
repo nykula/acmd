@@ -12,6 +12,7 @@ const { FileService } = require("../File/FileService");
 const gioAsync = require("../Gio/gioAsync").default;
 const { GioService } = require("../Gio/GioService");
 const { WorkerService } = require("../Gio/WorkerService");
+const { JobService } = require("../Job/JobService");
 const { LogService } = require("../Log/LogService");
 const getActiveMountUri = require("../Mount/getActiveMountUri").default;
 const { PlaceService } = require("../Mount/PlaceService");
@@ -25,6 +26,7 @@ function ActionService(
   /** @type {FileService} */   fileService,
   /** @type {GioService} */    gioService,
   /** @type {any} */           Gtk,
+  /** @type {JobService} */    jobService,
   /** @type {LogService} */    logService,
   /** @type {PlaceService} */  placeService,
   /** @type {PanelService} */  panelService,
@@ -38,6 +40,7 @@ function ActionService(
   this.fileService = fileService;
   this.gioService = gioService;
   this.Gtk = Gtk;
+  this.jobService = jobService;
   this.logService = logService;
   this.placeService = placeService;
   this.panelService = panelService;
@@ -138,14 +141,17 @@ ActionService.prototype.cp = function(uris, destUri) {
     return;
   }
 
-  this.workerService.run({
+  const pid = this.workerService.run({
     type: "cp",
     uris,
     destUri,
   }, (ev) => {
     if (ev.type === "error") {
       this.dialogService.alert(ev.message, noop);
+    } else if (ev.type === "progress") {
+      this.jobService.save(pid, ev);
     } else if (ev.type === "success") {
+      this.jobService.remove(pid);
       this.refresh();
     }
   });
@@ -432,14 +438,17 @@ ActionService.prototype.mv = function(uris, destUri) {
     return;
   }
 
-  this.workerService.run({
+  const pid = this.workerService.run({
     type: "mv",
     uris,
     destUri,
   }, (ev) => {
     if (ev.type === "error") {
       this.dialogService.alert(ev.message, noop);
+    } else if (ev.type === "progress") {
+      this.jobService.save(pid, ev);
     } else if (ev.type === "success") {
+      this.jobService.remove(pid);
       this.refresh();
     }
   });
@@ -501,14 +510,17 @@ ActionService.prototype.rm = function(uris) {
     return;
   }
 
-  this.workerService.run({
+  const pid = this.workerService.run({
     type: "rm",
     uris,
     destUri: "",
   }, (ev) => {
     if (ev.type === "error") {
       this.dialogService.alert(ev.message, noop);
+    } else if (ev.type === "progress") {
+      this.jobService.save(pid, ev);
     } else if (ev.type === "success") {
+      this.jobService.remove(pid);
       this.refresh();
     }
   });
