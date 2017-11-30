@@ -5,6 +5,7 @@ const { IconSize, Window } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
 const { action, computed, extendObservable, observable, runInAction } = require("mobx");
+const { WorkerProps } = require("../../domain/Gio/WorkerProps");
 const { autoBind } = require("../Gjs/autoBind");
 const Fun = require("../Gjs/Fun").default;
 const { DialogService } = require("../Dialog/DialogService");
@@ -109,6 +110,13 @@ ActionService.prototype.back = function() {
   }
 };
 
+ActionService.prototype.cancel = function() {
+  for (const pid of this.jobService.pids) {
+    this.jobService.stopWatching(pid);
+    this.workerService.interrupt(pid);
+  }
+};
+
 ActionService.prototype.copy = function() {
   const uris = this.getActiveFiles().map(x => x.uri);
 
@@ -141,19 +149,10 @@ ActionService.prototype.cp = function(uris, destUri) {
     return;
   }
 
-  const pid = this.workerService.run({
+  this.run({
     type: "cp",
     uris,
     destUri,
-  }, (ev) => {
-    if (ev.type === "error") {
-      this.dialogService.alert(ev.message, noop);
-    } else if (ev.type === "progress") {
-      this.jobService.save(pid, ev);
-    } else if (ev.type === "success") {
-      this.jobService.remove(pid);
-      this.refresh();
-    }
   });
 };
 
@@ -438,19 +437,10 @@ ActionService.prototype.mv = function(uris, destUri) {
     return;
   }
 
-  const pid = this.workerService.run({
+  this.run({
     type: "mv",
     uris,
     destUri,
-  }, (ev) => {
-    if (ev.type === "error") {
-      this.dialogService.alert(ev.message, noop);
-    } else if (ev.type === "progress") {
-      this.jobService.save(pid, ev);
-    } else if (ev.type === "success") {
-      this.jobService.remove(pid);
-      this.refresh();
-    }
   });
 };
 
@@ -510,19 +500,10 @@ ActionService.prototype.rm = function(uris) {
     return;
   }
 
-  const pid = this.workerService.run({
+  this.run({
     type: "rm",
     uris,
     destUri: "",
-  }, (ev) => {
-    if (ev.type === "error") {
-      this.dialogService.alert(ev.message, noop);
-    } else if (ev.type === "progress") {
-      this.jobService.save(pid, ev);
-    } else if (ev.type === "success") {
-      this.jobService.remove(pid);
-      this.refresh();
-    }
   });
 };
 
@@ -659,6 +640,28 @@ ActionService.prototype.getSelected = function() {
 
   const files = this.tabService.visibleFiles[activeTabId];
   return selected.map(index => files[index]);
+};
+
+/**
+ * @private
+ * @param {WorkerProps} props
+ */
+ActionService.prototype.run = function(props) {
+  const pid = this.workerService.run(props, (ev) => {
+    if (ev.type === "progress") {
+      this.jobService.save(pid, ev);
+    } else if (ev.type === "error" || ev.type === "success") {
+      this.jobService.remove(pid);
+    }
+
+    if (ev.type === "error") {
+      this.dialogService.alert(ev.message, noop);
+    } else if (ev.type === "success") {
+      this.refresh();
+    }
+  });
+
+  this.jobService.watch(pid, props.type);
 };
 
 exports.ActionService = ActionService;
