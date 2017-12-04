@@ -1,6 +1,6 @@
 const { WorkerProgress } = require("../../domain/Gio/WorkerProgress");
 const { autoBind } = require("../Gjs/autoBind");
-const { action, extendObservable } = require("mobx");
+const { action, computed, extendObservable } = require("mobx");
 
 function JobService() {
   autoBind(this, JobService.prototype, __filename);
@@ -11,12 +11,17 @@ function JobService() {
   /** @type {number[]} */
   this.pids = [];
 
+  /** @type {number[]} */
+  this.statefulPids = [];
+
   /** @type {{ [pid: number]: string }} */
   this.types = {};
 
   extendObservable(this, {
     jobs: this.jobs,
     pids: this.pids,
+    statefulPids: computed(this.getStatefulPids),
+    types: this.types,
     remove: action(this.remove),
     save: action(this.save),
     stopWatching: action(this.stopWatching),
@@ -61,6 +66,10 @@ JobService.prototype.save = function(pid, progress) {
   this.jobs = Object.assign({}, this.jobs, {
     [pid]: progress,
   });
+};
+
+JobService.prototype.getStatefulPids = function() {
+  return this.pids.filter(pid => !!this.jobs[pid]);
 };
 
 /**

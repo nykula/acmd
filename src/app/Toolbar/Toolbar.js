@@ -7,7 +7,7 @@ const autoBind = require("../Gjs/autoBind").default;
 const formatSize = require("../Size/formatSize").default;
 const { TabService } = require("../Tab/TabService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
-const ToolbarCancel = require("./ToolbarCancel").default;
+const ToolbarJobs = require("./ToolbarJobs").default;
 
 /**
  * @typedef IProps
@@ -51,14 +51,18 @@ Toolbar.prototype.render = function() {
       tooltip_text: "Hidden files",
       type: "showHidSys",
     },
-    "job",
-    "progress",
+    "jobs-",
+    "jobs",
   ];
 
   return (
     h("box", items.map(item => {
-      if (item === "progress") {
-        return h(ToolbarCancel, { key: item });
+      if (item === "jobs-") {
+        return h("box", { hexpand: true, key: item });
+      }
+
+      if (item === "jobs") {
+        return h(ToolbarJobs, { key: item });
       }
 
       if (typeof item === "string") {

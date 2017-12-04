@@ -278,6 +278,12 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
       }
       break;
 
+    case Gdk.KEY_j:
+      if (ev.ctrlKey) {
+        actionService.jobs();
+      }
+      break;
+
     case Gdk.KEY_l:
       if (ev.ctrlKey) {
         actionService.ls();

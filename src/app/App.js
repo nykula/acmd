@@ -1,8 +1,8 @@
-
 const Gtk = imports.gi.Gtk;
 const h = require("inferno-hyperscript").default;
 const ActionBar = require("./Action/ActionBar").default;
 const CtxMenu = require("./CtxMenu/CtxMenu").default;
+const Jobs = require("./Job/Jobs").default;
 const MenuBar = require("./Menu/MenuBar").default;
 const Places = require("./Mount/Places").default;
 const Panel = require("./Panel/Panel").default;
@@ -27,6 +27,7 @@ exports.render = () => {
       h(Prompt),
       h(ActionBar),
       h(CtxMenu),
+      h(Jobs),
     ])
   );
 };

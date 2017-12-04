@@ -1,7 +1,7 @@
 const { Event, Gravity, Rectangle } = imports.gi.Gdk;
 const { FileType } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const { IconSize, Window } = imports.gi.Gtk;
+const { Button, IconSize, Popover, Window } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
 const { action, computed, extendObservable, observable, runInAction } = require("mobx");
@@ -110,11 +110,12 @@ ActionService.prototype.back = function() {
   }
 };
 
-ActionService.prototype.cancel = function() {
-  for (const pid of this.jobService.pids) {
-    this.jobService.stopWatching(pid);
-    this.workerService.interrupt(pid);
-  }
+/**
+ * @param {number} pid
+ */
+ActionService.prototype.cancel = function(pid) {
+  this.jobService.stopWatching(pid);
+  this.workerService.interrupt(pid);
 };
 
 ActionService.prototype.copy = function() {
@@ -280,6 +281,17 @@ ActionService.prototype.forward = function() {
   if (uri) {
     this.ls(tabId, uri, 1);
   }
+};
+
+ActionService.prototype.jobs = function() {
+  /** @type {Popover} */
+  const jobs = this.refstore.get("jobs");
+
+  /** @type {Button} */
+  const toolbarJobs = this.refstore.get("toolbarJobs");
+
+  jobs.set_relative_to(toolbarJobs);
+  jobs.show_all();
 };
 
 /**
