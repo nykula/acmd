@@ -20,6 +20,8 @@ function Job(props) {
   autoBind(this, Job.prototype, __filename);
 }
 
+Job.spacing = 10;
+
 Job.prototype = Object.create(Component.prototype);
 
 /** @type {IProps} */
@@ -51,15 +53,22 @@ Job.prototype.render = function() {
 
       h(ProgressBar, {
         fraction: job.totalDoneCount / job.totalCount || 0,
+        margin_top: Job.spacing,
+        show_text: true,
         text: `${job.totalDoneCount} / ${job.totalCount}`,
       }),
 
       h(ProgressBar, {
         fraction: job.totalDoneSize / job.totalSize || 0,
+        margin_bottom: Job.spacing,
+        show_text: true,
         text: `${formatSize(job.totalDoneSize)} / ${formatSize(job.totalSize)}`,
       }),
 
-      h(Button, { label: "Cancel", ref: this.useCancelButton }),
+      h(Button, {
+        label: "Cancel",
+        ref: this.useCancelButton,
+      }),
     ])
   );
 };
