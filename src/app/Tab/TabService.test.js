@@ -70,7 +70,7 @@ describe("TabService", () => {
       location: "file:///",
     });
 
-    expect(tabService.entities[0].cursor).toBe(2);
+    expect(tabService.entities[0].cursor).toBe(1);
     expect(tabService.entities[0].selected.slice()).toEqual([0, 1]);
   });
 
@@ -79,6 +79,7 @@ describe("TabService", () => {
 
     const entities = {
       "0": {
+        cursor: 0,
         files: [
           ["config.sub", 2],
           ["usb.ids", 1],
@@ -91,6 +92,7 @@ describe("TabService", () => {
           modificationTime: modificationTime,
           fileType: isDir ? FileType.DIRECTORY : FileType.REGULAR,
         })),
+        selected: [],
         sortedBy: undefined,
       },
     };
@@ -162,6 +164,7 @@ describe("TabService", () => {
 
     const entities = {
       "0": {
+        cursor: 0,
         files: [
           "n.w.a",
           "run-d.m.c",
@@ -171,6 +174,7 @@ describe("TabService", () => {
           modificationTime: 0,
           fileType: FileType.DIRECTORY,
         })),
+        selected: [],
         sortedBy: undefined,
       },
     };

@@ -26,6 +26,7 @@ function TabService() {
         sortedBy: "ext",
       },
     },
+    selected: action(this.selected),
     set: action(this.set),
     showHidSys: this.showHidSys,
     sorted: action(this.sorted),
@@ -36,26 +37,21 @@ function TabService() {
   });
 }
 
-const sampleFiles = [
-  {
-    name: "..",
-    fileType: FileType.DIRECTORY,
-    icon: "folder",
-    iconType: "ICON_NAME",
-    size: 0,
-    modificationTime: Date.now(),
-    mode: "0755",
-  },
-  {
-    name: "clan in da front.txt",
-    fileType: FileType.REGULAR,
-    icon: "text-x-generic",
-    iconType: "ICON_NAME",
-    size: 4110,
-    modificationTime: Date.now(),
-    mode: "0644",
-  },
-];
+/**
+ * @type {File[]}
+ */
+const sampleFiles = [{
+  displayName: "..",
+  fileType: FileType.DIRECTORY,
+  icon: "go-up",
+  iconType: "ICON_NAME",
+  mode: "1755",
+  modificationTime: 0,
+  mountUri: "file:///",
+  name: "..",
+  size: 0,
+  uri: "file:///",
+}];
 
 /**
  * @type {{ [ id: number ]: Tab }}
@@ -84,19 +80,32 @@ TabService.prototype.selected = function(props) {
 };
 
 /**
- * @param {{ files: any[], id: number, location: string, sortedBy?: string }} props
+ * @param {{ files: any[], id: number, location: string }} props
  */
 TabService.prototype.set = function(props) {
   const tab = this.entities[props.id];
-  const sortedBy = props.sortedBy || tab.sortedBy;
 
-  tab.files = observable.shallowArray(sortFiles(sortedBy, props.files));
+  let visibleFiles = this.visibleFiles[props.id];
+  const cursorUri = visibleFiles[tab.cursor].uri;
+  const selectedUris = tab.selected.map(i => visibleFiles[i].uri);
+
+  tab.files = observable.shallowArray(sortFiles(tab.sortedBy, props.files));
   tab.location = props.location;
 
-  const visibleFiles = this.visibleFiles[props.id];
+  visibleFiles = this.visibleFiles[props.id];
+  const cursor = visibleFiles.findIndex(file => file.uri === cursorUri);
 
-  tab.cursor = Math.min(tab.cursor, visibleFiles.length);
-  tab.selected = tab.selected.filter(x => x < visibleFiles.length);
+  tab.cursor = cursor === -1
+    ? Math.min(tab.cursor, visibleFiles.length - 1)
+    : cursor;
+
+  const selected = [];
+  for (let i = 0; i < visibleFiles.length; i++) {
+    if (selectedUris.indexOf(visibleFiles[i].uri) !== -1) {
+      selected.push(i);
+    }
+  }
+  tab.selected = selected;
 };
 
 /**
@@ -104,12 +113,13 @@ TabService.prototype.set = function(props) {
  */
 TabService.prototype.sorted = function(props) {
   const tab = this.entities[props.tabId];
+  tab.sortedBy = nextSort(tab.sortedBy, props.by);
 
-  const by = nextSort(tab.sortedBy, props.by);
-  const files = sortFiles(by, tab.files);
-
-  tab.sortedBy = by;
-  tab.files = files;
+  this.set({
+    files: tab.files,
+    id: props.tabId,
+    location: tab.location,
+  });
 };
 
 /**
