@@ -21,6 +21,9 @@ const menus = [
       { action: "cut", label: "Cut" },
       { action: "copy", label: "Copy" },
       { action: "paste", label: "Paste" },
+      { action: "selectAll", label: "Select all" },
+      { action: "deselectAll", label: "Deselect all" },
+      { action: "invert", label: "Invert selection" },
     ],
 
     label: "Edit",

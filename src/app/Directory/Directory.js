@@ -266,6 +266,12 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
       actionService.rm();
       break;
 
+    case Gdk.KEY_a:
+      if (ev.ctrlKey) {
+        actionService.selectAll();
+      }
+      break;
+
     case Gdk.KEY_b:
       if (ev.ctrlKey) {
         actionService.showHidSys();
@@ -275,6 +281,18 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
     case Gdk.KEY_c:
       if (ev.ctrlKey) {
         actionService.copy();
+      }
+      break;
+
+    case Gdk.KEY_d:
+      if (ev.ctrlKey) {
+        actionService.deselectAll();
+      }
+      break;
+
+    case Gdk.KEY_I:
+      if (ev.ctrlKey) {
+        actionService.invert();
       }
       break;
 

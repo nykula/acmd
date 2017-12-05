@@ -54,6 +54,9 @@ function ActionService(
 
   extendObservable(this, {
     createTab: action(this.createTab),
+    deselectAll: action(this.deselectAll),
+    invert: action(this.invert),
+    selectAll: action(this.selectAll),
     showHidSys: action(this.showHidSys),
   });
 }
@@ -222,6 +225,10 @@ ActionService.prototype.cut = function() {
   });
 };
 
+ActionService.prototype.deselectAll = function() {
+  this.tabService.deselectAll(this.panelService.activeId);
+};
+
 ActionService.prototype.getPlaces = function() {
   this.gioService.getPlaces((_, places) => {
     this.placeService.set(places);
@@ -281,6 +288,10 @@ ActionService.prototype.forward = function() {
   if (uri) {
     this.ls(tabId, uri, 1);
   }
+};
+
+ActionService.prototype.invert = function() {
+  this.tabService.invert(this.panelService.activeId);
 };
 
 ActionService.prototype.jobs = function() {
@@ -531,6 +542,10 @@ ActionService.prototype.root = function(panelId) {
   const tabId = this.panelService.entities[panelId].activeTabId;
   const nextLocation = getActiveMountUri(this, panelId);
   this.ls(tabId, nextLocation);
+};
+
+ActionService.prototype.selectAll = function() {
+  this.tabService.selectAll(this.panelService.activeId);
 };
 
 ActionService.prototype.showHidSys = function() {

@@ -10,6 +10,7 @@ function TabService() {
 
   extendObservable(this, {
     cursor: action(this.cursor),
+    deselectAll: action(this.deselectAll),
     entities: {
       0: {
         cursor: 0,
@@ -26,6 +27,8 @@ function TabService() {
         sortedBy: "ext",
       },
     },
+    invert: action(this.invert),
+    selectAll: action(this.selectAll),
     selected: action(this.selected),
     set: action(this.set),
     showHidSys: this.showHidSys,
@@ -70,6 +73,31 @@ TabService.prototype.visibleFiles = undefined;
  */
 TabService.prototype.cursor = function(props) {
   this.entities[props.tabId].cursor = props.cursor;
+};
+
+/**
+ * @param {number} tabId
+ */
+TabService.prototype.deselectAll = function(tabId) {
+  this.entities[tabId].selected.splice(0);
+};
+
+/**
+ * @param {number} tabId
+ */
+TabService.prototype.invert = function(tabId) {
+  const tab = this.entities[tabId];
+
+  tab.selected = this.visibleFiles[tabId]
+    .map((_, i) => i)
+    .filter((i) => tab.selected.indexOf(i) === -1);
+};
+
+/**
+ * @param {number} tabId
+ */
+TabService.prototype.selectAll = function(tabId) {
+  this.entities[tabId].selected = this.visibleFiles[tabId].map((_, i) => i);
 };
 
 /**
