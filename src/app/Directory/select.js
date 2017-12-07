@@ -22,7 +22,7 @@ exports.default = function(state, ev) {
   const { limit, indices, cursor, selected, top } = state;
   const { which, shiftKey } = ev;
 
-  if (shiftKey && which === Gdk.KEY_Down) {
+  if ((shiftKey && which === Gdk.KEY_Down) || which === Gdk.KEY_Insert) {
     if (selected.indexOf(cursor) !== -1) {
       return assign({}, state, {
         cursor: Math.min(cursor + 1, indices.length - 1),
@@ -108,6 +108,18 @@ exports.default = function(state, ev) {
       cursor: Math.max(0, cursor - Math.floor(limit) + 1),
       top: Math.max(0, cursor - Math.floor(limit) + 1 < top ? cursor - Math.floor(limit) + 1 : top),
     });
+  }
+
+  if (which === Gdk.KEY_space) {
+    if (selected.indexOf(cursor) !== -1) {
+      return assign({}, state, {
+        selected: selected.filter(x => x !== cursor),
+      });
+    } else {
+      return assign({}, state, {
+        selected: selected.concat(cursor).sort((a, b) => a - b),
+      });
+    }
   }
 
   return state;
