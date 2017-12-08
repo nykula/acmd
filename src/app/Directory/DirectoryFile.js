@@ -1,4 +1,5 @@
 const { FileType } = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
@@ -64,7 +65,10 @@ DirectoryFile.prototype.mtime = function() {
  * @param {string} input
  */
 DirectoryFile.prototype.shouldSearchSkip = function(input) {
-  return this.props.file.name.toLowerCase().indexOf(input.toLowerCase()) !== 0;
+  return !GLib.pattern_match_simple(
+    input.toLowerCase() + "*",
+    this.props.file.name.toLowerCase(),
+  );
 };
 
 DirectoryFile.prototype.render = function() {

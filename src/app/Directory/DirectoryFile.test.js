@@ -1,6 +1,7 @@
 const { FileType } = imports.gi.Gio;
 const expect = require("expect");
 const h = require("inferno-hyperscript").default;
+const { File } = require("../../domain/File/File");
 const { DirectoryFile } = require("./DirectoryFile");
 const { shallow } = require("../Test/Test");
 const { TreeView } = require("../TreeView/TreeView");
@@ -115,5 +116,18 @@ describe("DirectoryFile", () => {
     expect(skip).toBe(false);
     skip = shouldSearchSkip(store, null, "some fir", 1);
     expect(skip).toBe(false); // Because cursor.
+  });
+
+  it("selects matching file as user types, with glob support", () => {
+    const file = new File();
+    file.name = "foo.bar";
+
+    const dirFile = new DirectoryFile({
+      file,
+      isSelected: false,
+    });
+
+    expect(dirFile.shouldSearchSkip("*.bar")).toBe(false);
+    expect(dirFile.shouldSearchSkip("*.js")).toBe(true);
   });
 });
