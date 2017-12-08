@@ -226,7 +226,7 @@ ActionService.prototype.cut = function() {
 };
 
 ActionService.prototype.deselectAll = function() {
-  this.tabService.deselectAll(this.panelService.activeId);
+  this.tabService.deselectAll(this.panelService.getActiveTabId());
 };
 
 ActionService.prototype.getPlaces = function() {
@@ -291,7 +291,7 @@ ActionService.prototype.forward = function() {
 };
 
 ActionService.prototype.invert = function() {
-  this.tabService.invert(this.panelService.activeId);
+  this.tabService.invert(this.panelService.getActiveTabId());
 };
 
 ActionService.prototype.jobs = function() {
@@ -545,7 +545,7 @@ ActionService.prototype.root = function(panelId) {
 };
 
 ActionService.prototype.selectAll = function() {
-  this.tabService.selectAll(this.panelService.activeId);
+  this.tabService.selectAll(this.panelService.getActiveTabId());
 };
 
 ActionService.prototype.showHidSys = function() {
