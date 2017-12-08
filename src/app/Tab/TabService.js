@@ -12,6 +12,7 @@ function TabService() {
   extendObservable(this, {
     cursor: action(this.cursor),
     deselectAll: action(this.deselectAll),
+    deselectGlob: action(this.deselectGlob),
     entities: {
       0: {
         cursor: 0,
@@ -30,6 +31,8 @@ function TabService() {
     },
     invert: action(this.invert),
     selectAll: action(this.selectAll),
+    selectDiff: action(this.selectDiff),
+    selectGlob: action(this.selectGlob),
     selected: action(this.selected),
     set: action(this.set),
     showHidSys: this.showHidSys,
@@ -117,6 +120,36 @@ TabService.prototype.selectAll = function(tabId) {
 };
 
 /**
+ * @param {number} id
+ * @param {number} id1
+ */
+TabService.prototype.selectDiff = function(id, id1) {
+  const files = this.visibleFiles[id];
+  const files1 = this.visibleFiles[id1];
+
+  /** @type {number[]} */
+  const selected = [];
+
+  /** @type {number[]} */
+  const selected0 = [];
+
+  for (let i = 0; i < files.length; i++) {
+    if (this.hasDiff(files[i], files1)) {
+      selected.push(i);
+    }
+  }
+
+  for (let i = 0; i < files1.length; i++) {
+    if (this.hasDiff(files1[i], files)) {
+      selected0.push(i);
+    }
+  }
+
+  this.entities[id].selected = selected;
+  this.entities[id1].selected = selected0;
+};
+
+/**
  * @param {{ id: number, pattern: string }} props
  */
 TabService.prototype.selectGlob = function(props) {
@@ -194,6 +227,35 @@ TabService.prototype.getVisibleFiles = function(tabId) {
   }
 
   return files.filter(file => file.name[0] !== "." || file.name === "..");
+};
+
+/**
+ * @private
+ * @param {File} file
+ * @param {File[]} files1
+ */
+TabService.prototype.hasDiff = function(file, files1) {
+  if (file.name === "..") {
+    return false;
+  }
+
+  for (const file1 of files1) {
+    if (file.name !== file1.name) {
+      continue;
+    }
+
+    if (file.size !== file1.size) {
+      continue;
+    }
+
+    if (file.modificationTime !== file1.modificationTime) {
+      continue;
+    }
+
+    return false;
+  }
+
+  return true;
 };
 
 exports.nextSort = nextSort;

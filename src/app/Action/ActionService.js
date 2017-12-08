@@ -561,6 +561,13 @@ ActionService.prototype.selectAll = function() {
   this.tabService.selectAll(this.panelService.getActiveTabId());
 };
 
+ActionService.prototype.selectDiff = function() {
+  this.tabService.selectDiff(
+    this.panelService.entities[0].activeTabId,
+    this.panelService.entities[1].activeTabId,
+  );
+};
+
 ActionService.prototype.selectGlob = function() {
   this.dialogService.prompt("Pattern:", "", pattern => {
     if (pattern) {

@@ -26,6 +26,7 @@ const menus = [
       { action: "invert", label: "Invert selection" },
       { action: "selectGlob", label: "Select glob" },
       { action: "deselectGlob", label: "Deselect glob" },
+      { action: "selectDiff", label: "Compare directories" },
     ],
 
     label: "Edit",

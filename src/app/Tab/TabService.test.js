@@ -373,4 +373,89 @@ describe("TabService", () => {
 
     expect(tab.selected.slice()).toEqual([0, 1, 2, 3, 4, 5]);
   });
+
+  it("selects diff, empty selected if all equal", () => {
+    const tabService = new TabService();
+
+    const tab = tabService.entities[0];
+    tab.files = [new File()];
+
+    const tab1 = tabService.entities[1];
+    tab1.files = [new File()];
+
+    tabService.selectDiff(0, 1);
+
+    expect(tab.selected.length).toBe(0);
+    expect(tab1.selected.length).toBe(0);
+  });
+
+  it("selects diff, comparing name", () => {
+    const tabService = new TabService();
+
+    const tab = tabService.entities[0];
+    tab.files = [new File()];
+    tab.files[0].name = "style.css";
+
+    const tab1 = tabService.entities[1];
+    tab1.files = [new File()];
+    tab1.files[0].name = "main.js";
+
+    tabService.selectDiff(0, 1);
+
+    expect(tab.selected.slice()).toEqual([0]);
+    expect(tab1.selected.slice()).toEqual([0]);
+  });
+
+  it("selects diff, comparing mtime", () => {
+    const tabService = new TabService();
+
+    const tab = tabService.entities[0];
+    tab.files = [new File()];
+    tab.files[0].modificationTime = 0;
+
+    const tab1 = tabService.entities[1];
+    tab1.files = [new File()];
+    tab1.files[0].modificationTime = 1;
+
+    tabService.selectDiff(0, 1);
+
+    expect(tab.selected.slice()).toEqual([0]);
+    expect(tab1.selected.slice()).toEqual([0]);
+  });
+
+  it("selects diff, comparing size", () => {
+    const tabService = new TabService();
+
+    const tab = tabService.entities[0];
+    tab.files = [new File()];
+    tab.files[0].size = 0;
+
+    const tab1 = tabService.entities[1];
+    tab1.files = [new File()];
+    tab1.files[0].size = 1;
+
+    tabService.selectDiff(0, 1);
+
+    expect(tab.selected.slice()).toEqual([0]);
+    expect(tab1.selected.slice()).toEqual([0]);
+  });
+
+  it("selects diff, skipping dotdot", () => {
+    const tabService = new TabService();
+
+    const tab = tabService.entities[0];
+    tab.files = [new File()];
+    tab.files[0].name = "..";
+    tab.files[0].size = 0;
+
+    const tab1 = tabService.entities[1];
+    tab1.files = [new File()];
+    tab1.files[0].name = "..";
+    tab1.files[0].size = 1;
+
+    tabService.selectDiff(0, 1);
+
+    expect(tab.selected.length).toBe(0);
+    expect(tab1.selected.length).toBe(0);
+  });
 });
