@@ -1,4 +1,5 @@
 const { FileType } = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const { action, computed, extendObservable, observable } = require("mobx");
 const orderBy = require("lodash/orderBy");
 const { autoBind } = require("../Gjs/autoBind");
@@ -83,6 +84,21 @@ TabService.prototype.deselectAll = function(tabId) {
 };
 
 /**
+ * @param {{ id: number, pattern: string }} props
+ */
+TabService.prototype.deselectGlob = function(props) {
+  if (!props.pattern) {
+    return;
+  }
+
+  const tab = this.entities[props.id];
+  const visibleFiles = this.visibleFiles[props.id];
+
+  tab.selected = tab.selected
+    .filter(i => !GLib.pattern_match_simple(props.pattern, visibleFiles[i].name));
+};
+
+/**
  * @param {number} tabId
  */
 TabService.prototype.invert = function(tabId) {
@@ -98,6 +114,23 @@ TabService.prototype.invert = function(tabId) {
  */
 TabService.prototype.selectAll = function(tabId) {
   this.entities[tabId].selected = this.visibleFiles[tabId].map((_, i) => i);
+};
+
+/**
+ * @param {{ id: number, pattern: string }} props
+ */
+TabService.prototype.selectGlob = function(props) {
+  if (!props.pattern) {
+    return;
+  }
+
+  const tab = this.entities[props.id];
+
+  tab.selected = this.visibleFiles[props.id]
+    .map((file, i) => GLib.pattern_match_simple(props.pattern, file.name)
+      ? i
+      : tab.selected.indexOf(i))
+    .filter((i) => i !== -1);
 };
 
 /**

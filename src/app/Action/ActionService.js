@@ -229,6 +229,19 @@ ActionService.prototype.deselectAll = function() {
   this.tabService.deselectAll(this.panelService.getActiveTabId());
 };
 
+ActionService.prototype.deselectGlob = function() {
+  this.dialogService.prompt("Pattern:", "", pattern => {
+    if (pattern) {
+      this.tabService.deselectGlob({
+        id: this.panelService.getActiveTabId(),
+        pattern,
+      });
+    }
+
+    return;
+  });
+};
+
 ActionService.prototype.getPlaces = function() {
   this.gioService.getPlaces((_, places) => {
     this.placeService.set(places);
@@ -546,6 +559,19 @@ ActionService.prototype.root = function(panelId) {
 
 ActionService.prototype.selectAll = function() {
   this.tabService.selectAll(this.panelService.getActiveTabId());
+};
+
+ActionService.prototype.selectGlob = function() {
+  this.dialogService.prompt("Pattern:", "", pattern => {
+    if (pattern) {
+      this.tabService.selectGlob({
+        id: this.panelService.getActiveTabId(),
+        pattern,
+      });
+    }
+
+    return;
+  });
 };
 
 ActionService.prototype.showHidSys = function() {

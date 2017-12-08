@@ -1,5 +1,6 @@
 const { FileType } = imports.gi.Gio;
 const expect = require("expect");
+const { File } = require("../../domain/File/File");
 const { TabService } = require("./TabService");
 
 describe("TabService", () => {
@@ -193,5 +194,183 @@ describe("TabService", () => {
       "n.w.a",
       "b.g knocc out & dresta",
     ]);
+  });
+
+  it("selects glob", () => {
+    const tabService = new TabService();
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "config.sub",
+      "usb.ids",
+      "magic.mgc",
+      "pci.ids",
+      "node_modules",
+      "config.guess",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tab.selected = [];
+
+    tabService.selectGlob({
+      id: 0,
+      pattern: "*.ids",
+    });
+
+    expect(tab.selected.slice()).toEqual([1, 3]);
+  });
+
+  it("selects glob, noop if empty pattern", () => {
+    const tabService = new TabService();
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "config.sub",
+      "usb.ids",
+      "magic.mgc",
+      "pci.ids",
+      "node_modules",
+      "config.guess",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tab.selected = [1, 3];
+
+    tabService.selectGlob({
+      id: 0,
+      pattern: "",
+    });
+
+    expect(tab.selected.slice()).toEqual([1, 3]);
+  });
+
+  it("inverts", () => {
+    const tabService = new TabService();
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "config.sub",
+      "usb.ids",
+      "magic.mgc",
+      "pci.ids",
+      "node_modules",
+      "config.guess",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tab.selected = [1, 3];
+
+    tabService.invert(0);
+
+    expect(tab.selected.slice()).toEqual([0, 2, 4, 5]);
+  });
+
+  it("deselects glob", () => {
+    const tabService = new TabService();
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "config.sub",
+      "usb.ids",
+      "magic.mgc",
+      "pci.ids",
+      "node_modules",
+      "config.guess",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tab.selected = [0, 2, 4, 5];
+
+    tabService.deselectGlob({
+      id: 0,
+      pattern: "*.guess",
+    });
+
+    expect(tab.selected.slice()).toEqual([0, 2, 4]);
+  });
+
+  it("deselects glob, noop if empty pattern", () => {
+    const tabService = new TabService();
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "config.sub",
+      "usb.ids",
+      "magic.mgc",
+      "pci.ids",
+      "node_modules",
+      "config.guess",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tab.selected = [0, 2, 4];
+
+    tabService.deselectGlob({
+      id: 0,
+      pattern: "",
+    });
+
+    expect(tab.selected.slice()).toEqual([0, 2, 4]);
+  });
+
+  it("deselects all", () => {
+    const tabService = new TabService();
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "config.sub",
+      "usb.ids",
+      "magic.mgc",
+      "pci.ids",
+      "node_modules",
+      "config.guess",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tab.selected = [0, 2, 4];
+
+    tabService.deselectAll(0);
+
+    expect(tab.selected.length).toBe(0);
+  });
+
+  it("selects all", () => {
+    const tabService = new TabService();
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "config.sub",
+      "usb.ids",
+      "magic.mgc",
+      "pci.ids",
+      "node_modules",
+      "config.guess",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tabService.selectAll(0);
+
+    expect(tab.selected.slice()).toEqual([0, 1, 2, 3, 4, 5]);
   });
 });

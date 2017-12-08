@@ -24,6 +24,8 @@ const menus = [
       { action: "selectAll", label: "Select all" },
       { action: "deselectAll", label: "Deselect all" },
       { action: "invert", label: "Invert selection" },
+      { action: "selectGlob", label: "Select glob" },
+      { action: "deselectGlob", label: "Deselect glob" },
     ],
 
     label: "Edit",
