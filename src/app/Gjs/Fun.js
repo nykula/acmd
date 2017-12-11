@@ -1,1 +1,4 @@
-exports.default = (...args) => Function.apply(null, args);
+/**
+ * @param {any[]} args
+ */
+exports.Fun = (...args) => Function.apply(null, args);

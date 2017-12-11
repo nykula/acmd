@@ -5,12 +5,10 @@ const { shallow } = require("../Test/Test");
 
 describe("Toolbar", () => {
   it("dispatches action without payload", () => {
-    const actions = [];
+    const handler = expect.createSpy();
 
     const actionService = {
-      refresh: function() {
-        actions.push(arguments.length);
-      },
+      get: () => ({ handler }),
     };
 
     const tabService = {
@@ -25,6 +23,6 @@ describe("Toolbar", () => {
     );
 
     tree.children[0].props.on_pressed();
-    expect(actions).toEqual([0]);
+    expect(handler).toHaveBeenCalledWith();
   });
 });

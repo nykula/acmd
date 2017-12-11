@@ -2,7 +2,7 @@ const { ListStore } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { TreeViewRow } = require("../../domain/TreeView/TreeViewRow");
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 const { setValue } = require("../ListStore/ListStore");
 
 /**
@@ -52,12 +52,19 @@ TreeViewBody.prototype.ensureInit = function(row) {
 
   row.iter = this._store.append();
 
+  /**
+   * @param {string} name
+   * @param {any} value
+   */
   const setAttribute = (name, value) => {
     setValue(this._store, row.iter, name, value);
   };
 
+  /** @type {{ [key: string]: any }} */
+  const values = row;
+
   for (const name of Object.keys(row)) {
-    setAttribute(name, row[name]);
+    setAttribute(name, values[name]);
   }
 
   row.setAttribute = setAttribute;
@@ -69,7 +76,10 @@ TreeViewBody.prototype.ensureInit = function(row) {
  */
 TreeViewBody.prototype.insertBefore = function(newChild, existingChild) {
   this.ensureInit(newChild);
-  this._store.move_before(newChild.iter, existingChild ? existingChild.iter : null);
+  this._store.move_before(
+    newChild.iter,
+    existingChild ? existingChild.iter : null,
+  );
   const index = this.rows.indexOf(existingChild);
 
   if (index === -1) {
@@ -129,6 +139,9 @@ TreeViewBody.prototype.setStore = function(store) {
   this.stub.parentNode.set_model(this._store);
 };
 
+/**
+ * @param {any} stub
+ */
 TreeViewBody.prototype.ref = function(stub) {
   this.rows = stub.children;
 

@@ -1,43 +1,20 @@
 const expect = require("expect");
-const Refstore = require("../Refstore/Refstore").default;
+const { RefService } = require("../Ref/RefService");
 const { CtxMenu } = require("./CtxMenu");
 
 describe("CtxMenu", () => {
   it("renders", () => {
-    /** @type {*} */
-    const actionService = {
-      getActiveFiles: () => [
-        undefined,
-        { uri: undefined },
-        { uri: "file:///foo.bar" },
-      ],
-    };
+    const refService = new RefService();
 
-    /** @type {*} */
-    const fileService = {
+    /** @type {any} */
+    const selectionService = {
+      getUris: () => ["file:///foo.bar"],
       handlers: [{}],
     };
 
-    /** @type {*} */
-    const refstore = {};
-
     new CtxMenu({
-      actionService,
-      fileService,
-      refstore,
+      refService,
+      selectionService,
     }).render();
-  });
-
-  it("refs", () => {
-    const refstore = new Refstore();
-    const node = {};
-
-    new CtxMenu({
-      actionService: undefined,
-      fileService: undefined,
-      refstore,
-    }).ref(node);
-
-    expect(refstore.get("ctxMenu")).toBe(node);
   });
 });

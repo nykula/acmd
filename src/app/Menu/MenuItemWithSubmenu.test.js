@@ -5,12 +5,12 @@ describe("MenuItemWithSubmenu", () => {
   it("associates new gtkdom menu with a gtk menu item", () => {
     const menu = {};
 
-    /** @type {*} */
+    /** @type {any} */
     const document = {
       createElement: expect.createSpy().andReturn(menu),
     };
 
-    /** @type {*} */
+    /** @type {any} */
     const menuItem = {
       set_submenu: expect.createSpy(),
     };
@@ -21,19 +21,19 @@ describe("MenuItemWithSubmenu", () => {
 
   it("proxies dom methods to gtkdom menu", () => {
     const menu = {
-      firstChild: null,
-      insertBefore: expect.createSpy().andCall((newChild, _) => newChild),
       appendChild: expect.createSpy(),
+      firstChild: false,
+      insertBefore: expect.createSpy().andCall((newChild, _) => newChild),
       removeChild: expect.createSpy().andCall(x => x),
       replaceChild: expect.createSpy().andCall((_, oldChild) => oldChild),
     };
 
-    /** @type {*} */
+    /** @type {any} */
     const document = {
       createElement: () => menu,
     };
 
-    /** @type {*} */
+    /** @type {any} */
     let menuItem = {
       set_submenu: expect.createSpy(),
     };

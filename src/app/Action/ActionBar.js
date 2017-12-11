@@ -2,18 +2,18 @@ const { ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 const ActionBarRm = require("./ActionBarRm").default;
 const { ActionService } = require("./ActionService");
 
 const actions = [
-  { type: "view", text: "View", shortcut: "F3" },
-  { type: "editor", text: "Edit", shortcut: "F4" },
-  { type: "cp", text: "Copy", shortcut: "F5" },
-  { type: "mv", text: "Move", shortcut: "F6" },
-  { type: "mkdir", text: "NewFolder", shortcut: "F7" },
-  { type: "rm", text: "Delete", shortcut: "F8" },
-  { type: "exit", text: "Exit", shortcut: "Alt+F4" },
+  { id: "cursorService.view", label: "View", shortcut: "F3" },
+  { id: "cursorService.edit", label: "Edit", shortcut: "F4" },
+  { id: "oppositeService.cp", label: "Copy", shortcut: "F5" },
+  { id: "oppositeService.mv", label: "Move", shortcut: "F6" },
+  { id: "directoryService.mkdir", label: "NewFolder", shortcut: "F7" },
+  { id: "selectionService.rm", label: "Delete", shortcut: "F8" },
+  { id: "windowService.exit", label: "Exit", shortcut: "Alt+F4" },
 ];
 
 /**
@@ -34,28 +34,21 @@ ActionBar.prototype = Object.create(Component.prototype);
  */
 ActionBar.prototype.props = undefined;
 
-/**
- * @param {string} type
- */
-ActionBar.prototype.handlePressed = function(type) {
-  return () => this.props.actionService[type]();
-};
-
 ActionBar.prototype.render = function() {
   return (
     h("box", { expand: false }, actions.reduce((prev, action) => prev.concat([
-      action.type === "rm" ? h(ActionBarRm, {
-        key: action.type,
-        label: action.shortcut + " " + action.text,
-      }) : h("button", {
-        can_focus: false,
-        expand: true,
-        key: action.type,
-        label: action.shortcut + " " + action.text,
-        on_pressed: this.handlePressed(action.type),
-        relief: ReliefStyle.NONE,
-      }),
-      h("v-separator", { key: action.type + "+" }),
+      action.id === "rm" ? h(ActionBarRm, {
+          key: action.id,
+          label: action.shortcut + " " + action.label,
+        }) : h("button", {
+          can_focus: false,
+          expand: true,
+          key: action.id,
+          label: action.shortcut + " " + action.label,
+          on_pressed: this.props.actionService.get(action.id).handler,
+          relief: ReliefStyle.NONE,
+        }),
+      h("v-separator", { key: action.id + "+" }),
     ]), []))
   );
 };

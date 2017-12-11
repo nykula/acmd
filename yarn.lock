@@ -541,7 +541,7 @@ tmatch@^2.0.1:
 
 "ts-for-gjs@https://github.com/makepost/ts-for-gjs":
   version "1.0.0"
-  resolved "https://github.com/makepost/ts-for-gjs#582a50166d0986b32782932d1481ca0a134f2352"
+  resolved "https://github.com/makepost/ts-for-gjs#df2bc9ee34ecc35e300037d6e24b18428c5b1f91"
 
 tslib@^1.7.1:
   version "1.8.0"

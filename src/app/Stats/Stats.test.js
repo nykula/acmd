@@ -13,22 +13,20 @@ describe("Stats", () => {
     const props = sampleProps();
     expect(new Stats(props).data).toEqual({
       selectedCount: 2,
-      totalCount: 4,
       selectedSize: 20,
+      totalCount: 4,
       totalSize: 60,
     });
   });
 });
 
 function sampleProps() {
-  /** @type {*} */
+  /** @type {any} */
   const panelService = {
-    entities: {
-      "0": { activeTabId: 0 },
-    },
+    getActiveTabId: () => 0,
   };
 
-  /** @type {*} */
+  /** @type {any} */
   const tabService = {
     entities: {
       "0": {

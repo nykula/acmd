@@ -1,18 +1,16 @@
 const { Button, ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
-const { ActionService } = require("../Action/ActionService");
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { JobService } = require("../Job/JobService");
-const Refstore = require("../Refstore/Refstore").default;
+const { RefService } = require("../Ref/RefService");
 const formatSize = require("../Size/formatSize").default;
 
 /**
  * @typedef IProps
- * @property {ActionService} actionService
  * @property {JobService} jobService
- * @property {Refstore} refstore
+ * @property {RefService} refService
  *
  * @param {IProps} props
  */
@@ -32,8 +30,8 @@ ToolbarJobs.prototype.props = undefined;
  * @param {Button} button
  */
 ToolbarJobs.prototype.useButton = function(button) {
-  this.props.refstore.set("toolbarJobs")(button);
-  button.connect("clicked", () => this.props.actionService.jobs());
+  this.props.refService.set("toolbarJobs")(button);
+  button.connect("clicked", () => this.props.jobService.list());
 };
 
 ToolbarJobs.prototype.render = function() {
@@ -76,4 +74,4 @@ ToolbarJobs.prototype.render = function() {
 };
 
 exports.ToolbarJobs = ToolbarJobs;
-exports.default = connect(["actionService", "jobService", "refstore"])(ToolbarJobs);
+exports.default = connect(["jobService", "refService"])(ToolbarJobs);

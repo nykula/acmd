@@ -2,7 +2,7 @@ const { StateFlags } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 
 /**
  * @typedef INode

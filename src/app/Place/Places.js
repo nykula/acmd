@@ -14,17 +14,15 @@ const { PlaceService } = require("./PlaceService");
 function Places(props) {
   const { entities, names } = props.placeService;
 
-  return (
-    h("box", [
-      names.map(x => entities[x]).map(place => {
-        return h(PlacesEntry, {
-          panelId: this.props.panelId,
-          place,
-          short: minLength(names, place.name),
-        });
-      }),
-    ])
-  );
+  return h("box", [
+    names.map(x => entities[x]).map(place => {
+      return h(PlacesEntry, {
+        panelId: this.props.panelId,
+        place,
+        short: minLength(names, place.name),
+      });
+    }),
+  ]);
 }
 
 exports.Places = Places;

@@ -1,13 +1,18 @@
 const assign = require("lodash/assign");
 const expect = require("expect");
 const { createSpy } = require("expect");
+const { RefService } = require("../Ref/RefService");
 const { Mount } = require("./Mount");
 
 describe("Mount", () => {
   it("renders without crashing", () => {
-    /** @type {*} */
+    /** @type {any} */
+    const panelService = {
+      getActiveMountUri: () => "file:///media/System",
+    };
+
+    /** @type {any} */
     const placeService = {
-      names: ["System"],
       entities: {
         System: {
           filesystemFree: 0,
@@ -16,57 +21,32 @@ describe("Mount", () => {
           rootUri: "file:///media/System",
         },
       },
-    };
-
-    /** @type {*} */
-    const panelService = {
-      entities: {
-        "0": { activeTabId: 0 },
-      },
-    };
-
-    /** @type {*} */
-    const tabService = {
-      entities: {
-        "0": {
-          files: [{
-            mountUri: "file:///media/System",
-            name: ".",
-          }],
-        },
-      },
+      names: ["System"],
     };
 
     new Mount({
-      actionService: undefined,
       panelId: 0,
       panelService,
       placeService,
-      refstore: undefined,
-      tabService,
+      refService: new RefService(),
     }).render();
   });
 
   it("dispatches levelUp", () => {
-    const levelUp = createSpy().andReturn(undefined);
-
     /**
-     * @type {*}
+     * @type {any}
      */
-    const actionService = {
-      levelUp: levelUp,
+    const panelService = {
+      levelUp: createSpy().andReturn(undefined),
     };
 
     new Mount({
-      actionService: actionService,
       panelId: 0,
-      panelService: undefined,
+      panelService,
       placeService: undefined,
-      refstore: undefined,
-      tabService: undefined,
-    })
-      .handleLevelUp();
+      refService: new RefService(),
+    }).handleLevelUp();
 
-    expect(levelUp.calls.length).toBe(1);
+    expect(panelService.levelUp).toHaveBeenCalled();
   });
 });

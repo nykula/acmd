@@ -2,16 +2,14 @@ const { EllipsizeMode } = imports.gi.Pango;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
-const { ActionService } = require("../Action/ActionService");
+const { DirectoryService } = require("../Directory/DirectoryService");
 const { autoBind } = require("../Gjs/autoBind");
 const { PanelService } = require("../Panel/PanelService");
-const { TabService } = require("../Tab/TabService");
 
 /**
  * @typedef IProps
- * @property {ActionService} actionService
+ * @property {DirectoryService} directoryService
  * @property {PanelService} panelService
- * @property {TabService} tabService
  *
  * @param {IProps} props
  */
@@ -30,13 +28,12 @@ Prompt.prototype.props = undefined;
  */
 Prompt.prototype.activate = function(node) {
   if (node.text) {
-    this.props.actionService.exec(node.text);
+    this.props.directoryService.exec(node.text);
   }
 };
 
 Prompt.prototype.render = function() {
-  const tabId = this.props.panelService.getActiveTabId();
-  const { location } = this.props.tabService.entities[tabId];
+  const { location } = this.props.panelService.getActiveTab();
 
   return (
     h("box", { expand: false }, [
@@ -52,4 +49,4 @@ Prompt.prototype.render = function() {
 };
 
 exports.Prompt = Prompt;
-exports.default = connect(["actionService", "panelService", "tabService"])(Prompt);
+exports.default = connect(["directoryService", "panelService"])(Prompt);

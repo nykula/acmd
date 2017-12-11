@@ -20,49 +20,65 @@ function getParentNode() {
 
 function removeAllChildren() {
   const node = this;
-  this.forall(function(x) {
+  this.forall(function(/** @type {any} */ x) {
     node.remove(x);
   });
 }
 
 function GtkDom(GLib = imports.gi.GLib, Gtk = imports.gi.Gtk, _window = window) {
-  this.app = this.app.bind(this);
   this.createElement = this.createElement.bind(this);
   this.domify = this.domify.bind(this);
   this.require = this.require.bind(this);
 
-  this.document = _window;
   this.GLib = GLib;
+
+  /** @type {{ [key: string]: any }} */
   this.Gtk = Gtk;
+
   this.window = _window;
 }
 
 /**
  * Monkey-patches a GTK+ widget to resemble a DOM node.
+ *
+ * @param {any} node
  */
 GtkDom.prototype.domify = function(node) {
+  /**
+   * @param {string} name
+   * @param {any} value
+   */
   node.setAttribute = function(name, value) {
     this[name] = value;
   };
 
+  /**
+   * @param {string} name
+   */
   node.removeAttribute = function(name) {
     this[name] = null;
   };
 
-  node.appendChild = function(node) {
-    this.add(node);
+  /**
+   * @param {any} child
+   */
+  node.appendChild = function(child) {
+    this.add(child);
 
-    Object.keys(node).filter(x => /^on_/.test(x)).forEach(x => {
+    Object.keys(child).filter(x => /^on_/.test(x)).forEach(x => {
       const signal = x.slice(3);
-      node.connect(signal, node[x]);
+      child.connect(signal, child[x]);
     });
 
-    node.show();
+    child.show();
   };
 
-  node.removeChild = function(node) {
-    this.remove(node);
-    return node;
+  /**
+   * @param {any} child
+   */
+  node.removeChild = function(child) {
+    this.remove(child);
+    return child;
   };
 
   Object.defineProperties(node, {
@@ -72,6 +88,10 @@ GtkDom.prototype.domify = function(node) {
     textContent: { configurable: true, get: noop, set: removeAllChildren },
   });
 
+  /**
+   * @param {any} newChild
+   * @param {any} existingChild
+   */
   node.insertBefore = function(newChild, existingChild) {
     if (newChild.parent) {
       newChild.parent.remove(newChild);
@@ -81,9 +101,9 @@ GtkDom.prototype.domify = function(node) {
       const children = this.get_children();
       const position = children.indexOf(existingChild);
 
-      children.forEach(x => {
+      for (const x of children) {
         this.remove(x);
-      });
+      }
 
       for (let i = 0; i < position; i++) {
         this.add(children[i]);
@@ -101,6 +121,10 @@ GtkDom.prototype.domify = function(node) {
     return newChild;
   };
 
+  /**
+   * @param {any} newChild
+   * @param {any} oldChild
+   */
   node.replaceChild = function(newChild, oldChild) {
     if (!newChild.parent) {
       newChild.show();
@@ -116,23 +140,29 @@ GtkDom.prototype.domify = function(node) {
   node.toString = function() {
     let children;
 
-    const getValue = (node) => {
+    /**
+     * @param {{ [key: string]: any }} x
+     */
+    const getValue = x => {
+      /** @type {any} */
       let value;
 
       const keys = ["icon_name", "label", "tooltip_text"];
       keys.forEach(key => {
-        if (value === undefined && node[key]) {
-          value = node[key];
+        if (value === undefined && x[key]) {
+          value = x[key];
         }
       });
 
       return value;
     };
 
-    const value = getValue(this);
+    const ownValue = getValue(this);
 
     try {
-      const _children = this.get_children().map(getValue).filter(x => x !== value);
+      const _children = this.get_children()
+        .map(getValue)
+        .filter((/** @type {any} */ x) => x !== ownValue);
       if (_children.length) {
         children = _children;
       }
@@ -141,14 +171,14 @@ GtkDom.prototype.domify = function(node) {
     }
 
     const result = [
-      value !== undefined ? value : imports.gi.GObject.type_name(node),
+      ownValue !== undefined ? ownValue : imports.gi.GObject.type_name(node),
       children,
     ].filter(x => x !== undefined);
 
     return JSON.stringify(result);
   };
 
-  node.ownerDocument = this.document;
+  node.ownerDocument = this.window;
 
   return node;
 };
@@ -156,6 +186,8 @@ GtkDom.prototype.domify = function(node) {
 /**
  * Instantiates a GTK+ widget associated with a given tag name. Assigns helpers
  * for it to be compatible with Inferno.
+ *
+ * @param {string} tagName
  */
 GtkDom.prototype.createElement = function(tagName) {
   if (tagName === "menu-item-with-submenu") {
@@ -179,24 +211,6 @@ GtkDom.prototype.createElement = function(tagName) {
 };
 
 /**
- * Creates a Gtk application with a main window.
- */
-GtkDom.prototype.app = function({ on_activate, on_startup }) {
-  const Gtk = imports.gi.Gtk;
-  const app = new Gtk.Application();
-  let win;
-  app.connect("startup", () => {
-    win = this.domify(new Gtk.ApplicationWindow({ application: app }));
-    on_startup({ app: app, win: win });
-  });
-  app.connect("activate", () => {
-    win.show_all();
-    on_activate({ app: app, win: win });
-  });
-  return app;
-};
-
-/**
  * Returns environment variables.
  */
 GtkDom.prototype.getEnv = function() {
@@ -216,7 +230,6 @@ GtkDom.prototype.getEnv = function() {
 
 /**
  * Inits GTK. Sets console, document, global, navigator and process globals.
- * Exports own `app` as static function.
  */
 GtkDom.prototype.require = function() {
   this.Gtk.init(null);
@@ -230,7 +243,7 @@ GtkDom.prototype.require = function() {
   window.console = { error: print, log: print, warn: print };
   window.setTimeout = setTimeout;
 
-  exports.app = this.app;
+  exports.domify = this.domify;
 };
 
 exports.GtkDom = GtkDom;

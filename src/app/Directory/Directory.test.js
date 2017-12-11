@@ -1,14 +1,15 @@
 const { FileType } = imports.gi.Gio;
 const expect = require("expect");
-const h = require("inferno-hyperscript").default;
 const assign = require("lodash/assign");
 const { observable } = require("mobx");
 const { createSpy } = expect;
-const { Directory } = require("./Directory");
+const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
+const { Directory } = require("./Directory");
 
 describe("Directory", () => {
   it("renders without crashing", () => {
+    /** @type {any} */
     const panelService = {
       activeId: 0,
 
@@ -17,6 +18,7 @@ describe("Directory", () => {
       },
     };
 
+    /** @type {any} */
     const tabService = {
       entities: {
         "0": {
@@ -50,7 +52,7 @@ describe("Directory", () => {
   });
 
   it("prepends arrow to sorting column title", () => {
-    /** @type {*} */
+    /** @type {any} */
     const panelService = {
       activeId: 0,
       entities: {
@@ -58,7 +60,7 @@ describe("Directory", () => {
       },
     };
 
-    /** @type {*} */
+    /** @type {any} */
     const tabService = {
       entities: {
         "0": { sortedBy: "ext" },
@@ -66,12 +68,17 @@ describe("Directory", () => {
     };
 
     const instance = new Directory({
-      actionService: undefined,
-      fileService: undefined,
+      cursorService: undefined,
+      directoryService: undefined,
+      jobService: undefined,
+      oppositeService: undefined,
       panelId: 0,
       panelService,
-      refstore: undefined,
+      placeService: undefined,
+      refService: undefined,
+      selectionService: undefined,
       tabService,
+      windowService: undefined,
     });
 
     tabService.entities[0].sortedBy = "ext";
@@ -98,75 +105,75 @@ describe("Directory", () => {
     });
 
     const instance = new Directory({
-      actionService: undefined,
-      fileService: undefined,
+      cursorService: undefined,
+      directoryService: undefined,
+      jobService: undefined,
+      oppositeService: undefined,
       panelId: 0,
       panelService,
-      refstore: undefined,
+      placeService: undefined,
+      refService: undefined,
+      selectionService: undefined,
       tabService: undefined,
+      windowService: undefined,
     });
 
     panelService.activeId = 0;
 
-    const grabFocus = createSpy().andReturn(undefined);
+    /** @type {any} */
+    const treeView = {
+      grab_focus: createSpy().andReturn(undefined),
+    };
 
-    instance.ref({ grab_focus: grabFocus });
+    instance.ref(treeView);
 
-    expect(grabFocus).toHaveBeenCalled();
+    expect(treeView.grab_focus).toHaveBeenCalled();
   });
 
   it("dispatches actions without crashing", () => {
-    const activated = createSpy().andReturn(undefined);
-
-    /** @type {*} */
-    const actionService = {
-      activated: activated,
+    /** @type {any} */
+    const cursorService = {
+      open: createSpy().andReturn(undefined),
     };
 
-    /** @type {*} */
+    /** @type {any} */
     const panelService = {
       activeId: 0,
-      entities: {
-        "0": {
-          activeTabId: 0,
-        },
-      },
-    };
-
-    /** @type {*} */
-    const tabService = {
-      entities: {
-        "0": {
-          files: [],
-        },
-      },
+      cursor: createSpy().andReturn(undefined),
     };
 
     const instance = new Directory({
-      actionService,
-      fileService: undefined,
+      cursorService,
+      directoryService: undefined,
+      jobService: undefined,
+      oppositeService: undefined,
       panelId: 0,
       panelService,
-      refstore: undefined,
-      tabService,
+      placeService: undefined,
+      refService: undefined,
+      selectionService: undefined,
+      tabService: undefined,
+      windowService: undefined,
     });
 
     instance.handleActivated(2);
 
-    expect(activated.calls.length).toBe(1);
+    expect(panelService.cursor).toHaveBeenCalledWith(0, 2);
+    expect(cursorService.open).toHaveBeenCalled();
   });
 
   it("dispatches file actions without crashing", () => {
-    const cursor = createSpy().andReturn(undefined);
-    const selected = createSpy().andReturn(undefined);
-
-    /** @type {*} */
-    const fileService = {
-      cursor,
-      selected,
+    /** @type {any} */
+    const panelService = {
+      activeId: 0,
+      cursor: createSpy().andReturn(undefined),
+      entities: {
+        "0": { activeTabId: 0 },
+      },
+      selected: createSpy().andReturn(undefined),
     };
 
-    /** @type {*} */
+    /** @type {any} */
     const tabService = {
       entities: {
         "0": {
@@ -176,34 +183,31 @@ describe("Directory", () => {
       },
     };
 
-    /** @type {*} */
-    const panelService = {
-      activeId: 0,
-      entities: {
-        "0": { activeTabId: 0 },
-      },
-    };
-
     const instance = new Directory({
-      actionService: undefined,
-      fileService: fileService,
+      cursorService: undefined,
+      directoryService: undefined,
+      jobService: undefined,
+      oppositeService: undefined,
       panelId: 0,
       panelService,
-      refstore: undefined,
+      placeService: undefined,
+      refService: undefined,
+      selectionService: undefined,
       tabService,
+      windowService: undefined,
     });
 
     instance.handleCursor({ index: 1 });
     instance.handleSelected(1);
 
-    expect(cursor.calls.length).toBe(1);
-    expect(selected.calls.length).toBe(1);
+    expect(panelService.cursor.calls.length).toBe(1);
+    expect(panelService.selected.calls.length).toBe(1);
   });
 
   it("dispatches tab actions without crashing", () => {
     const sorted = createSpy().andReturn(undefined);
 
-    /** @type {*} */
+    /** @type {any} */
     const panelService = {
       activeId: 0,
       entities: {
@@ -211,18 +215,23 @@ describe("Directory", () => {
       },
     };
 
-    /** @type {*} */
+    /** @type {any} */
     const tabService = {
       sorted: sorted,
     };
 
     const instance = new Directory({
-      actionService: undefined,
-      fileService: undefined,
+      cursorService: undefined,
+      directoryService: undefined,
+      jobService: undefined,
+      oppositeService: undefined,
       panelId: 0,
       panelService,
-      refstore: undefined,
+      placeService: undefined,
+      refService: undefined,
+      selectionService: undefined,
       tabService,
+      windowService: undefined,
     });
 
     instance.handleClicked("ext");

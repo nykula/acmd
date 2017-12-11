@@ -3,23 +3,20 @@ const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { Place } = require("../../domain/Place/Place");
-const { ActionService } = require("../Action/ActionService");
 const { autoBind } = require("../Gjs/autoBind");
 const Icon = require("../Icon/Icon").default;
 const minLength = require("../MinLength/minLength").default;
-const getActiveMountUri = require("../Mount/getActiveMountUri").default;
 const { PanelService } = require("../Panel/PanelService");
-const { TabService } = require("../Tab/TabService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
+const { PlaceService } = require("./PlaceService");
 
 /**
  * @typedef IProps
- * @property {ActionService} actionService
  * @property {number} panelId
  * @property {Place} place
  * @property {PanelService} panelService
  * @property {string} short
- * @property {TabService} tabService
+ * @property {PlaceService} placeService
  *
  * @param {IProps} props
  */
@@ -34,30 +31,26 @@ PlacesEntry.prototype = Object.create(Component.prototype);
 PlacesEntry.prototype.props = undefined;
 
 PlacesEntry.prototype.activeUri = function() {
-  return getActiveMountUri(this.props, this.props.panelId);
+  return this.props.panelService.getActiveMountUri(this.props.panelId);
 };
 
 PlacesEntry.prototype.isActive = function() {
   return this.props.place.rootUri === this.activeUri();
 };
 
-PlacesEntry.prototype.location = function() {
-  return this.props.tabService.entities[this.props.panelId].location;
-};
-
 PlacesEntry.prototype.handleClicked = function() {
-  const { place } = this.props;
+  const { panelService, place, placeService } = this.props;
+  const { location } = this.props.panelService.getActiveTab();
   const isActive = place.rootUri === this.activeUri();
 
-  /** @type {any} FIXME */
   const menu = new Gtk.Menu();
   let item;
 
-  if (place.rootUri && place.rootUri !== this.location()) {
+  if (place.rootUri && place.rootUri !== location) {
     item = new Gtk.MenuItem();
     item.label = "Open";
     item.connect("activate", () => {
-      this.props.actionService.ls(this.props.panelId, place.rootUri);
+      this.props.panelService.ls(place.rootUri, this.props.panelId);
     });
     menu.add(item);
   }
@@ -66,7 +59,7 @@ PlacesEntry.prototype.handleClicked = function() {
     item = new Gtk.MenuItem();
     item.label = "Unmount";
     item.connect("activate", () => {
-      this.props.actionService.unmount(place.rootUri);
+      placeService.unmount(place.rootUri, panelService.refresh);
     });
     menu.add(item);
   }
@@ -75,7 +68,7 @@ PlacesEntry.prototype.handleClicked = function() {
     item = new Gtk.MenuItem();
     item.label = "Mount";
     item.connect("activate", () => {
-      this.props.actionService.mount(place.uuid);
+      placeService.mountUuid(place.uuid, panelService.refresh);
     });
     menu.add(item);
   }
@@ -92,14 +85,16 @@ PlacesEntry.prototype.render = function() {
   const { place, short } = this.props;
   const { icon, iconType, name } = place;
 
-  return (
-    h(ToggleButton, {
+  return h(
+    ToggleButton,
+    {
       active: this.isActive(),
       can_focus: false,
-      relief: Gtk.ReliefStyle.NONE,
       on_clicked: this.handleClicked,
+      relief: Gtk.ReliefStyle.NONE,
       tooltip_text: name,
-    }, [
+    },
+    [
       h("box", { spacing: 4 }, [
         h("image", {
           gicon: Icon({ icon: icon, iconType: iconType }),
@@ -107,9 +102,9 @@ PlacesEntry.prototype.render = function() {
         }),
         h("label", { label: short }),
       ]),
-    ])
+    ],
   );
 };
 
 exports.PlacesEntry = PlacesEntry;
-exports.default = connect(["actionService", "panelService", "tabService"])(PlacesEntry);
+exports.default = connect(["panelService", "placeService"])(PlacesEntry);

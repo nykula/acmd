@@ -26,7 +26,7 @@ describe("DirectoryFile", () => {
   });
 
   it("maps files to table rows", () => {
-    /** @type {*} */
+    /** @type {any} */
     let file;
 
     /** @type {DirectoryFile} */
@@ -79,8 +79,8 @@ describe("DirectoryFile", () => {
       },
       {
         fileType: FileType.REGULAR,
-        name: "Some File Name.jpeg",
         modificationTime: 0,
+        name: "Some File Name.jpeg",
         size: 1048576,
       },
     ];
@@ -91,12 +91,15 @@ describe("DirectoryFile", () => {
     }));
 
     const store = {
+      /**
+       * @param {string} x
+       */
       get_string_from_iter: x => x,
     };
 
     const treeView = {
-      body: { children: rows },
       _cursor: 1,
+      body: { children: rows },
       store,
     };
 

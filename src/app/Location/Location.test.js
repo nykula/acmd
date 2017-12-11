@@ -32,12 +32,12 @@ describe("Location", () => {
   });
 
   it("selects row when isActive becomes true", () => {
-    /** @type {*} */
+    /** @type {any} */
     const panelService = observable({
       activeId: 1,
     });
 
-    /** @type {*} */
+    /** @type {any} */
     const tabService = {};
 
     const instance = new Location({
@@ -48,23 +48,29 @@ describe("Location", () => {
 
     panelService.activeId = 0;
 
-    const selectRow = expect.createSpy().andReturn(undefined);
+    /** @type {any} */
     const row = {};
 
     instance.refRow(row);
-    instance.refList({ select_row: selectRow });
 
-    expect(selectRow).toHaveBeenCalledWith(row);
+    /** @type {any} */
+    const list = {
+      select_row: expect.createSpy().andReturn(undefined),
+    };
+
+    instance.refList(list);
+
+    expect(list.select_row).toHaveBeenCalledWith(row);
   });
 
   it("unselects row when isActive becomes false", () => {
-    /** @type {*} */
+    /** @type {any} */
     const panelService = observable({
       activeId: 0,
       entities: {},
     });
 
-    /** @type {*} */
+    /** @type {any} */
     const tabService = {};
 
     const instance = new Location({
@@ -75,17 +81,23 @@ describe("Location", () => {
 
     panelService.activeId = 1;
 
-    const unselectRow = expect.createSpy().andReturn(undefined);
+    /** @type {any} */
     const row = {};
 
     instance.refRow(row);
-    instance.refList({ unselect_row: unselectRow });
 
-    expect(unselectRow).toHaveBeenCalledWith(row);
+    /** @type {any} */
+    const list = {
+      unselect_row: expect.createSpy().andReturn(undefined),
+    };
+
+    instance.refList(list);
+
+    expect(list.unselect_row).toHaveBeenCalledWith(row);
   });
 
   it("maps state to expected props", () => {
-    /** @type {*} */
+    /** @type {any} */
     const panelService = {
       activeId: 0,
       entities: {
@@ -93,7 +105,7 @@ describe("Location", () => {
       },
     };
 
-    /** @type {*} */
+    /** @type {any} */
     const tabService = {
       entities: {
         "0": { location: "file:///" },

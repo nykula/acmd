@@ -7,7 +7,7 @@ describe("App", () => {
     /** @type {any} */
     const win = { destroy: noop };
     const services = new Services(win);
-    services.win.destroy();
+    services.windowService.exit();
   });
 
   it("renders layout without crashing", () => {

@@ -3,7 +3,7 @@ const { CtxMenuAction } = require("./CtxMenuAction");
 
 describe("CtxMenuAction", () => {
   it("renders", () => {
-    /** @type {*} */
+    /** @type {any} */
     const actionService = {
       getActiveFiles: () => [
         undefined,
@@ -13,28 +13,35 @@ describe("CtxMenuAction", () => {
     };
 
     new CtxMenuAction({
-      action: "copy",
       actionService,
       icon: "edit-copy",
       iconSize: 16,
+      id: "copy",
       label: "Copy",
     }).render();
   });
 
-  it("handles activate", () => {
-    /** @type {*} */
+  it("connects activate", () => {
+    const handler = expect.createSpy();
+
+    /** @type {any} */
     const actionService = {
-      copy: expect.createSpy(),
+      get: () => ({ handler }),
+    };
+
+    /** @type {any} */
+    const menuItem = {
+      connect: expect.createSpy(),
     };
 
     new CtxMenuAction({
-      action: "copy",
       actionService,
       icon: "edit-copy",
       iconSize: 16,
+      id: "selectionService.copy",
       label: "Copy",
-    }).handleActivate();
+    }).ref(menuItem);
 
-    expect(actionService.copy).toHaveBeenCalled();
+    expect(menuItem.connect).toHaveBeenCalledWith("activate", handler);
   });
 });

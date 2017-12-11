@@ -1,14 +1,16 @@
 const { DragAction } = imports.gi.Gdk;
 const expect = require("expect");
-const h = require("inferno-hyperscript").default;
+const { h } = require("../Gjs/GtkInferno");
 const { find, shallow } = require("../Test/Test");
 const { ActionBarRm } = require("./ActionBarRm");
 
 describe("ActionBarRm", () => {
   it("renders", () => {
     new ActionBarRm({
-      actionService: undefined,
+      jobService: undefined,
       label: "",
+      panelService: undefined,
+      selectionService: undefined,
     }).render();
   });
 
@@ -19,42 +21,55 @@ describe("ActionBarRm", () => {
     };
 
     new ActionBarRm({
-      actionService: undefined,
+      jobService: undefined,
       label: "",
+      panelService: undefined,
+      selectionService: undefined,
     }).ref(node);
 
     expect(node.drag_dest_set).toHaveBeenCalled();
     expect(node.drag_dest_add_uri_targets).toHaveBeenCalled();
   });
 
-  it("removes files on drop", () => {
-    /** @type {*} */
-    const actionService = {
-      rm: expect.createSpy(),
+  it("removes dropped files", () => {
+    /** @type {any} */
+    const jobService = {
+      run: expect.createSpy(),
     };
 
-    /** @type {*} */
+    /** @type {any} */
     const selectionData = {
       get_uris: () => ["file:///foo.bar"],
     };
 
+    /** @type {any} */
+    const panelService = {
+      refresh: expect.createSpy(),
+    };
+
     new ActionBarRm({
-      actionService,
+      jobService,
       label: "",
+      panelService,
+      selectionService: undefined,
     }).handleDrop(undefined, undefined, 0, 0, selectionData);
 
-    expect(actionService.rm).toHaveBeenCalledWith(["file:///foo.bar"]);
+    expect(jobService.run).toHaveBeenCalledWith({
+      destUri: "",
+      type: "rm",
+      uris: ["file:///foo.bar"],
+    }, panelService.refresh);
   });
 
-  it("shows confirm on click", () => {
-    /** @type {*} */
-    const actionService = {
+  it("removes selected files on click", () => {
+    /** @type {any} */
+    const selectionService = {
       rm: expect.createSpy(),
     };
 
-    const button = shallow(h(ActionBarRm, { actionService }));
+    const button = shallow(h(ActionBarRm, { selectionService }));
     button.props.on_pressed();
 
-    expect(actionService.rm).toHaveBeenCalledWith();
+    expect(selectionService.rm).toHaveBeenCalled();
   });
 });

@@ -18,4 +18,4 @@ export function h<T>(
 export function h(
   tag: "stub-box",
   children: Array<VNode|null>
-);
+): VNode;

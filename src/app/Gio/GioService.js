@@ -3,228 +3,38 @@ const {
   AppInfo,
   AppInfoCreateFlags,
   FileCreateFlags,
+  FileInfo,
   FileQueryInfoFlags,
   Mount,
-  MountMountFlags,
-  MountOperationResult,
-  MountUnmountFlags,
   SubprocessFlags,
-  Volume,
-  VolumeMonitor,
 } = Gio;
+const GioFile = Gio.File;
 const { MAXINT32, PRIORITY_DEFAULT } = imports.gi.GLib;
-const { MountOperation } = imports.gi.Gtk;
 const { map, waterfall } = require("async");
 const find = require("lodash/find");
+const noop = require("lodash/noop");
 const uniqBy = require("lodash/uniqBy");
-const Uri = require("url-parse");
 const { File } = require("../../domain/File/File");
 const { FileHandler } = require("../../domain/File/FileHandler");
 const { Place } = require("../../domain/Place/Place");
-const autoBind = require("../Gjs/autoBind").default;
-const gioAsync = require("./gioAsync").default;
+const { autoBind } = require("../Gjs/autoBind");
+const { gioAsync } = require("./gioAsync");
 
 /**
  * Let the front-end use drives.
  */
-function GioService(_Gio = Gio, _MountOperation = MountOperation) {
+function GioService(_Gio = Gio) {
   autoBind(this, GioService.prototype, __filename);
 
   this.fileAttributes = "standard::*,time::*,unix::*";
   this.Gio = _Gio;
-  this.MountOperation = _MountOperation;
-  this.placeAttributes = "filesystem::*";
 }
 
 /**
- * Native volume monitor.
- * @type {VolumeMonitor}
- */
-GioService.prototype.gVolMon = undefined;
-
-GioService.prototype.ensureGVolMon = function() {
-  if (!this.gVolMon) {
-    this.gVolMon = this.Gio.VolumeMonitor.get();
-  }
-};
-
-/**
- * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Drive.html
- * @param {(error: Error | undefined, places: Place[]) => void} callback
- */
-GioService.prototype.getPlaces = function(callback) {
-  this.ensureGVolMon();
-
-  /** @type {Place[]} */
-  let places = [];
-
-  const fromDrives = (_callback) => {
-    /** @type {Volume[]} */
-    const gVolumes = [];
-
-    for (const gDrive of this.gVolMon.get_connected_drives()) {
-      for (const gVolume of gDrive.get_volumes()) {
-        gVolumes.push(gVolume);
-      }
-    }
-
-    map(gVolumes, (gVolume, __callback) => {
-      const label = gVolume.get_identifier("label");
-      const uuid = gVolume.get_identifier("uuid");
-      const gMount = gVolume.get_mount();
-
-      if (gMount) {
-        this._serializeMount(gMount, __callback);
-      } else {
-        __callback(null, {
-          filesystemFree: 0,
-          filesystemSize: 0,
-          icon: "drive-harddisk",
-          iconType: "ICON_NAME",
-          name: label || uuid,
-          rootUri: null,
-          uuid,
-        });
-      }
-    }, (_, _places) => {
-      places = places.concat(_places);
-      _callback();
-    });
-  };
-
-  const fromMounts = (_callback) => {
-    map(this.gVolMon.get_mounts(), this._serializeMount, (_, _places) => {
-      places = places.concat(_places);
-      places = uniqBy(places, mount => mount.uuid || mount.name);
-      _callback();
-    });
-  };
-
-  const fromFilesystem = (_callback) => {
-    gioAsync(this.Gio.File.new_for_uri("file:///"), "query_filesystem_info",
-      this.placeAttributes,
-      PRIORITY_DEFAULT,
-      null,
-      (_, rootInfo) => {
-        places.unshift({
-          filesystemFree: Number(rootInfo.get_attribute_as_string("filesystem::free")),
-          filesystemSize: Number(rootInfo.get_attribute_as_string("filesystem::size")),
-          icon: "computer",
-          iconType: "ICON_NAME",
-          name: "/",
-          rootUri: "file:///",
-          uuid: null,
-        });
-
-        _callback(null, places);
-      },
-    );
-  };
-
-  waterfall([
-    fromDrives,
-    fromMounts,
-    fromFilesystem,
-  ], callback);
-};
-
-/**
- * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Volume.html
- */
-GioService.prototype.mount = function(props, callback) {
-  let mountOperation;
-
-  if (props.identifier) {
-    const identifier = props.identifier;
-
-    this.ensureGVolMon();
-
-    const gVolume = find(this.gVolMon.get_volumes(), _gVolume => {
-      return _gVolume.get_identifier(identifier.type) === identifier.value;
-    });
-
-    mountOperation = new this.MountOperation();
-
-    gVolume.mount(MountMountFlags.NONE, mountOperation, null, () => {
-      callback();
-    });
-  } else {
-    const uri = Uri(props.uri);
-    const { auth, username, password, host } = uri;
-
-    if (!uri.pathname) {
-      uri.set("pathname", "/");
-    }
-
-    let mountOperation;
-
-    if ((username && password) || auth === username + ":") {
-      mountOperation = new this.Gio.MountOperation();
-      mountOperation.connect("ask-password", () => {
-        mountOperation.set_domain(host);
-        mountOperation.set_username(username);
-        mountOperation.set_password(password);
-        mountOperation.reply(MountOperationResult.HANDLED);
-      });
-    } else {
-      mountOperation = new this.MountOperation();
-    }
-
-    uri.set("password", "");
-    const gFile = this.Gio.File.new_for_uri(uri.toString());
-    gFile.mount_enclosing_volume(MountMountFlags.NONE, mountOperation, null, (_, result) => {
-      try {
-        gFile.mount_enclosing_volume_finish(result);
-      } catch (error) {
-        callback(error);
-        return;
-      }
-      callback(null, uri.toString());
-    });
-  }
-};
-
-/**
- * @see https://www.roojs.com/seed/gir-1.2-gtk-3.0/gjs/Gio.Mount.html
- */
-GioService.prototype.unmount = function(uri, callback) {
-  const gFile = this.Gio.File.new_for_uri(uri);
-  const gMount = gFile.find_enclosing_mount(null);
-
-  gMount.unmount(MountUnmountFlags.NONE, null, () => {
-    callback();
-  });
-};
-
-/**
- * @param {Mount} gMount
- * @param {(error: Error, place: Place) => void} callback
- */
-GioService.prototype._serializeMount = function(gMount, callback) {
-  const root = gMount.get_root();
-
-  gioAsync(root, "query_filesystem_info",
-    this.placeAttributes,
-    PRIORITY_DEFAULT,
-    null,
-    (_, rootInfo) => {
-      /** @type {Place} */
-      const place = {
-        filesystemFree: Number(rootInfo.get_attribute_as_string("filesystem::free")),
-        filesystemSize: Number(rootInfo.get_attribute_as_string("filesystem::size")),
-        icon: gMount.get_icon().to_string(),
-        iconType: "GICON",
-        name: gMount.get_name(),
-        rootUri: root.get_uri(),
-        uuid: null,
-      };
-
-      callback(null, place);
-    });
-};
-
-/**
  * Opens URIs in an application.
+ *
+ * @param {FileHandler} handler
+ * @param {string[]} uris
  */
 GioService.prototype.launch = function(handler, uris) {
   const gAppInfo = this.Gio.AppInfo.create_from_commandline(
@@ -244,21 +54,34 @@ GioService.prototype.launch = function(handler, uris) {
  * @param {(error: Error, files: File[]) => void} callback
  */
 GioService.prototype.ls = function(uri, callback) {
+  /**
+   * @type {File[]}
+   */
   let files = [];
+
   const dir = this.Gio.File.new_for_uri(uri);
   const parent = dir.get_parent();
 
-  const handleRequest = callback => {
-    gioAsync(dir, "query_info",
+  /**
+   * @param {any} _callback
+   */
+  const handleRequest = _callback => {
+    gioAsync(
+      dir,
+      "query_info",
       this.fileAttributes,
       FileQueryInfoFlags.NONE,
       PRIORITY_DEFAULT,
       null,
-      callback,
+      _callback,
     );
   };
 
-  const handleSelf = (selfInfo, callback) => {
+  /**
+   * @param {FileInfo} selfInfo
+   * @param {any} _callback
+   */
+  const handleSelf = (selfInfo, _callback) => {
     const selfFile = mapGFileInfoToFile(selfInfo);
     selfFile.displayName = ".";
     selfFile.mountUri = this.getMountUri(dir);
@@ -267,20 +90,26 @@ GioService.prototype.ls = function(uri, callback) {
     files = [selfFile];
 
     if (!parent) {
-      callback(null, null);
+      _callback(null, null);
       return;
     }
 
-    gioAsync(parent, "query_info",
+    gioAsync(
+      parent,
+      "query_info",
       this.fileAttributes,
       FileQueryInfoFlags.NONE,
       PRIORITY_DEFAULT,
       null,
-      callback,
+      _callback,
     );
   };
 
-  const handleParent = (parentInfo, callback) => {
+  /**
+   * @param {FileInfo} parentInfo
+   * @param {any} _callback
+   */
+  const handleParent = (parentInfo, _callback) => {
     if (parentInfo) {
       const parentFile = mapGFileInfoToFile(parentInfo);
       parentFile.displayName = "..";
@@ -291,29 +120,44 @@ GioService.prototype.ls = function(uri, callback) {
       files = files.concat(parentFile);
     }
 
-    gioAsync(dir, "enumerate_children",
+    gioAsync(
+      dir,
+      "enumerate_children",
       this.fileAttributes,
       FileQueryInfoFlags.NONE,
       PRIORITY_DEFAULT,
       null,
-      callback,
+      _callback,
     );
   };
 
-  const handleChildren = (enumerator, callback) => {
-    gioAsync(enumerator, "next_files",
+  /**
+   * @param {any} enumerator
+   * @param {any} _callback
+   */
+  const handleChildren = (enumerator, _callback) => {
+    gioAsync(
+      enumerator,
+      "next_files",
       MAXINT32,
       PRIORITY_DEFAULT,
       null,
-      callback,
+      _callback,
     );
   };
 
-  const handleInfos = (list, callback) => {
+  /**
+   * @param {FileInfo[]} list
+   * @param {any} _callback
+   */
+  const handleInfos = (list, _callback) => {
     files = files.concat(list.map(mapGFileInfoToFile));
-    callback(null, files);
+    _callback(null, files);
   };
 
+  /**
+   * @param {FileInfo} gFileInfo
+   */
   const mapGFileInfoToFile = gFileInfo => {
     const mode = gFileInfo.get_attribute_as_string("unix::mode");
     const name = gFileInfo.get_name();
@@ -324,10 +168,12 @@ GioService.prototype.ls = function(uri, callback) {
       fileType: gFileInfo.get_file_type(),
       icon: gFileInfo.get_icon().to_string(),
       iconType: "GICON",
-      name: name,
-      mode: Number(mode).toString(8).slice(-4),
+      mode: Number(mode)
+        .toString(8)
+        .slice(-4),
       modificationTime: gFileInfo.get_modification_time().tv_sec,
       mountUri: "",
+      name: name,
       size: gFileInfo.get_size(),
       uri: dir.get_child(name).get_uri(),
     };
@@ -335,13 +181,10 @@ GioService.prototype.ls = function(uri, callback) {
     return file;
   };
 
-  waterfall([
-    handleRequest,
-    handleSelf,
-    handleParent,
-    handleChildren,
-    handleInfos,
-  ], callback);
+  waterfall(
+    [handleRequest, handleSelf, handleParent, handleChildren, handleInfos],
+    callback,
+  );
 };
 
 /**
@@ -353,12 +196,14 @@ GioService.prototype.ls = function(uri, callback) {
 GioService.prototype.getHandlers = function(uri, callback) {
   const file = this.Gio.File.new_for_uri(uri);
 
-  gioAsync(file, "query_info",
+  gioAsync(
+    file,
+    "query_info",
     this.fileAttributes,
     FileQueryInfoFlags.NONE,
     PRIORITY_DEFAULT,
     null,
-    (error, gFileInfo) => {
+    (/** @type {Error} */ error, /** @type {FileInfo} */ gFileInfo) => {
       if (error) {
         callback(error);
         return;
@@ -395,6 +240,8 @@ GioService.prototype.getHandlers = function(uri, callback) {
 
 /**
  * Returns root uri of the mount enclosing a given file.
+ *
+ * @param {GioFile} gFile
  */
 GioService.prototype.getMountUri = function(gFile) {
   let mount = null;
@@ -410,9 +257,14 @@ GioService.prototype.getMountUri = function(gFile) {
 
 /**
  * Creates a directory.
+ *
+ * @param {string} uri
+ * @param {(error: Error) => void} callback
  */
 GioService.prototype.mkdir = function(uri, callback) {
-  gioAsync(this.Gio.File.new_for_uri(uri), "make_directory",
+  gioAsync(
+    this.Gio.File.new_for_uri(uri),
+    "make_directory",
     PRIORITY_DEFAULT,
     null,
     callback,
@@ -421,9 +273,14 @@ GioService.prototype.mkdir = function(uri, callback) {
 
 /**
  * Creates a file.
+ *
+ * @param {string} uri
+ * @param {(error: Error) => void} callback
  */
 GioService.prototype.touch = function(uri, callback) {
-  gioAsync(this.Gio.File.new_for_uri(uri), "create",
+  gioAsync(
+    this.Gio.File.new_for_uri(uri),
+    "create",
     FileCreateFlags.NONE,
     PRIORITY_DEFAULT,
     null,
@@ -454,7 +311,7 @@ GioService.prototype.spawn = function(props) {
  * @param {string[]} argv
  * @param {(error: Error, stdout: string) => void} callback
  */
-GioService.prototype.communicate = function(argv, callback) {
+GioService.prototype.communicate = function(argv, callback = noop) {
   const subprocess = new this.Gio.Subprocess({
     argv,
     flags: SubprocessFlags.STDOUT_PIPE,
@@ -462,7 +319,12 @@ GioService.prototype.communicate = function(argv, callback) {
 
   subprocess.init(null);
 
-  gioAsync(subprocess, "communicate_utf8", null, null, (_, result) => {
+  gioAsync(subprocess, "communicate_utf8", null, null, (
+    /** @type {any} */
+    _,
+    /** @type {string[]} */
+    result,
+  ) => {
     const stdout = result[1];
     callback(null, stdout);
   });

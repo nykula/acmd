@@ -5,21 +5,21 @@ const { Places } = require("./Places");
 describe("Places", () => {
   it("renders without crashing", () => {
     const placeService = {
-      names: ["System", "Music"],
       entities: {
-        System: {
-          name: "System",
-          icon: "drive-harddisk",
-          iconType: "ICON_NAME",
-          rootUri: "file:///media/System",
-        },
         Music: {
-          name: "Music",
           icon: "media-optical",
           iconType: "ICON_NAME",
+          name: "Music",
           rootUri: "file:///media/Music",
         },
+        System: {
+          icon: "drive-harddisk",
+          iconType: "ICON_NAME",
+          name: "System",
+          rootUri: "file:///media/System",
+        },
       },
+      names: ["System", "Music"],
     };
 
     const panelService = {
@@ -31,11 +31,13 @@ describe("Places", () => {
     const tabService = {
       entities: {
         "0": {
+          files: [
+            {
+              mountUri: "file:///media/System",
+              name: ".",
+            },
+          ],
           location: "file:///media/System/tmp",
-          files: [{
-            name: ".",
-            mountUri: "file:///media/System",
-          }],
         },
       },
     };

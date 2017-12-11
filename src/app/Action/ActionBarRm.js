@@ -3,12 +3,16 @@ const { DestDefaults, ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
-const autoBind = require("../Gjs/autoBind").default;
-const { ActionService } = require("./ActionService");
+const { autoBind } = require("../Gjs/autoBind");
+const { JobService } = require("../Job/JobService");
+const { PanelService } = require("../Panel/PanelService");
+const { SelectionService } = require("../Selection/SelectionService");
 
 /**
  * @typedef IProps
- * @property {ActionService} actionService
+ * @property {JobService} jobService
+ * @property {PanelService} panelService
+ * @property {SelectionService} selectionService
  * @property {string} label
  *
  * @param {IProps} props
@@ -26,23 +30,38 @@ ActionBarRm.prototype = Object.create(Component.prototype);
 ActionBarRm.prototype.props = undefined;
 
 /**
- * @param {*} _node
+ * @param {any} _node
  * @param {{ get_selected_action(): number }} _dragContext
  * @param {number} _x
  * @param {number} _y
  * @param {{ get_uris(): string[] }} selectionData
  */
-ActionBarRm.prototype.handleDrop = function(_node, _dragContext, _x, _y, selectionData) {
+ActionBarRm.prototype.handleDrop = function(
+  _node,
+  _dragContext,
+  _x,
+  _y,
+  selectionData,
+) {
+  const { jobService, panelService } = this.props;
   const uris = selectionData.get_uris();
-  this.props.actionService.rm(uris);
+
+  jobService.run(
+    {
+      destUri: "",
+      type: "rm",
+      uris,
+    },
+    panelService.refresh,
+  );
 };
 
 ActionBarRm.prototype.handlePressed = function() {
-  this.props.actionService.rm();
+  this.props.selectionService.rm();
 };
 
 /**
- * @param {*} node
+ * @param {any} node
  */
 ActionBarRm.prototype.ref = function(node) {
   node.drag_dest_set(DestDefaults.ALL, [], DragAction.MOVE);
@@ -64,4 +83,6 @@ ActionBarRm.prototype.render = function() {
 };
 
 exports.ActionBarRm = ActionBarRm;
-exports.default = connect(["actionService"])(ActionBarRm);
+exports.default = connect(["jobService", "panelService", "selectionService"])(
+  ActionBarRm,
+);

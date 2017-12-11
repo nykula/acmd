@@ -3,27 +3,22 @@ const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const noop = require("lodash/noop");
-const { ActionService } = require("../Action/ActionService");
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 const { setTimeout } = require("../Gjs/setTimeout");
 const { GICON, TEXT } = require("../ListStore/ListStore");
 const minLength = require("../MinLength/minLength").default;
-const { PlaceService } = require("../Mount/PlaceService");
-const getActiveMountUri = require("../Mount/getActiveMountUri").default;
 const { PanelService } = require("../Panel/PanelService");
-const Refstore = require("../Refstore/Refstore").default;
+const { PlaceService } = require("../Place/PlaceService");
+const { RefService } = require("../Ref/RefService");
 const Select = require("../Select/Select").default;
 const formatSize = require("../Size/formatSize").default;
-const { TabService } = require("../Tab/TabService");
 
 /**
  * @typedef IProps
- * @property {ActionService} actionService
- * @property {PlaceService} placeService
  * @property {number} panelId
  * @property {PanelService} panelService
- * @property {Refstore} refstore
- * @property {TabService} tabService
+ * @property {PlaceService} placeService
+ * @property {RefService} refService
  *
  * @param {IProps} props
  */
@@ -43,7 +38,7 @@ Mount.prototype.onChanged = noop;
 
 Mount.prototype.handleFocus = function() {
   setTimeout(() => {
-    const node = this.props.refstore.get("panel" + this.props.panelId);
+    const node = this.props.refService.get("panel" + this.props.panelId);
 
     if (node) {
       node.grab_focus();
@@ -51,24 +46,22 @@ Mount.prototype.handleFocus = function() {
   }, 0);
 };
 
-Mount.prototype.handleLayout = function(node) {
-  this.props.refstore.set("mounts" + this.props.panelId)(node);
-};
-
 Mount.prototype.handleLevelUp = function() {
-  this.props.actionService.levelUp(this.props.panelId);
+  this.props.panelService.levelUp(this.props.panelId);
 };
 
 Mount.prototype.handleRoot = function() {
-  this.props.actionService.root(this.props.panelId);
+  this.props.panelService.root(this.props.panelId);
 };
 
 Mount.prototype.render = function() {
-  const activeUri = getActiveMountUri(this.props, this.props.panelId);
+  const { panelId, panelService, placeService } = this.props;
+  const { entities, names } = placeService;
 
-  const { entities, names } = this.props.placeService;
+  const activeUri = panelService.getActiveMountUri(panelId);
 
-  const activeMount = names.map(x => entities[x])
+  const activeMount = names
+    .map(x => entities[x])
     .filter(mount => mount.rootUri === activeUri)[0];
 
   const name = activeMount.name;
@@ -85,6 +78,9 @@ Mount.prototype.render = function() {
             { name: "text", type: TEXT, pack: "pack_end" },
             { name: "icon", type: GICON },
           ],
+          on_changed: this.onChanged,
+          on_focus: this.handleFocus,
+          on_layout: this.props.refService.set("mounts" + this.props.panelId),
           rows: names.map(x => entities[x]).map(mount => ({
             icon: {
               icon: mount.icon,
@@ -93,9 +89,6 @@ Mount.prototype.render = function() {
             text: minLength(names, mount.name),
             value: mount.name,
           })),
-          on_changed: this.onChanged,
-          on_layout: this.handleLayout,
-          on_focus: this.handleFocus,
           value: name,
         }),
       ]),
@@ -108,24 +101,18 @@ Mount.prototype.render = function() {
           on_clicked: this.handleRoot,
           relief: ReliefStyle.NONE,
         }, [
-          h("label", { label: "\\" }),
-        ]),
+            h("label", { label: "\\" }),
+          ]),
         h("button", {
           on_clicked: this.handleLevelUp,
           relief: ReliefStyle.NONE,
         }, [
-          h("label", { label: ".." }),
-        ]),
+            h("label", { label: ".." }),
+          ]),
       ]),
     ])
   );
 };
 
 exports.Mount = Mount;
-exports.default = connect([
-  "actionService",
-  "placeService",
-  "panelService",
-  "refstore",
-  "tabService",
-])(Mount);
+exports.default = connect(["panelService", "placeService", "refService"])(Mount);

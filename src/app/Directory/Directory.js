@@ -1,5 +1,6 @@
 const Gdk = imports.gi.Gdk;
 const { DragAction } = Gdk;
+const { TreeView } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
@@ -7,26 +8,53 @@ const assign = require("lodash/assign");
 const isEqual = require("lodash/isEqual");
 const noop = require("lodash/noop");
 const range = require("lodash/range");
-const { action, autorun, computed, extendObservable, observable } = require("mobx");
+const {
+  action,
+  autorun,
+  computed,
+  extendObservable,
+  observable,
+} = require("mobx");
 const { File } = require("../../domain/File/File");
-const { ActionService } = require("../Action/ActionService");
-const { FileService } = require("../File/FileService");
-const autoBind = require("../Gjs/autoBind").default;
+const { CursorService } = require("../Cursor/CursorService");
+const { DirectoryService } = require("../Directory/DirectoryService");
+const { autoBind } = require("../Gjs/autoBind");
+const { JobService } = require("../Job/JobService");
 const { CHECKBOX, GICON, TEXT } = require("../ListStore/ListStore");
+const { OppositeService } = require("../Opposite/OppositeService");
 const { PanelService } = require("../Panel/PanelService");
-const Refstore = require("../Refstore/Refstore").default;
+const { PlaceService } = require("../Place/PlaceService");
+const { RefService } = require("../Ref/RefService");
+const { SelectionService } = require("../Selection/SelectionService");
 const { TabService } = require("../Tab/TabService");
+const { WindowService } = require("../Window/WindowService");
 const DirectoryFiles = require("./DirectoryFiles").default;
 const select = require("./select").default;
 
 /**
+ * @typedef KeyPressEvent
+ * @property {boolean} altKey
+ * @property {boolean} ctrlKey
+ * @property {number} limit
+ * @property {any} nativeEvent
+ * @property {any} rect
+ * @property {boolean} shiftKey
+ * @property {number} top
+ * @property {any} win
+ * @property {any} which
+ *
  * @typedef IProps
- * @property {ActionService} actionService
- * @property {FileService} fileService
+ * @property {CursorService} cursorService
+ * @property {DirectoryService} directoryService
+ * @property {JobService} jobService
  * @property {number} panelId
+ * @property {OppositeService} oppositeService
  * @property {PanelService} panelService
- * @property {Refstore} refstore
+ * @property {PlaceService} placeService
+ * @property {RefService} refService
+ * @property {SelectionService} selectionService
  * @property {TabService} tabService
+ * @property {WindowService} windowService
  *
  * @param {IProps} props
  */
@@ -50,8 +78,8 @@ Directory.prototype = Object.create(Component.prototype);
 
 Directory.prototype.cols = [
   {
-    title: null,
     name: "isSelected",
+    title: null,
     type: CHECKBOX,
   },
   { title: null, name: "icon", type: GICON },
@@ -102,10 +130,9 @@ Directory.prototype.focusIfActive = function() {
  * @param {number} index
  */
 Directory.prototype.handleActivated = function(index) {
-  this.props.actionService.activated({
-    index,
-    panelId: this.props.panelId,
-  });
+  const { cursorService, panelService } = this.props;
+  panelService.cursor(this.props.panelId, index);
+  cursorService.open();
 };
 
 /**
@@ -123,61 +150,70 @@ Directory.prototype.handleClicked = function(colName) {
  */
 Directory.prototype.handleCursor = function(ev) {
   const { index, mouseEvent } = ev;
+  const { panelService, selectionService } = this.props;
 
-  this.props.fileService.cursor({
-    cursor: index,
-    panelId: this.props.panelId,
-    tabId: this.tabId,
-  });
+  panelService.cursor(this.props.panelId, index);
 
   if (mouseEvent) {
     const button = mouseEvent.get_button()[1];
 
     if (button === Gdk.BUTTON_SECONDARY) {
-      this.props.actionService.ctxMenu({ mouseEvent });
+      selectionService.menu({ mouseEvent });
     }
   }
 };
 
 /**
- * @param {*} _node
- * @param {*} _dragContext
+ * @param {any} _node
+ * @param {any} _dragContext
  * @param {{ set_uris(uris: string[]): void }} selectionData
  */
 Directory.prototype.handleDrag = function(_node, _dragContext, selectionData) {
-  const uris = this.props.actionService.getActiveFiles().map(x => x.uri);
+  const uris = this.props.selectionService.getUris();
   selectionData.set_uris(uris);
 };
 
 /**
- * @param {*} _node
+ * @param {any} _node
  * @param {{ get_selected_action(): number }} dragContext
  * @param {number} _x
  * @param {number} _y
  * @param {{ get_uris(): string[] }} selectionData
  */
-Directory.prototype.handleDrop = function(_node, dragContext, _x, _y, selectionData) {
-  const action = dragContext.get_selected_action();
+Directory.prototype.handleDrop = function(
+  _node,
+  dragContext,
+  _x,
+  _y,
+  selectionData,
+) {
+  const { run } = this.props.jobService;
+  const { refresh } = this.props.windowService;
+
+  const selectedAction = dragContext.get_selected_action();
   const uris = selectionData.get_uris();
   const { location } = this.tab;
 
-  if (action === DragAction.MOVE) {
-    this.props.actionService.mv(uris, location);
-  } else {
-    this.props.actionService.cp(uris, location);
-  }
+  run(
+    {
+      destUri: location,
+      type: selectedAction === DragAction.MOVE ? "mv" : "cp",
+      uris,
+    },
+    refresh,
+  );
 };
 
 /**
- * @param {{ altKey: boolean, ctrlKey: boolean, limit: number, nativeEvent: any, rect: any, shiftKey: boolean, top: number, win: any, which: any }} ev
+ * @param {KeyPressEvent} ev
  */
 Directory.prototype.handleKeyPressEvent = function(ev) {
   const { cursor, selected } = this.tab;
 
   const state = {
-    limit: ev.limit,
-    indices: range(0, this.getFiles().length),
     cursor: cursor,
+    indices: range(0, this.getFiles().length),
+    limit: ev.limit,
     selected: selected,
     top: ev.top,
   };
@@ -188,25 +224,31 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
     this.handleCursor({ index: nextState.cursor });
 
     if (!isEqual(state.selected.slice(), nextState.selected.slice())) {
-      this.props.fileService.selected({
-        panelId: this.props.panelId,
-        selected: nextState.selected,
-        tabId: this.tabId,
-      });
+      this.props.tabService.selected(this.tabId, nextState.selected);
     }
 
     return true;
   }
 
-  const { actionService, panelService, panelId } = this.props;
+  const {
+    cursorService,
+    directoryService,
+    jobService,
+    oppositeService,
+    panelId,
+    panelService,
+    placeService,
+    selectionService,
+    windowService,
+  } = this.props;
 
   switch (ev.which) {
     case Gdk.KEY_BackSpace:
-      actionService.levelUp(panelId);
+      panelService.levelUp(panelId);
       break;
 
     case Gdk.KEY_Menu:
-      actionService.ctxMenu({
+      selectionService.menu({
         keyEvent: ev.nativeEvent,
         rect: ev.rect,
         win: ev.win,
@@ -226,109 +268,109 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
 
     case Gdk.KEY_1:
       if (ev.altKey) {
-        actionService.mounts(0);
+        placeService.list(0);
         return true;
       }
       break;
 
     case Gdk.KEY_2:
       if (ev.altKey) {
-        actionService.mounts(1);
+        placeService.list(1);
         return true;
       }
       break;
 
     case Gdk.KEY_F2:
-      actionService.refresh();
+      windowService.refresh();
       break;
 
     case Gdk.KEY_F3:
-      actionService.view();
+      cursorService.view();
       break;
 
     case Gdk.KEY_F4:
-      actionService.editor();
+      cursorService.edit();
       break;
 
     case Gdk.KEY_F5:
-      actionService.cp();
+      oppositeService.cp();
       break;
 
     case Gdk.KEY_F6:
-      actionService.mv();
+      oppositeService.mv();
       break;
 
     case Gdk.KEY_F7:
-      actionService.mkdir();
+      directoryService.mkdir();
       break;
 
     case Gdk.KEY_F8:
-      actionService.rm();
+      selectionService.rm();
       break;
 
     case Gdk.KEY_a:
       if (ev.ctrlKey) {
-        actionService.selectAll();
+        selectionService.selectAll();
       }
       break;
 
     case Gdk.KEY_b:
       if (ev.ctrlKey) {
-        actionService.showHidSys();
+        windowService.showHidSys();
       }
       break;
 
     case Gdk.KEY_c:
       if (ev.ctrlKey) {
-        actionService.copy();
+        selectionService.copy();
       }
       break;
 
     case Gdk.KEY_d:
       if (ev.ctrlKey) {
-        actionService.deselectAll();
+        selectionService.deselectAll();
       }
       break;
 
     case Gdk.KEY_I:
       if (ev.ctrlKey) {
-        actionService.invert();
+        selectionService.invert();
       }
       break;
 
     case Gdk.KEY_j:
       if (ev.ctrlKey) {
-        actionService.jobs();
+        jobService.list();
       }
       break;
 
     case Gdk.KEY_l:
       if (ev.ctrlKey) {
-        actionService.ls();
+        panelService.ls();
       }
       break;
 
     case Gdk.KEY_t:
       if (ev.ctrlKey) {
-        actionService.createTab();
+        panelService.createTab();
       }
       break;
 
     case Gdk.KEY_v:
       if (ev.ctrlKey) {
-        actionService.paste();
+        directoryService.paste();
       }
       break;
 
     case Gdk.KEY_w:
       if (ev.ctrlKey) {
-        actionService.removeTab();
+        panelService.removeTab();
       }
       break;
 
     case Gdk.KEY_x:
       if (ev.ctrlKey) {
-        actionService.cut();
+        selectionService.cut();
       }
       break;
   }
@@ -336,8 +378,11 @@ Directory.prototype.handleKeyPressEvent = function(ev) {
   return false;
 };
 
+/**
+ * @param {TreeView} node
+ */
 Directory.prototype.handleLayout = function(node) {
-  this.props.refstore.set("panel" + this.props.panelId)(node);
+  this.props.refService.set("panel" + this.props.panelId)(node);
   this.focusIfActive();
 };
 
@@ -347,17 +392,17 @@ Directory.prototype.handleLayout = function(node) {
 Directory.prototype.handleSelected = function(index) {
   let { selected } = this.tab;
 
-  selected = selected.indexOf(index) === -1
-    ? selected.concat(index)
-    : selected.filter(x => x !== index);
+  selected =
+    selected.indexOf(index) === -1
+      ? selected.concat(index)
+      : selected.filter(x => x !== index);
 
-  this.props.fileService.selected({
-    panelId: this.props.panelId,
-    selected: selected,
-    tabId: this.tabId,
-  });
+  this.props.panelService.selected(this.props.panelId, selected);
 };
 
+/**
+ * @param {{ name: string, title: string }} col
+ */
 Directory.prototype.prefixSort = function(col) {
   const { sortedBy } = this.tab;
 
@@ -373,14 +418,19 @@ Directory.prototype.prefixSort = function(col) {
 };
 
 Directory.prototype.getCols = function() {
-  return Directory.prototype.cols
-    .map(this.prefixSort)
-    .map(col => assign({}, col, {
+  return Directory.prototype.cols.map(this.prefixSort).map((
+    /** @type {any} */ col,
+  ) =>
+    assign({}, col, {
       on_clicked: () => this.handleClicked(col.name),
       on_toggled: col.name === "isSelected" ? this.handleSelected : undefined,
-    }));
+    }),
+  );
 };
 
+/**
+ * @param {TreeView} node
+ */
 Directory.prototype.ref = function(node) {
   this.node = node;
 };
@@ -407,9 +457,14 @@ Directory.prototype.render = function() {
 exports.Directory = Directory;
 
 exports.default = connect([
-  "actionService",
-  "fileService",
+  "cursorService",
+  "directoryService",
+  "jobService",
+  "oppositeService",
   "panelService",
-  "refstore",
+  "placeService",
+  "refService",
+  "selectionService",
   "tabService",
+  "windowService",
 ])(Directory);

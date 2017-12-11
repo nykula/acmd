@@ -1,5 +1,11 @@
 const hyperscript = require("inferno-hyperscript").default;
 
+/**
+ * @see ./GtkInferno.d.ts
+ * @param {any} component
+ * @param {any=} props
+ * @param {any=} children
+ */
 function h(component, props, children) {
   if (typeof component !== "string" && "new" in component) {
     // Gtk widget.

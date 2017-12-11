@@ -2,6 +2,10 @@ const Gdk = imports.gi.Gdk;
 const assign = require("lodash/assign");
 const range = require("lodash/range");
 const sortedUniq = require("lodash/sortedUniq");
+
+/**
+ * @param {number[]} xs
+ */
 const uniqSort = xs => sortedUniq(xs.sort((a, b) => a - b));
 
 /**
@@ -27,13 +31,19 @@ exports.default = function(state, ev) {
       return assign({}, state, {
         cursor: Math.min(cursor + 1, indices.length - 1),
         selected: selected.filter(x => x !== cursor),
-        top: Math.min(cursor + 2 > Math.floor(limit) ? top + 1 : top, indices.length - Math.floor(limit)),
+        top: Math.min(
+          cursor + 2 > Math.floor(limit) ? top + 1 : top,
+          indices.length - Math.floor(limit),
+        ),
       });
     } else {
       return assign({}, state, {
         cursor: Math.min(cursor + 1, indices.length - 1),
         selected: selected.concat(cursor).sort((a, b) => a - b),
-        top: Math.min(cursor + 2 > Math.floor(limit) ? top + 1 : top, indices.length - Math.floor(limit)),
+        top: Math.min(
+          cursor + 2 > Math.floor(limit) ? top + 1 : top,
+          indices.length - Math.floor(limit),
+        ),
       });
     }
   }
@@ -41,7 +51,10 @@ exports.default = function(state, ev) {
   if (which === Gdk.KEY_Down) {
     return assign({}, state, {
       cursor: Math.min(cursor + 1, indices.length - 1),
-      top: Math.min(cursor + 2 > Math.floor(limit) ? top + 1 : top, indices.length - Math.floor(limit)),
+      top: Math.min(
+        cursor + 2 > Math.floor(limit) ? top + 1 : top,
+        indices.length - Math.floor(limit),
+      ),
     });
   }
 
@@ -69,14 +82,29 @@ exports.default = function(state, ev) {
     if (selected.indexOf(cursor) !== -1) {
       return assign({}, state, {
         cursor: Math.min(cursor + Math.floor(limit) - 2, indices.length - 1),
-        selected: selected.filter(x => range(cursor, cursor + Math.floor(limit) - 2).indexOf(x) === -1),
-        top: cursor + Math.floor(limit) - 2 >= top + Math.floor(limit) ? Math.min(cursor - 1, indices.length - Math.floor(limit)) : top,
+        selected: selected.filter(
+          x => range(cursor, cursor + Math.floor(limit) - 2).indexOf(x) === -1,
+        ),
+        top:
+          cursor + Math.floor(limit) - 2 >= top + Math.floor(limit)
+            ? Math.min(cursor - 1, indices.length - Math.floor(limit))
+            : top,
       });
     } else {
       return assign({}, state, {
         cursor: Math.min(cursor + Math.floor(limit) - 2, indices.length - 1),
-        selected: uniqSort(selected.concat(range(cursor, Math.min(cursor + Math.floor(limit) - 2, indices.length)))),
-        top: cursor + Math.floor(limit) - 2 >= top + Math.floor(limit) ? Math.min(cursor - 1, indices.length - Math.floor(limit)) : top,
+        selected: uniqSort(
+          selected.concat(
+            range(
+              cursor,
+              Math.min(cursor + Math.floor(limit) - 2, indices.length),
+            ),
+          ),
+        ),
+        top:
+          cursor + Math.floor(limit) - 2 >= top + Math.floor(limit)
+            ? Math.min(cursor - 1, indices.length - Math.floor(limit))
+            : top,
       });
     }
   }
@@ -84,7 +112,10 @@ exports.default = function(state, ev) {
   if (which === Gdk.KEY_Page_Down) {
     return assign({}, state, {
       cursor: Math.min(cursor + Math.floor(limit) - 1, indices.length - 1),
-      top: Math.min(cursor > 0 ? cursor : top, indices.length - Math.floor(limit)),
+      top: Math.min(
+        cursor > 0 ? cursor : top,
+        indices.length - Math.floor(limit),
+      ),
     });
   }
 
@@ -92,13 +123,28 @@ exports.default = function(state, ev) {
     if (selected.indexOf(cursor) !== -1) {
       return assign({}, state, {
         cursor: Math.max(0, cursor - Math.floor(limit) + 2),
-        selected: selected.filter(x => range(Math.max(0, cursor - Math.floor(limit) + 3), cursor + 1).indexOf(x) === -1),
+        selected: selected.filter(
+          x =>
+            range(
+              Math.max(0, cursor - Math.floor(limit) + 3),
+              cursor + 1,
+            ).indexOf(x) === -1,
+        ),
       });
     } else {
       return assign({}, state, {
         cursor: Math.max(0, cursor - Math.floor(limit) + 2),
-        selected: uniqSort(selected.concat(range(Math.max(0, cursor - Math.floor(limit) + 3), cursor + 1))),
-        top: Math.max(0, cursor - Math.floor(limit) + 2 < top ? cursor - Math.floor(limit) + 2 : top),
+        selected: uniqSort(
+          selected.concat(
+            range(Math.max(0, cursor - Math.floor(limit) + 3), cursor + 1),
+          ),
+        ),
+        top: Math.max(
+          0,
+          cursor - Math.floor(limit) + 2 < top
+            ? cursor - Math.floor(limit) + 2
+            : top,
+        ),
       });
     }
   }
@@ -106,7 +152,12 @@ exports.default = function(state, ev) {
   if (which === Gdk.KEY_Page_Up) {
     return assign({}, state, {
       cursor: Math.max(0, cursor - Math.floor(limit) + 1),
-      top: Math.max(0, cursor - Math.floor(limit) + 1 < top ? cursor - Math.floor(limit) + 1 : top),
+      top: Math.max(
+        0,
+        cursor - Math.floor(limit) + 1 < top
+          ? cursor - Math.floor(limit) + 1
+          : top,
+      ),
     });
   }
 

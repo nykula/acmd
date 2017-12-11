@@ -3,22 +3,29 @@ const { MenuBar } = require("./MenuBar");
 
 describe("MenuBar", () => {
   it("renders without crashing", () => {
-    /** @type {*} */
-    const actionService = {};
+    const handler = expect.createSpy();
+
+    /** @type {any} */
+    const actionService = {
+      get: () => ({ handler }),
+    };
 
     new MenuBar({ actionService }).render();
   });
 
   it("calls action when user activates item", () => {
-    /** @type {*} */
+    const handler = expect.createSpy();
+
+    /** @type {any} */
     const actionService = {
-      createTab: expect.createSpy(),
+      get: () => ({ handler }),
     };
 
+    /** @type {any} */
     const tree = new MenuBar({ actionService }).render();
 
     tree.children[0].children[0].props.on_activate();
 
-    expect(actionService.createTab).toHaveBeenCalled();
+    expect(handler).toHaveBeenCalled();
   });
 });

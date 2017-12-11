@@ -1,14 +1,33 @@
-const Buffer = require("buffer/").Buffer;
+const { Buffer } = require("buffer");
+
+exports.Class = class Class { };
+
+/** @type {any[]} */
+exports.EmptyArray = [];
+
+/** @type {any} */
+exports.EmptyProps = {};
+
+/** @type {string} */
+exports.NoString = null;
 
 let description = "";
 
-exports.describe = function(_description, callback) {
+/**
+ * @param {string} _description
+ * @param {() => void} callback
+ */
+function describe(_description, callback) {
   description = _description;
   callback();
   description = "";
-};
+}
 
-exports.it = function(title, callback) {
+/**
+ * @param {string} title
+ * @param {() => void} callback
+ */
+function it(title, callback) {
   if (description) {
     title = description ? `${description}: ${title}` : title;
   }
@@ -23,14 +42,21 @@ exports.it = function(title, callback) {
   }
 
   print(title + " SUCCESS");
-};
+}
 
 exports.find = find;
+/**
+ * @param {{ children: any[] }} tree
+ * @param {(node: any) => boolean} callback
+ */
 function find(tree, callback) {
   return tree.children.filter(callback)[0];
 }
 
 exports.shallow = shallow;
+/**
+ * @param {{ flags: number, props: any, type: any }} tree
+ */
 function shallow(tree) {
   if (tree.flags === 4) {
     const Component = tree.type;
@@ -48,7 +74,7 @@ exports.require = () => {
    * @type {any}
    */
   const win = window;
-  win.describe = exports.describe;
+  win.describe = describe;
   win.Buffer = Buffer;
-  win.it = exports.it;
+  win.it = it;
 };

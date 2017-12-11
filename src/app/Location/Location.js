@@ -1,9 +1,10 @@
+const { Box, Label, ListBox, ListBoxRow } = imports.gi.Gtk;
 const { EllipsizeMode } = imports.gi.Pango;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
-const h = require("inferno-hyperscript").default;
 const { action, autorun, extendObservable, observable } = require("mobx");
 const { autoBind } = require("../Gjs/autoBind");
+const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 
@@ -60,10 +61,16 @@ Location.prototype.tab = function() {
   return this.props.tabService.entities[activeTabId];
 };
 
+/**
+ * @param {ListBox} node
+ */
 Location.prototype.refList = function(node) {
   this.list = node;
 };
 
+/**
+ * @param {ListBoxRow} node
+ */
 Location.prototype.refRow = function(node) {
   this.row = node;
 };
@@ -84,13 +91,13 @@ Location.prototype.render = function() {
   const { location } = this.tab();
   const label = location.replace(/\/?$/, "/*").replace(/^file:\/\//, "");
   return (
-    h("list-box", { ref: this.refList }, [
-      h("list-box-row", { ref: this.refRow }, [
-        h("box", { border_width: 2 }, [
-          h("box", { border_width: 2 }),
-          h("label", {
-            label: label,
+    h(ListBox, { ref: this.refList }, [
+      h(ListBoxRow, { ref: this.refRow }, [
+        h(Box, { border_width: 2 }, [
+          h(Box, { border_width: 2 }),
+          h(Label, {
             ellipsize: EllipsizeMode.MIDDLE,
+            label: label,
           }),
         ]),
       ]),

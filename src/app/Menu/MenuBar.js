@@ -6,11 +6,11 @@ const { ActionService } = require("../Action/ActionService");
 const menus = [
   {
     children: [
-      { action: "createTab", label: "New tab" },
-      { action: "touch", label: "Create file" },
-      { action: "terminal", label: "Open terminal" },
-      { action: "removeTab", label: "Close tab" },
-      { action: "exit", label: "Exit" },
+      { id: "panelService.createTab", label: "New tab" },
+      { id: "directoryService.touch", label: "Create file" },
+      { id: "directoryService.terminal", label: "Open terminal" },
+      { id: "panelService.removeTab", label: "Close tab" },
+      { id: "windowService.exit", label: "Exit" },
     ],
 
     label: "File",
@@ -18,15 +18,15 @@ const menus = [
 
   {
     children: [
-      { action: "cut", label: "Cut" },
-      { action: "copy", label: "Copy" },
-      { action: "paste", label: "Paste" },
-      { action: "selectAll", label: "Select all" },
-      { action: "deselectAll", label: "Deselect all" },
-      { action: "invert", label: "Invert selection" },
-      { action: "selectGlob", label: "Select glob" },
-      { action: "deselectGlob", label: "Deselect glob" },
-      { action: "selectDiff", label: "Compare directories" },
+      { id: "selectionService.cut", label: "Cut" },
+      { id: "selectionService.copy", label: "Copy" },
+      { id: "directoryService.paste", label: "Paste" },
+      { id: "selectionService.selectAll", label: "Select all" },
+      { id: "selectionService.deselectAll", label: "Deselect all" },
+      { id: "selectionService.invert", label: "Invert selection" },
+      { id: "selectionService.selectGlob", label: "Select glob" },
+      { id: "selectionService.deselectGlob", label: "Deselect glob" },
+      { id: "selectionService.selectDiff", label: "Compare directories" },
     ],
 
     label: "Edit",
@@ -34,8 +34,8 @@ const menus = [
 
   {
     children: [
-      { action: "refresh", label: "Refresh" },
-      { action: "showHidSys", label: "Hidden files" },
+      { id: "windowService.refresh", label: "Refresh" },
+      { id: "windowService.showHidSys", label: "Hidden files" },
     ],
 
     label: "View",
@@ -43,17 +43,17 @@ const menus = [
 
   {
     children: [
-      { action: "levelUp", label: "Open parent" },
-      { action: "back", label: "Back" },
-      { action: "forward", label: "Forward" },
-      { action: "ls", label: "Open location..." },
+      { id: "panelService.levelUp", label: "Open parent" },
+      { id: "panelService.back", label: "Back" },
+      { id: "panelService.forward", label: "Forward" },
+      { id: "panelService.ls", label: "Open location..." },
     ],
 
     label: "Go",
   },
 
   {
-    children: [{ action: "reportIssue", label: "Report issue" }],
+    children: [{ id: "windowService.issue", label: "Report issue" }],
     label: "Help",
   },
 ];
@@ -81,7 +81,7 @@ MenuBar.prototype.render = function() {
           menu.children.map(child => (
             h("menu-item", {
               label: child.label,
-              on_activate: this.props.actionService[child.action],
+              on_activate: this.props.actionService.get(child.id).handler,
             })
           )),
         )),

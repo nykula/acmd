@@ -4,7 +4,7 @@ const { ListStore, TreeModel } = Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
 const { TreeViewRow } = require("../../domain/TreeView/TreeViewRow");
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 const KeyListener = require("../Gjs/KeyListener").default;
 const { configureColumn, setCols, setValue } = require("../ListStore/ListStore");
 
@@ -83,7 +83,7 @@ TreeView.prototype.useNodeAsThis = function() {
     layoutCallback: { set: callback => this.setLayoutCallback(callback) },
   });
 
-  this.connect("button_press_event", (_, ev) => {
+  this.connect("button_press_event", (/** @type {any} */ _, /** @type {any} */ ev) => {
     this.mouseEvent = ev;
   });
 
@@ -94,7 +94,7 @@ TreeView.prototype.useNodeAsThis = function() {
  * @param {Col[]} cols
  */
 TreeView.prototype.setCols = function(cols) {
-  this.setCols = _cols => {
+  this.setCols = (/** @type {Col[]} */ _cols) => {
     const tvCols = this.get_columns();
     for (let i = 0; i < _cols.length; i++) {
       tvCols[i].title = _cols[i].title;
@@ -153,7 +153,7 @@ TreeView.prototype.appendChild = function(newChild) {
 TreeView.prototype.setActivatedCallback = function(callback) {
   this.setActivatedCallback = noop;
 
-  this.connect("row_activated", (_, path) => {
+  this.connect("row_activated", (/** @type {any} */ _, /** @type {any} */ path) => {
     const index = path.get_indices()[0];
     callback(index);
   });
@@ -190,7 +190,7 @@ TreeView.prototype.setCursorCallback = function(callback) {
 TreeView.prototype.setKeyPressEventCallback = function(callback) {
   this.setKeyPressEventCallback = noop;
 
-  new KeyListener(this).on("key-press-event", (ev) => {
+  new KeyListener(this).on("key-press-event", (/** @type {any} */ ev) => {
     const visible = this.get_visible_range();
     const top = visible[1] ? visible[1].get_indices()[0] : 0;
 
@@ -254,6 +254,7 @@ TreeView.prototype.setDragAction = function(dragAction) {
 
 /**
  * @param {TreeModel} store
+ * @param {any} _
  * @param {string} input
  * @param {any} iter
  */

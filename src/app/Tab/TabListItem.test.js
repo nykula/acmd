@@ -33,7 +33,7 @@ describe("TabListItem", () => {
 
   it("requests active tab change on click without crashing", () => {
     /**
-     * @type {*}
+     * @type {any}
      */
     const tabService = {
       entities: {
@@ -42,17 +42,11 @@ describe("TabListItem", () => {
       },
     };
 
-    let _id = -1;
-    let _tabId = -1;
-
     /**
-     * @type {*}
+     * @type {any}
      */
     const panelService = {
-      setActiveTabId: ({ id, tabId }) => {
-        _id = id;
-        _tabId = tabId;
-      },
+      setActiveTab: expect.createSpy(),
     };
 
     new TabListItem({
@@ -65,7 +59,6 @@ describe("TabListItem", () => {
     })
       .handleClicked();
 
-    expect(_id).toEqual(1);
-    expect(_tabId).toEqual(0);
+    expect(panelService.setActiveTab).toHaveBeenCalledWith(0);
   });
 });

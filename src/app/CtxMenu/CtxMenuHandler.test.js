@@ -3,7 +3,7 @@ const { CtxMenuHandler } = require("./CtxMenuHandler");
 
 describe("CtxMenuHandler", () => {
   it("renders", () => {
-    /** @type {*} */
+    /** @type {any} */
     const gioService = {};
 
     new CtxMenuHandler({
@@ -19,7 +19,7 @@ describe("CtxMenuHandler", () => {
   });
 
   it("handles activate", () => {
-    /** @type {*} */
+    /** @type {any} */
     const gioService = {
       launch: expect.createSpy(),
     };

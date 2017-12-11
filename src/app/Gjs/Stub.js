@@ -1,3 +1,6 @@
+/**
+ * @param {any=} node
+ */
 function Stub(node) {
   if (node) {
     Stub.call(node);
@@ -31,7 +34,10 @@ Stub.prototype.appendChild = function(newChild) {
  * @param {any=} value
  */
 Stub.prototype.setAttribute = function(name, value) {
-  this[name] = value;
+  /** @type {{ [name: string]: any }} */
+  const self = this;
+
+  self[name] = value;
 };
 
 exports.Stub = Stub;

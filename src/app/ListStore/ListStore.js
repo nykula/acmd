@@ -7,6 +7,9 @@ const CHECKBOX = exports.CHECKBOX = "CHECKBOX";
 const GICON = exports.GICON = "GICON";
 const TEXT = exports.TEXT = "TEXT";
 
+/**
+ * @param {{ cols: { name: string, type: string }[], rows: any[] }} props
+ */
 exports.fromProps = function(props) {
   const store = new Gtk.ListStore();
 
@@ -29,7 +32,12 @@ exports.fromProps = function(props) {
   return store;
 };
 
-const setCols = exports.setCols = function(store, cols) {
+exports.setCols = setCols;
+/**
+ * @param {any} store
+ * @param {{ name: string, type: string }[]} cols
+ */
+function setCols(store, cols) {
   store.cols = cols;
   store.set_column_types(cols.map(col => {
     if (col.type === GICON) {
@@ -42,9 +50,16 @@ const setCols = exports.setCols = function(store, cols) {
 
     return String;
   }));
-};
+}
 
-const setValue = exports.setValue = function(store, iter, name, value) {
+exports.setValue = setValue;
+/**
+ * @param {any} store
+ * @param {any} iter
+ * @param {string} name
+ * @param {any} value
+ */
+function setValue(store, iter, name, value) {
   for (let i = 0; i < store.cols.length; i++) {
     const col = store.cols[i];
 
@@ -59,9 +74,15 @@ const setValue = exports.setValue = function(store, iter, name, value) {
       break;
     }
   }
-};
+}
 
-exports.configureColumn = function(node, col, i) {
+exports.configureColumn = configureColumn;
+/**
+ * @param {any} node
+ * @param {{ on_toggled?: (row: number) => void, pack?: string, type: string }} col
+ * @param {number} i
+ */
+function configureColumn(node, col, i) {
   let attribute;
   let renderer;
 
@@ -87,4 +108,4 @@ exports.configureColumn = function(node, col, i) {
 
   node[col.pack || "pack_start"](renderer, false);
   node.add_attribute(renderer, attribute, i);
-};
+}

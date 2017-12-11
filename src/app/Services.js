@@ -1,50 +1,122 @@
 const Gtk = imports.gi.Gtk;
 const { Window } = Gtk;
 const { ActionService } = require("./Action/ActionService");
+const { ClipboardService } = require("./Clipboard/ClipboardService");
+const { CursorService } = require("./Cursor/CursorService");
 const { DialogService } = require("./Dialog/DialogService");
-const { FileService } = require("./File/FileService");
+const { DirectoryService } = require("./Directory/DirectoryService");
 const { GioService } = require("./Gio/GioService");
-const { WorkerService } = require("./Gio/WorkerService");
 const { JobService } = require("./Job/JobService");
-const { LogService } = require("./Log/LogService");
-const { PlaceService } = require("./Mount/PlaceService");
-const Refstore = require("./Refstore/Refstore").default;
+const { OppositeService } = require("./Opposite/OppositeService");
 const { PanelService } = require("./Panel/PanelService");
+const { PlaceService } = require("./Place/PlaceService");
+const { RefService } = require("./Ref/RefService");
+const { SelectionService } = require("./Selection/SelectionService");
 const { TabService } = require("./Tab/TabService");
+const { WindowService } = require("./Window/WindowService");
 
 /**
- * @param {Window} win
+ * @param {Window} window
  */
-function Services(win) {
-  this.win = win;
+function Services(window) {
+  const dialogService = new DialogService(window);
 
-  this.dialogService = new DialogService(this.win);
-  this.gioService = new GioService();
-  this.jobService = new JobService();
-  this.logService = new LogService();
-  this.placeService = new PlaceService();
-  this.refstore = new Refstore();
-  this.tabService = new TabService();
-  this.workerService = new WorkerService();
+  const gioService = new GioService();
 
-  this.panelService = new PanelService(this.tabService);
+  const refService = new RefService();
 
-  this.fileService = new FileService(this.panelService, this.tabService);
+  // ---
 
-  this.actionService = new ActionService(
-    this.dialogService,
-    this.fileService,
-    this.gioService,
-    Gtk,
-    this.jobService,
-    this.logService,
-    this.placeService,
-    this.panelService,
-    this.refstore,
-    this.tabService,
-    this.win,
-    this.workerService,
-  );
+  const clipboardService = new ClipboardService({
+    gioService,
+  });
+
+  const jobService = new JobService({
+    refService,
+  });
+
+  const placeService = new PlaceService({
+    refService,
+  });
+
+  const tabService = new TabService({
+    gioService,
+  });
+
+  // ---
+
+  const panelService = new PanelService({
+    dialogService,
+    placeService,
+    tabService,
+  });
+
+  // ---
+
+  const directoryService = new DirectoryService({
+    clipboardService,
+    dialogService,
+    gioService,
+    jobService,
+    panelService,
+  });
+
+  const windowService = new WindowService({
+    panelService,
+    placeService,
+    tabService,
+    window,
+  });
+
+  // ---
+
+  const cursorService = new CursorService({
+    dialogService,
+    directoryService,
+    gioService,
+    panelService,
+    tabService,
+  });
+
+  const selectionService = new SelectionService({
+    clipboardService,
+    dialogService,
+    gioService,
+    jobService,
+    panelService,
+    refService,
+    tabService,
+  });
+
+  // ---
+
+  const oppositeService = new OppositeService({
+    dialogService,
+    jobService,
+    panelService,
+    selectionService,
+    tabService,
+  });
+
+  // ---
+
+  this.clipboardService = clipboardService;
+  this.cursorService = cursorService;
+  this.dialogService = dialogService;
+  this.directoryService = directoryService;
+  this.gioService = gioService;
+  this.jobService = jobService;
+  this.oppositeService = oppositeService;
+  this.panelService = panelService;
+  this.placeService = placeService;
+  this.refService = refService;
+  this.selectionService = selectionService;
+  this.tabService = tabService;
+  this.windowService = windowService;
+
+  // ---
+
+  this.actionService = new ActionService(this);
 }
 
 exports.Services = Services;

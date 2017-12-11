@@ -162,11 +162,13 @@ Require.prototype.getOrCreate = function(path) {
   const dirname = gFile.get_parent().get_path();
   const filename = gFile.get_path();
 
-  const module = this.cache[filename] || (this.cache[filename] = {
-    hot: { accept: this.accept.bind(null, dirname) },
-    filename: filename,
-    exports: {},
-  });
+  const module =
+    this.cache[filename] ||
+    (this.cache[filename] = {
+      exports: {},
+      filename: filename,
+      hot: { accept: this.accept.bind(null, dirname) },
+    });
 
   this.filenames[filename] = true;
 
@@ -200,7 +202,9 @@ Require.prototype.require = function() {
      */
     get: () => {
       const path = this.RE.exec(new Error().stack)[1];
-      return this.Gio.File.new_for_path(path).get_path().replace(/.[^/]+$/, "");
+      return this.Gio.File.new_for_path(path)
+        .get_path()
+        .replace(/.[^/]+$/, "");
     },
   });
 
@@ -256,7 +260,7 @@ Require.prototype.require = function() {
   this.DIRNAME = memoize(this.DIRNAME);
   this.JOIN = memoize(this.JOIN);
 
-  this.Fun = require("./Fun").default;
+  this.Fun = require("./Fun").Fun;
 
   // exports.Require = Require; // FIXME
 };
@@ -274,15 +278,19 @@ Require.prototype.REQUIRE = function(X, Y) {
     Y = "/"; // filesystem root
   }
 
+  let result = "";
+
   if (X.slice(0, 2) === "./" || X[0] === "/" || X.slice(0, 3) === "../") {
-    const result = this.LOAD_AS_FILE(this.JOIN(Y, X)) || this.LOAD_AS_DIRECTORY(this.JOIN(Y, X));
+    result =
+      this.LOAD_AS_FILE(this.JOIN(Y, X)) ||
+      this.LOAD_AS_DIRECTORY(this.JOIN(Y, X));
 
     if (result) {
       return result;
     }
   }
 
-  const result = this.LOAD_NODE_MODULES(X, Y);
+  result = this.LOAD_NODE_MODULES(X, Y);
 
   if (result) {
     return result;
@@ -308,6 +316,9 @@ Require.prototype.LOAD_AS_FILE = function(X) {
   }
 };
 
+/**
+ * @param {string} X
+ */
 Require.prototype.LOAD_INDEX = function(X) {
   if (this.IS_FILE(this.JOIN(X, "index.js"))) {
     return this.JOIN(X, "index.js");
@@ -323,7 +334,9 @@ Require.prototype.LOAD_INDEX = function(X) {
  */
 Require.prototype.LOAD_AS_DIRECTORY = function(X) {
   if (this.IS_FILE(this.JOIN(X, "package.json"))) {
-    const contents = String(this.GLib.file_get_contents(this.JOIN(X, "package.json"))[1]);
+    const contents = String(
+      this.GLib.file_get_contents(this.JOIN(X, "package.json"))[1],
+    );
     const M = this.JOIN(X, JSON.parse(contents).main);
     const result = this.LOAD_AS_FILE(M) || this.LOAD_INDEX(M);
 
@@ -343,7 +356,9 @@ Require.prototype.LOAD_NODE_MODULES = function(X, START) {
   const DIRS = this.NODE_MODULES_PATHS(START);
 
   for (const DIR of DIRS) {
-    const result = this.LOAD_AS_FILE(this.JOIN(DIR, X)) || this.LOAD_AS_DIRECTORY(this.JOIN(DIR, X));
+    const result =
+      this.LOAD_AS_FILE(this.JOIN(DIR, X)) ||
+      this.LOAD_AS_DIRECTORY(this.JOIN(DIR, X));
 
     if (result) {
       return result;
@@ -364,7 +379,11 @@ Require.prototype.NODE_MODULES_PATHS = function(START) {
 
   while (I >= 0) {
     if (PARTS[I] !== "node_modules") {
-      DIRS.push(PARTS.slice(0, I + 1).concat("node_modules").reduce(this.JOIN));
+      DIRS.push(
+        PARTS.slice(0, I + 1)
+          .concat("node_modules")
+          .reduce(this.JOIN),
+      );
     }
 
     I = I - 1;
@@ -396,7 +415,9 @@ Require.prototype.IS_FILE = function(X) {
  * @param {string} X
  */
 Require.prototype.DIRNAME = function(X) {
-  return this.Gio.file_new_for_path(X).get_parent().get_path();
+  return this.Gio.file_new_for_path(X)
+    .get_parent()
+    .get_path();
 };
 
 /**
@@ -404,7 +425,9 @@ Require.prototype.DIRNAME = function(X) {
  * @param {string} Y
  */
 Require.prototype.JOIN = function(X, Y) {
-  return this.Gio.file_new_for_path(X).resolve_relative_path(Y).get_path();
+  return this.Gio.file_new_for_path(X)
+    .resolve_relative_path(Y)
+    .get_path();
 };
 
 /**
@@ -427,7 +450,9 @@ Require.prototype.resolve = function(dirname, path) {
  * @param {string} path
  */
 Require.prototype.requireClosure = function(parentFilename, path) {
-  const dirname = this.Gio.file_new_for_path(parentFilename).get_parent().get_path();
+  const dirname = this.Gio.file_new_for_path(parentFilename)
+    .get_parent()
+    .get_path();
   const filename = this.resolve(dirname, path);
 
   if (this.cache[filename]) {
@@ -445,9 +470,13 @@ Require.prototype.requireClosure = function(parentFilename, path) {
     contents += `\n//# sourceURL=${filename}`;
   }
 
-  this.Fun("exports", "require", "module", "__filename", "__dirname",
-    contents,
-  )(module.exports, require, module, filename, dirname);
+  this.Fun("exports", "require", "module", "__filename", "__dirname", contents)(
+    module.exports,
+    require,
+    module,
+    filename,
+    dirname,
+  );
 
   if (!this.dependencies[parentFilename]) {
     this.dependencies[parentFilename] = [filename];
@@ -465,7 +494,9 @@ Require.prototype.requireClosure = function(parentFilename, path) {
  * @param {string} path
  */
 Require.prototype.requireModule = function(parentFilename, path) {
-  const dirname = this.Gio.File.new_for_path(parentFilename).get_parent().get_path();
+  const dirname = this.Gio.File.new_for_path(parentFilename)
+    .get_parent()
+    .get_path();
   const filename = this.resolve(dirname, path);
 
   if (this.cache[filename]) {
@@ -488,7 +519,10 @@ Require.prototype.requireModule = function(parentFilename, path) {
   }
 
   const parts = filename
-    .replace(this.imports.searchPath[this.imports.searchPath.length - 1] + "/", "")
+    .replace(
+      this.imports.searchPath[this.imports.searchPath.length - 1] + "/",
+      "",
+    )
     .replace(/\.js$/, "")
     .split("/");
 
@@ -523,7 +557,7 @@ function memoize(fun, cache) {
   }
 
   if (fun.length === 1) {
-    return (arg) => {
+    return (/** @type {any} */ arg) => {
       if (arg in cache) {
         return cache[arg];
       }
@@ -534,7 +568,7 @@ function memoize(fun, cache) {
     };
   }
 
-  return (arg1, arg2) => {
+  return (/** @type {any} */ arg1, /** @type {any} */ arg2) => {
     if (cache[arg1] && arg2 in cache[arg1]) {
       return cache[arg1][arg2];
     }

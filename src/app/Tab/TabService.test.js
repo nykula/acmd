@@ -1,11 +1,14 @@
 const { FileType } = imports.gi.Gio;
 const expect = require("expect");
+const { toJS } = require("mobx");
 const { File } = require("../../domain/File/File");
+const { GioService } = require("../Gio/GioService");
+const { EmptyProps } = require("../Test/Test");
 const { TabService } = require("./TabService");
 
 describe("TabService", () => {
   it("saves cursor", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
     tabService.entities[1].cursor = 0;
     tabService.entities[1].selected = [];
@@ -19,21 +22,18 @@ describe("TabService", () => {
   });
 
   it("saves selected", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
     tabService.entities[1].cursor = 0;
     tabService.entities[1].selected = [];
 
-    tabService.selected({
-      selected: [3, 4, 5],
-      tabId: 1,
-    });
+    tabService.selected(1, [3, 4, 5]);
 
     expect(tabService.entities[1].selected.slice()).toEqual([3, 4, 5]);
   });
 
   it("sets files, adjusting selected and cursor if fewer", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
     tabService.entities[0] = {
       cursor: 2,
@@ -50,8 +50,8 @@ describe("TabService", () => {
         uri: `file:///${i}`,
       })),
       location: "file:///",
-      sortedBy: "ext",
       selected: [0, 1, 2],
+      sortedBy: "ext",
     };
 
     tabService.set({
@@ -76,28 +76,30 @@ describe("TabService", () => {
   });
 
   it("sorts files in tab", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
-    const entities = {
-      "0": {
-        cursor: 0,
-        files: [
-          ["config.sub", 2],
-          ["usb.ids", 1],
-          ["magic.mgc", 0],
-          ["pci.ids", 4],
-          ["node_modules", 5, true],
-          ["config.guess", 3],
-        ].map(([name, modificationTime, isDir]) => ({
-          name: name,
-          modificationTime: modificationTime,
-          fileType: isDir ? FileType.DIRECTORY : FileType.REGULAR,
-        })),
-        selected: [],
-        sortedBy: undefined,
-      },
-    };
-    tabService.entities = entities;
+    tabService.entities[0].cursor = 0;
+    tabService.entities[0].files = [
+      ["config.sub", 2],
+      ["usb.ids", 1],
+      ["magic.mgc", 0],
+      ["pci.ids", 4],
+      ["node_modules", 5, true],
+      ["config.guess", 3],
+    ].map((props) => {
+      const [name, modificationTime, isDir] = props;
+
+      /** @type {any} */
+      const file = new File();
+
+      file.fileType = isDir ? FileType.DIRECTORY : FileType.REGULAR;
+      file.modificationTime = modificationTime;
+      file.name = name;
+
+      return file;
+    });
+    tabService.entities[0].selected = [];
+    tabService.entities[0].sortedBy = undefined;
 
     tabService.sorted({ tabId: 0, by: "filename" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([
@@ -161,25 +163,24 @@ describe("TabService", () => {
   });
 
   it("ignores dots in dir names when sorting by ext", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
-    const entities = {
-      "0": {
-        cursor: 0,
-        files: [
-          "n.w.a",
-          "run-d.m.c",
-          "b.g knocc out & dresta",
-        ].map(name => ({
-          name: name,
-          modificationTime: 0,
-          fileType: FileType.DIRECTORY,
-        })),
-        selected: [],
-        sortedBy: undefined,
-      },
-    };
-    tabService.entities = entities;
+    tabService.entities[0].cursor = 0;
+    tabService.entities[0].files = [
+      "n.w.a",
+      "run-d.m.c",
+      "b.g knocc out & dresta",
+    ].map(name => {
+      const file = new File();
+
+      file.fileType = FileType.DIRECTORY;
+      file.modificationTime = 0;
+      file.name = name;
+
+      return file;
+    }),
+      tabService.entities[0].selected = [];
+    tabService.entities[0].sortedBy = undefined;
 
     tabService.sorted({ tabId: 0, by: "ext" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([
@@ -197,7 +198,7 @@ describe("TabService", () => {
   });
 
   it("selects glob", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
     const tab = tabService.entities[0];
 
     tab.files = [
@@ -224,7 +225,7 @@ describe("TabService", () => {
   });
 
   it("selects glob, noop if empty pattern", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
     const tab = tabService.entities[0];
 
     tab.files = [
@@ -251,7 +252,7 @@ describe("TabService", () => {
   });
 
   it("inverts", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
     const tab = tabService.entities[0];
 
     tab.files = [
@@ -275,7 +276,7 @@ describe("TabService", () => {
   });
 
   it("deselects glob", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
     const tab = tabService.entities[0];
 
     tab.files = [
@@ -302,7 +303,7 @@ describe("TabService", () => {
   });
 
   it("deselects glob, noop if empty pattern", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
     const tab = tabService.entities[0];
 
     tab.files = [
@@ -329,7 +330,7 @@ describe("TabService", () => {
   });
 
   it("deselects all", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
     const tab = tabService.entities[0];
 
     tab.files = [
@@ -353,7 +354,7 @@ describe("TabService", () => {
   });
 
   it("selects all", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
     const tab = tabService.entities[0];
 
     tab.files = [
@@ -375,7 +376,7 @@ describe("TabService", () => {
   });
 
   it("selects diff, empty selected if all equal", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
     const tab = tabService.entities[0];
     tab.files = [new File()];
@@ -390,7 +391,7 @@ describe("TabService", () => {
   });
 
   it("selects diff, comparing name", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
     const tab = tabService.entities[0];
     tab.files = [new File()];
@@ -407,7 +408,7 @@ describe("TabService", () => {
   });
 
   it("selects diff, comparing mtime", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
     const tab = tabService.entities[0];
     tab.files = [new File()];
@@ -424,7 +425,7 @@ describe("TabService", () => {
   });
 
   it("selects diff, comparing size", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
     const tab = tabService.entities[0];
     tab.files = [new File()];
@@ -441,7 +442,7 @@ describe("TabService", () => {
   });
 
   it("selects diff, skipping dotdot", () => {
-    const tabService = new TabService();
+    const tabService = new TabService(EmptyProps);
 
     const tab = tabService.entities[0];
     tab.files = [new File()];
@@ -457,5 +458,104 @@ describe("TabService", () => {
 
     expect(tab.selected.length).toBe(0);
     expect(tab1.selected.length).toBe(0);
+  });
+
+  it("lists files", () => {
+    const dirGFile = {
+      enumerate_children_async: function() {
+        arguments[arguments.length - 1]();
+      },
+
+      enumerate_children_finish: () => ({
+        next_files_async: function() {
+          arguments[arguments.length - 1]();
+        },
+
+        next_files_finish: () => [{
+          get_attribute_as_string: () => "33204",
+          get_display_name: () => "file.txt",
+          get_file_type: () => FileType.REGULAR,
+          get_icon: () => ({
+            to_string: () => "some gio icon",
+          }),
+          get_modification_time: () => ({
+            tv_sec: 0,
+          }),
+          get_name: () => "?@$/@!#$/*@!)(#</>E",
+          get_size: () => 1,
+        }],
+      }),
+
+      /**
+       * @param {string} name
+       */
+      get_child: name => ({
+        get_uri: () => "file:///tmp/" + name,
+      }),
+
+      get_parent: () => false,
+
+      get_uri: () => "file:///tmp",
+
+      query_info_async: function() {
+        arguments[arguments.length - 1]();
+      },
+
+      query_info_finish: () => ({
+        get_attribute_as_string: () => "17405",
+        get_display_name: () => "/",
+        get_file_type: () => FileType.DIRECTORY,
+        get_icon: () => ({
+          to_string: () => "some gio icon",
+        }),
+        get_modification_time: () => ({
+          tv_sec: 0,
+        }),
+        get_name: () => "/",
+        get_size: () => 1,
+      }),
+    };
+
+    /** @type {any} */
+    const Gio = {
+      File: {
+        new_for_uri: () => dirGFile,
+      },
+    };
+
+    const tabService = new TabService({
+      gioService: new GioService(Gio),
+    });
+
+    tabService.ls(0, "file:///tmp");
+
+    expect(tabService.entities[0].location).toBe("file:///tmp");
+
+    expect(toJS(tabService.entities[0].files)).toEqual([
+      {
+        displayName: ".",
+        fileType: FileType.DIRECTORY,
+        icon: "some gio icon",
+        iconType: "GICON",
+        mode: "1775",
+        modificationTime: 0,
+        mountUri: "file:///",
+        name: ".",
+        size: 1,
+        uri: "file:///tmp",
+      },
+      {
+        displayName: "file.txt",
+        fileType: FileType.REGULAR,
+        icon: "some gio icon",
+        iconType: "GICON",
+        mode: "0664",
+        modificationTime: 0,
+        mountUri: "",
+        name: "?@$/@!#$/*@!)(#</>E",
+        size: 1,
+        uri: "file:///tmp/?@$/@!#$/*@!)(#</>E",
+      },
+    ]);
   });
 });

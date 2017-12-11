@@ -2,7 +2,7 @@ const { IconSize, ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
@@ -31,10 +31,7 @@ TabListItem.prototype = Object.create(Component.prototype);
 TabListItem.prototype.props = undefined;
 
 TabListItem.prototype.handleClicked = function() {
-  this.props.panelService.setActiveTabId({
-    id: this.props.panelId,
-    tabId: this.props.id,
-  });
+  this.props.panelService.setActiveTab(this.props.id);
 };
 
 TabListItem.prototype.render = function() {

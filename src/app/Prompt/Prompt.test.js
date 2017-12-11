@@ -1,54 +1,41 @@
 const expect = require("expect");
-const h = require("inferno-hyperscript").default;
+const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 const { Prompt } = require("./Prompt");
 
 describe("Prompt", () => {
   it("renders without crashing", () => {
+    /** @type {any} */
+    const directoryService = {};
+
+    /** @type {any} */
+    const panelService = {
+      getActiveTab: () => ({ location: "file:///" }),
+    };
+
     shallow(
       h(Prompt, {
-        actionService: {},
-
-        panelService: {
-          getActiveTabId: () => 0,
-        },
-
-        tabService: {
-          entities: {
-            "0": { location: "file:///" },
-          },
-        },
+        directoryService,
+        panelService,
       }),
     );
   });
 
   it("dispatches action when user activates field", () => {
-    const cmds = [];
-
-    /**
-     * @type {any}
-     */
-    const actionService = {
-      exec: (cmd) => cmds.push(cmd),
+    /** @type {any} */
+    const directoryService = {
+      exec: expect.createSpy(),
     };
 
-    /**
-     * @type {any}
-     */
+    /** @type {any} */
     const panelService = {};
 
-    /**
-     * @type {any}
-     */
-    const tabService = {};
-
     new Prompt({
-      actionService: actionService,
-      panelService: panelService,
-      tabService: tabService,
+      directoryService,
+      panelService,
     })
       .activate({ text: "x-terminal-emulator -e ranger" });
 
-    expect(cmds).toEqual(["x-terminal-emulator -e ranger"]);
+    expect(directoryService.exec).toHaveBeenCalledWith("x-terminal-emulator -e ranger");
   });
 });

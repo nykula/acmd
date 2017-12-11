@@ -6,7 +6,7 @@
     "checkJs": true,
     "noEmit": true,
     "strict": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitThis": false,
     "strictNullChecks": false,
     "noUnusedLocals": true,

@@ -3,16 +3,80 @@ const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { ActionService } = require("../Action/ActionService");
-const autoBind = require("../Gjs/autoBind").default;
-const formatSize = require("../Size/formatSize").default;
+const { autoBind } = require("../Gjs/autoBind");
 const { TabService } = require("../Tab/TabService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
 const ToolbarJobs = require("./ToolbarJobs").default;
 
+const items = [
+  {
+    icon: "view-refresh",
+    id: "windowService.refresh",
+    label: "Refresh",
+  },
+
+  "mode",
+
+  {
+    icon: "format-justify-left",
+    id: "",
+    label: "List",
+  },
+
+  {
+    icon: "format-justify-fill",
+    id: "",
+    label: "Table",
+  },
+
+  "history",
+
+  {
+    icon: "go-previous",
+    id: "panelService.back",
+    label: "Back",
+  },
+
+  {
+    icon: "go-next",
+    id: "panelService.forward",
+    label: "Forward",
+  },
+
+  "misc",
+
+  {
+    icon: "go-jump",
+    id: "panelService.ls",
+    label: "Go to URI",
+  },
+
+  {
+    icon: "document-new",
+    id: "directoryService.touch",
+    label: "Create file",
+  },
+
+  {
+    icon: "utilities-terminal",
+    id: "directoryService.terminal",
+    label: "Terminal",
+  },
+
+  {
+    icon: "dialog-warning",
+    id: "windowService.showHidSys",
+    label: "Hidden files",
+  },
+
+  "jobs-",
+
+  "jobs",
+];
+
 /**
- * @typedef IProps
+ * @typedef {{ [key: string]: any }} IProps
  * @property {ActionService} actionService
- * @property {TabService} tabService
  *
  * @param {IProps} props
  */
@@ -28,33 +92,8 @@ Toolbar.prototype = Object.create(Component.prototype);
  */
 Toolbar.prototype.props = undefined;
 
-Toolbar.prototype.handlePressed = function(type) {
-  return () => this.props.actionService[type]();
-};
-
 Toolbar.prototype.render = function() {
-  const items = [
-    { type: "refresh", icon_name: "view-refresh", tooltip_text: "Refresh" },
-    "mode",
-    { sensitive: false, icon_name: "format-justify-left", tooltip_text: "List" },
-    { active: true, icon_name: "format-justify-fill", tooltip_text: "Table" },
-    "history",
-    { type: "back", icon_name: "go-previous", tooltip_text: "Back" },
-    { type: "forward", icon_name: "go-next", tooltip_text: "Forward" },
-    "misc",
-    { type: "ls", icon_name: "go-jump", tooltip_text: "Go to URI" },
-    { type: "touch", icon_name: "document-new", tooltip_text: "Create file" },
-    { type: "terminal", icon_name: "utilities-terminal", tooltip_text: "Terminal" },
-    {
-      active: this.props.tabService.showHidSys,
-      icon_name: "dialog-warning",
-      tooltip_text: "Hidden files",
-      type: "showHidSys",
-    },
-    "jobs-",
-    "jobs",
-  ];
-
+  const { actionService, tabService } = this.props;
   return (
     h("box", items.map(item => {
       if (item === "jobs-") {
@@ -71,21 +110,24 @@ Toolbar.prototype.render = function() {
 
       return (
         h(ToggleButton, {
-          active: !!item.active,
+          active:
+            item.icon === "format-justify-fill" ||
+            (item.id === "windowService.showHidSys" && tabService.showHidSys),
           can_focus: false,
-          key: item.icon_name,
-          on_pressed: "type" in item ? this.handlePressed(item.type) : null,
+          key: item.icon,
+          on_pressed: item.id ? actionService.get(item.id).handler : null,
           relief: ReliefStyle.NONE,
-          sensitive: "sensitive" in item ? item.sensitive : null,
-          tooltip_text: item.tooltip_text,
+          sensitive: item.icon !== "format-justify-left",
+          tooltip_text: item.label,
         }, [
             h("image", {
-              icon_name: item.icon_name + "-symbolic",
+              icon_name: item.icon + "-symbolic",
               icon_size: IconSize.SMALL_TOOLBAR,
             }),
           ])
       );
-    })));
+    }))
+  );
 };
 
 exports.Toolbar = Toolbar;

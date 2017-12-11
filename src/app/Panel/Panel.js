@@ -7,21 +7,26 @@ const Stats = require("../Stats/Stats").default;
 const TabList = require("../Tab/TabList").default;
 
 exports.default = Panel;
-function Panel({ id }) {
+/**
+ * @param {{ id: string }} props
+ */
+function Panel(props) {
+  const panelId = props.id;
+
   return (
     h("box", { orientation: Orientation.VERTICAL }, [
       h(Mount, {
         key: "MOUNT",
-        panelId: id,
+        panelId,
       }),
       h(TabList, {
         key: "TAB_LIST",
-        panelId: id,
+        panelId,
       }),
       h("h-separator"),
       h(Location, {
         key: "LOCATION",
-        panelId: id,
+        panelId,
       }),
       h("h-separator"),
       h("scrolled-window", {
@@ -29,11 +34,11 @@ function Panel({ id }) {
         hscrollbar_policy: PolicyType.NEVER,
         key: "DIRECTORY",
       }, [
-        h(Directory, { panelId: id }),
+        h(Directory, { panelId }),
       ]),
       h(Stats, {
         key: "STATS",
-        panelId: id,
+        panelId,
       }),
     ])
   );

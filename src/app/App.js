@@ -4,8 +4,8 @@ const ActionBar = require("./Action/ActionBar").default;
 const CtxMenu = require("./CtxMenu/CtxMenu").default;
 const Jobs = require("./Job/Jobs").default;
 const MenuBar = require("./Menu/MenuBar").default;
-const Places = require("./Mount/Places").default;
 const Panel = require("./Panel/Panel").default;
+const Places = require("./Place/Places").default;
 const Prompt = require("./Prompt/Prompt").default;
 const Toolbar = require("./Toolbar/Toolbar").default;
 

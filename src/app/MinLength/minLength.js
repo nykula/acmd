@@ -1,13 +1,16 @@
 /**
  * Shortens the string as much as possible without making it confusing.
+ *
+ * @param {string[]} xs
+ * @param {string} x
  */
 exports.default = (xs, x) => {
   for (let i = 1; i < x.length; i++) {
-    const _x = x.slice(0, i);
-    const same = xs.filter(x => x.slice(0, i) === _x).length;
+    const short = x.slice(0, i);
+    const same = xs.filter(other => other.slice(0, i) === short).length;
 
     if (same === 1) {
-      return _x;
+      return short;
     }
   }
 

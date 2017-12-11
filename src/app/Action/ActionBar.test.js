@@ -5,17 +5,17 @@ const { ActionBar } = require("./ActionBar");
 
 describe("ActionBar", () => {
   it("dispatches action without payload", () => {
-    const views = [];
+    const handler = expect.createSpy();
+
+    /** @type {any} */
     const actionService = {
-      view: function() {
-        views.push(arguments.length);
-      },
+      get: () => ({ handler }),
     };
 
-    const tree = shallow(h(ActionBar, { actionService: actionService }));
+    const tree = shallow(h(ActionBar, { actionService }));
     const button = find(tree, x => x.type === "button");
 
     button.props.on_pressed();
-    expect(views).toEqual([0]);
+    expect(handler).toHaveBeenCalledWith();
   });
 });

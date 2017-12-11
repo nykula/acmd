@@ -7,11 +7,14 @@ const {
   WindowPosition,
 } = imports.gi.Gtk;
 const noop = require("lodash/noop");
+const { autoBind } = require("../Gjs/autoBind");
 
 /**
  * @param {Window} win
  */
 function DialogService(win, _Entry = Entry, _MessageDialog = MessageDialog) {
+  autoBind(this, DialogService.prototype, __filename);
+
   this.win = win;
   this.Entry = _Entry;
   this.MessageDialog = _MessageDialog;
@@ -87,17 +90,17 @@ DialogService.prototype.prompt = function(text, initialValue, callback) {
   const entry = new this.Entry({ text: initialValue });
   dialog.get_content_area().add(entry);
   entry.connect("activate", () => {
-    const text = entry.text;
+    const entryText = entry.text;
     dialog.destroy();
-    callback(text);
+    callback(entryText);
   });
 
   dialog.connect("response", (_, response) => {
-    const text = entry.text;
+    const entryText = entry.text;
     dialog.destroy();
 
     if (response === ResponseType.OK) {
-      callback(text);
+      callback(entryText);
       return;
     }
 

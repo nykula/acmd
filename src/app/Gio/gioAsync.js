@@ -1,4 +1,9 @@
-exports.default = gioAsync;
+/**
+ * Calls an async method on a Gio object.
+ *
+ * @param {any} obj
+ * @param {string} methodName
+ */
 function gioAsync(obj, methodName) {
   const args = [];
   const callback = arguments[arguments.length - 1];
@@ -7,7 +12,7 @@ function gioAsync(obj, methodName) {
     args.push(arguments[i]);
   }
 
-  args.push(function(_, asyncResult) {
+  args.push(function(/** @type {any} */ _, /** @type {any} */ asyncResult) {
     let result;
 
     try {
@@ -22,3 +27,5 @@ function gioAsync(obj, methodName) {
 
   obj[methodName + "_async"].apply(obj, args);
 }
+
+exports.gioAsync = gioAsync;

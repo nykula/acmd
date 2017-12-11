@@ -2,7 +2,7 @@ const { ComboBox } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const isEqual = require("lodash/isEqual");
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 const ListStore = require("../ListStore/ListStore");
 
 /**

@@ -1,9 +1,9 @@
-const { FileCopyFlags, FileQueryInfoFlags, FileType } = imports.gi.Gio;
+const { File, FileCopyFlags, FileQueryInfoFlags, FileType } = imports.gi.Gio;
 const { WorkerError } = require("../../domain/Gio/WorkerError");
 const { WorkerProgress } = require("../../domain/Gio/WorkerProgress");
 const { WorkerProps } = require("../../domain/Gio/WorkerProps");
 const { WorkerSuccess } = require("../../domain/Gio/WorkerSuccess");
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 
 /**
  * Tasks intended to run in a separate process because they are heavy on IO or
@@ -27,9 +27,9 @@ Worker.prototype.run = function() {
     this[this.props.type]();
   } catch (error) {
     this.emit({
-      type: "error",
       message: error.message,
       stack: error.stack,
+      type: "error",
     });
     return;
   }
@@ -55,21 +55,26 @@ Worker.prototype.cp = function() {
     const uri = file.gFile.get_uri();
     const dest = file.dest.get_uri();
 
-    file.gFile.copy(
+    /** @type {File} */
+    const gFile = file.gFile;
+
+    gFile.copy(
       file.dest,
-      FileCopyFlags.OVERWRITE + FileCopyFlags.NOFOLLOW_SYMLINKS + FileCopyFlags.ALL_METADATA,
+      FileCopyFlags.OVERWRITE +
+        FileCopyFlags.NOFOLLOW_SYMLINKS +
+        FileCopyFlags.ALL_METADATA,
       null,
       (doneSize, size) => {
         this.emit({
-          type: "progress",
-          uri,
           dest,
           doneSize,
           size,
+          totalCount: data.files.length,
+          totalDoneCount,
           totalDoneSize: data.totalDoneSize + doneSize,
           totalSize: data.totalSize,
-          totalDoneCount,
-          totalCount: data.files.length,
+          type: "progress",
+          uri,
         });
       },
     );
@@ -93,6 +98,9 @@ Worker.prototype.rm = function() {
   /** @type {any[]} */
   const gFiles = this.props.uris.map(x => this.Gio.file_new_for_uri(x));
 
+  /**
+   * @type {any[]}
+   */
   const files = gFiles.reduce((prev, gFile) => {
     return prev.concat(this.flatten(gFile).files);
   }, []);
@@ -104,15 +112,15 @@ Worker.prototype.rm = function() {
     file.gFile.delete(null);
 
     this.emit({
-      type: "progress",
-      uri,
       dest: "",
       doneSize: 0,
       size: 0,
+      totalCount: files.length,
+      totalDoneCount,
       totalDoneSize: 0,
       totalSize: 0,
-      totalDoneCount,
-      totalCount: files.length,
+      type: "progress",
+      uri,
     });
   });
 };
@@ -126,21 +134,30 @@ Worker.prototype.prepare = function() {
 
   const dest = this.Gio.file_new_for_uri(destUri);
 
-  const isDestExistingDir = dest.query_exists(null) && dest.query_info(
-    "standard::*",
-    FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
-    null,
-  ).get_file_type() === FileType.DIRECTORY;
+  const isDestExistingDir =
+    dest.query_exists(null) &&
+    dest
+      .query_info("standard::*", FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null)
+      .get_file_type() === FileType.DIRECTORY;
 
   const willCreateDest = uris.length === 1 && !isDestExistingDir;
 
-  const data = uris.reduce((prev, srcUri) => {
+  /** @type {any[]} */
+  const files = [];
+
+  const data = {
+    files,
+    totalDoneSize: 0,
+    totalSize: 0,
+  };
+
+  for (const srcUri of uris) {
     const src = this.Gio.file_new_for_uri(srcUri);
     const srcName = src.get_basename();
     const splice = srcUri[srcUri.length - 1] === "/" || willCreateDest;
-    const data = this.flatten(src);
+    const uriData = this.flatten(src);
 
-    data.files.forEach(file => {
+    uriData.files.forEach(file => {
       if (!splice && !file.relativePath) {
         file.destUri = dest.get_child(srcName).get_uri();
         file.dest = this.Gio.file_new_for_uri(file.destUri);
@@ -148,7 +165,10 @@ Worker.prototype.prepare = function() {
       }
 
       if (!splice && file.relativePath) {
-        file.destUri = dest.get_child(srcName).get_child(file.relativePath).get_uri();
+        file.destUri = dest
+          .get_child(srcName)
+          .get_child(file.relativePath)
+          .get_uri();
         file.dest = this.Gio.file_new_for_uri(file.destUri);
         return;
       }
@@ -165,11 +185,9 @@ Worker.prototype.prepare = function() {
       }
     });
 
-    prev.files = prev.files.concat(data.files);
-    prev.totalSize += data.totalSize;
-
-    return prev;
-  }, { files: [], totalSize: 0, totalDoneSize: 0 });
+    data.files = data.files.concat(uriData.files);
+    data.totalSize += uriData.totalSize;
+  }
 
   return data;
 };
@@ -177,33 +195,45 @@ Worker.prototype.prepare = function() {
 /**
  * Creates a given directory if it doesn't exist. Copies source attributes
  * to the destination.
+ *
+ * @param {any} file
  */
 Worker.prototype.cpDirNode = function(file) {
   if (!file.dest.query_exists(null)) {
     file.dest.make_directory(null);
   }
 
-  file.gFile.copy_attributes(
-    file.dest,
-    FileCopyFlags.ALL_METADATA,
-    null,
-  );
+  file.gFile.copy_attributes(file.dest, FileCopyFlags.ALL_METADATA, null);
 };
 
 /**
  * Given a point in a file hierarchy, finds all files and their total size.
+ *
+ * @param {File} gFile
  */
 Worker.prototype.flatten = function(gFile) {
-  const data = { files: [], totalSize: 0 };
+  /** @type {any[]} */
+  const files = [];
 
-  const handleFile = (file) => {
-    data.files.push(file);
-    data.totalSize += file.gFileInfo.get_size();
+  const data = {
+    files,
+    totalSize: 0,
+  };
 
-    if (file.gFileInfo.get_file_type() === FileType.DIRECTORY) {
-      this.children(gFile, file.gFile).forEach(handleFile);
+  /**
+   * @param {any} x
+   */
+  const handleFile = x => {
+    data.files.push(x);
+    data.totalSize += x.gFileInfo.get_size();
+
+    if (x.gFileInfo.get_file_type() === FileType.DIRECTORY) {
+      this.children(gFile, x.gFile).forEach(handleFile);
     }
   };
+
+  /** @type {string} */
+  const relativePath = null;
 
   const file = {
     gFile: gFile,
@@ -212,7 +242,7 @@ Worker.prototype.flatten = function(gFile) {
       FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
       null,
     ),
-    relativePath: null,
+    relativePath,
   };
 
   handleFile(file);
@@ -223,6 +253,9 @@ Worker.prototype.flatten = function(gFile) {
 /**
  * For every child of a parent, gets Gio.File and Gio.FileInfo references
  * and a path relative to the given ancestor.
+ *
+ * @param {File} ancestor
+ * @param {File} parent
  */
 Worker.prototype.children = function(ancestor, parent) {
   const enumerator = parent.enumerate_children(

@@ -13,7 +13,12 @@ const reportPerf = throttle(function() {
   print(JSON.stringify(data));
 }, 10000);
 
-exports.default = exports.autoBind = function(self, prototype, filename) {
+/**
+ * @param {any} self
+ * @param {any} prototype
+ * @param {string} filename
+ */
+function autoBind(self, prototype, filename) {
   const keys = Object.getOwnPropertyNames(prototype);
 
   for (let i = 0; i < keys.length; i++) {
@@ -41,4 +46,6 @@ exports.default = exports.autoBind = function(self, prototype, filename) {
       }
     }
   }
-};
+}
+
+exports.autoBind = autoBind;

@@ -1,6 +1,10 @@
 const Gdk = imports.gi.Gdk;
+const { Event } = Gdk;
 const { autoBind } = require("./autoBind");
 
+/**
+ * @param {any} node
+ */
 function KeyListener(node) {
   autoBind(this, KeyListener.prototype, __filename);
 
@@ -13,6 +17,10 @@ function KeyListener(node) {
   this.node.connect("key-release-event", this.handleKeyRelease);
 }
 
+/**
+ * @param {any} _
+ * @param {Event} nativeEv
+ */
 KeyListener.prototype.handleKeyPress = function(_, nativeEv) {
   const keyval = nativeEv.get_keyval()[1];
 
@@ -27,7 +35,10 @@ KeyListener.prototype.handleKeyPress = function(_, nativeEv) {
 
   return result;
 };
-
+/**
+ * @param {any} _
+ * @param {Event} nativeEv
+ */
 KeyListener.prototype.handleKeyRelease = function(_, nativeEv) {
   const keyval = nativeEv.get_keyval()[1];
 
@@ -42,7 +53,10 @@ KeyListener.prototype.handleKeyRelease = function(_, nativeEv) {
 
   return result;
 };
-
+/**
+ * @param {string} evName
+ * @param {(ev: Ev) => void} callback
+ */
 KeyListener.prototype.on = function(evName, callback) {
   if (evName === "key-press-event") {
     this.onKeyPress = callback;
@@ -52,6 +66,11 @@ KeyListener.prototype.on = function(evName, callback) {
 };
 
 exports.Ev = Ev;
+/**
+ * @param {{ [key: number]: boolean }} pressed
+ * @param {number} which
+ * @param {Event} nativeEvent
+ */
 function Ev(pressed, which, nativeEvent) {
   this.nativeEvent = nativeEvent;
   this.which = which;

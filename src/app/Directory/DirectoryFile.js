@@ -4,7 +4,7 @@ const Component = require("inferno-component").default;
 const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { File } = require("../../domain/File/File");
-const autoBind = require("../Gjs/autoBind").default;
+const { autoBind } = require("../Gjs/autoBind");
 const formatSize = require("../Size/formatSize").default;
 
 /**
@@ -53,10 +53,10 @@ DirectoryFile.prototype.mtime = function() {
   const date = new Date(time * 1000);
 
   const month = ("00" + (date.getMonth() + 1)).slice(-2);
-  const day = ("00" + (date.getDate())).slice(-2);
-  const year = ("0000" + (date.getFullYear())).slice(-4);
-  const hours = ("00" + (date.getHours())).slice(-2);
-  const minutes = ("00" + (date.getMinutes())).slice(-2);
+  const day = ("00" + date.getDate()).slice(-2);
+  const year = ("0000" + date.getFullYear()).slice(-4);
+  const hours = ("00" + date.getHours()).slice(-2);
+  const minutes = ("00" + date.getMinutes()).slice(-2);
 
   return [month, day, year].join("/") + " " + [hours, minutes].join(":");
 };
