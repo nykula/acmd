@@ -17,6 +17,10 @@ Then install with [npm](https://nodejs.org/en/download/):
 
 ```bash
 npm i -g acme-commander
+
+# Above not working? Try a local prefix:
+echo prefix=~/.local >> ~/.npmrc
+npm i -g acme-commander
 ```
 
 Run:
