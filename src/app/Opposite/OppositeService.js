@@ -12,11 +12,11 @@ const { TabService } = require("../Tab/TabService");
 class OppositeService {
   /**
    * @typedef IProps
-   * @property {DialogService} dialogService
-   * @property {JobService} jobService
-   * @property {PanelService} panelService
-   * @property {SelectionService} selectionService
-   * @property {TabService} tabService
+   * @property {DialogService?} [dialogService]
+   * @property {JobService?} [jobService]
+   * @property {PanelService?} [panelService]
+   * @property {SelectionService?} [selectionService]
+   * @property {TabService?} [tabService]
    *
    * @param {IProps} props
    */

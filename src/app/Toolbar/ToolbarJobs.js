@@ -9,69 +9,75 @@ const formatSize = require("../Size/formatSize").default;
 
 /**
  * @typedef IProps
- * @property {JobService} jobService
- * @property {RefService} refService
+ * @property {JobService?} [jobService]
+ * @property {RefService?} [refService]
  *
- * @param {IProps} props
+ * @extends Component<IProps>
  */
-function ToolbarJobs(props) {
-  Component.call(this, props);
-  autoBind(this, ToolbarJobs.prototype, __filename);
-}
-
-ToolbarJobs.prototype = Object.create(Component.prototype);
-
-/**
- * @type {IProps}
- */
-ToolbarJobs.prototype.props = undefined;
-
-/**
- * @param {Button} button
- */
-ToolbarJobs.prototype.useButton = function(button) {
-  this.props.refService.set("toolbarJobs")(button);
-  button.connect("clicked", () => this.props.jobService.list());
-};
-
-ToolbarJobs.prototype.render = function() {
-  let jobs = 0;
-  let totalCount = 0;
-  let totalDoneCount = 0;
-  let totalSize = 0;
-  let totalDoneSize = 0;
-
-  for (const pid of this.props.jobService.statefulPids) {
-    const job = this.props.jobService.jobs[pid];
-
-    totalCount += job.totalCount;
-    totalDoneCount += job.totalDoneCount;
-    totalSize += job.totalSize;
-    totalDoneSize += job.totalDoneSize;
-
-    jobs++;
+class ToolbarJobs extends Component {
+  /**
+   * @param {IProps} props
+   */
+  constructor(props) {
+    super(props);
+    autoBind(this, ToolbarJobs.prototype, __filename);
   }
 
-  const label = jobs > 0
-    ? Math.round(totalDoneSize / totalSize * 100 || 0) + "%"
-    : "Ready";
+  /**
+   * @param {Button} button
+   */
+  useButton(button) {
+    const { list } = /** @type {JobService} */ (this.props.jobService);
+    const { set } = /** @type {RefService} */ (this.props.refService);
 
-  const progress = [
-    `${totalDoneCount} / ${totalCount}`,
-    `${formatSize(totalDoneSize)} / ${formatSize(totalSize)}`,
-  ].join("\n");
+    set("toolbarJobs")(button);
+    button.connect("clicked", () => list());
+  }
 
-  const tooltip = jobs > 0
-    ? progress
-    : "Cp/mv/rm progress displays here";
+  render() {
+    const { jobs, statefulPids } =
+      /** @type {JobService} */ (this.props.jobService);
 
-  return h(Button, {
-    label,
-    ref: this.useButton,
-    relief: ReliefStyle.NONE,
-    tooltip_text: tooltip,
-  });
-};
+    let jobCount = 0;
+    let totalCount = 0;
+    let totalDoneCount = 0;
+    let totalSize = 0;
+    let totalDoneSize = 0;
+
+    for (const pid of statefulPids) {
+      const job = jobs[pid];
+
+      totalCount += job.totalCount;
+      totalDoneCount += job.totalDoneCount;
+      totalSize += job.totalSize;
+      totalDoneSize += job.totalDoneSize;
+
+      jobCount++;
+    }
+
+    const label = jobCount > 0
+      ? Math.round(totalDoneSize / totalSize * 100 || 0) + "%"
+      : "Ready";
+
+    const progress = [
+      `${totalDoneCount} / ${totalCount}`,
+      `${formatSize(totalDoneSize)} / ${formatSize(totalSize)}`,
+    ].join("\n");
+
+    const tooltip = jobCount > 0
+      ? progress
+      : "Cp/mv/rm progress displays here";
+
+    return (
+      h(Button, {
+        label,
+        ref: this.useButton,
+        relief: ReliefStyle.NONE,
+        tooltip_text: tooltip,
+      })
+    );
+  }
+}
 
 exports.ToolbarJobs = ToolbarJobs;
 exports.default = connect(["jobService", "refService"])(ToolbarJobs);

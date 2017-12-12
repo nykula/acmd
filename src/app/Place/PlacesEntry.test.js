@@ -18,9 +18,8 @@ describe("PlacesEntry", () => {
         iconType: "ICON_NAME",
         name: "/",
         rootUri: "file:///",
-        uuid: null,
+        uuid: "",
       },
-      placeService: undefined,
       short: "/",
     }).render();
 
@@ -34,9 +33,8 @@ describe("PlacesEntry", () => {
         iconType: "ICON_NAME",
         name: "Music",
         rootUri: "file:///media/Music",
-        uuid: null,
+        uuid: "",
       },
-      placeService: undefined,
       short: "M",
     }).render();
   });

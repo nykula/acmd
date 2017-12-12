@@ -11,11 +11,11 @@ const { PanelService } = require("../Panel/PanelService");
 class DirectoryService {
   /**
    * @typedef IProps
-   * @property {ClipboardService} clipboardService
-   * @property {DialogService} dialogService
-   * @property {GioService} gioService
-   * @property {JobService} jobService
-   * @property {PanelService} panelService
+   * @property {ClipboardService?} [clipboardService]
+   * @property {DialogService?} [dialogService]
+   * @property {GioService?} [gioService]
+   * @property {JobService?} [jobService]
+   * @property {PanelService?} [panelService]
    *
    * @param {IProps} props
    */
@@ -36,16 +36,28 @@ class DirectoryService {
       return;
     }
 
-    const { dialogService, gioService } = this.props;
+    const { alert } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { spawn } =
+      /** @type {GioService} */ (this.props.gioService);
+
     const location = this.getLocation();
 
     if (location.indexOf("file:///") !== 0) {
-      dialogService.alert("Operation not supported.");
+      alert("Operation not supported.");
       return;
     }
 
-    gioService.spawn({
-      argv: GLib.shell_parse_argv(cmd)[1],
+    const argv = GLib.shell_parse_argv(cmd)[1];
+
+    if (!argv) {
+      this.terminal();
+      return;
+    }
+
+    spawn({
+      argv,
       cwd: location.replace(/^file:\/\//, ""),
     });
   }
@@ -54,23 +66,31 @@ class DirectoryService {
    * Creates a child directory, prompting for name.
    */
   mkdir() {
-    const { dialogService, gioService, panelService } = this.props;
+    const { prompt } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { mkdir } =
+      /** @type {GioService} */ (this.props.gioService);
+
+    const { refresh } =
+      /** @type {PanelService} */ (this.props.panelService);
+
     const location = this.getLocation();
 
-    dialogService.prompt("Name of the new dir:", "", name => {
+    prompt("Name of the new dir:", "", name => {
       if (!name) {
         return;
       }
 
       const uri = this.getChild(location, name);
 
-      gioService.mkdir(uri, error => {
+      mkdir(uri, error => {
         if (error) {
-          dialogService.alert(error.message);
+          alert(error.message);
           return;
         }
 
-        panelService.refresh();
+        refresh();
       });
     });
   }
@@ -80,10 +100,17 @@ class DirectoryService {
    * app marked the list written to clipboard.
    */
   paste() {
-    const { paste } = this.props.clipboardService;
-    const { alert } = this.props.dialogService;
-    const { run } = this.props.jobService;
-    const { refresh } = this.props.panelService;
+    const { paste } =
+      /** @type {ClipboardService} */ (this.props.clipboardService);
+
+    const { alert } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { run } =
+      /** @type {JobService} */ (this.props.jobService);
+
+    const { refresh } =
+      /** @type {PanelService} */ (this.props.panelService);
 
     paste((_, text) => {
       if (!text) {
@@ -118,16 +145,20 @@ class DirectoryService {
    * @param {(string[])=} argv
    */
   terminal(argv) {
-    const { dialogService, gioService } = this.props;
+    const { spawn } =
+      /** @type {GioService} */ (this.props.gioService);
 
     const location = this.getLocation();
 
     if (location.indexOf("file:///") !== 0) {
-      dialogService.alert("Operation not supported.");
+      const { alert } =
+        /** @type {DialogService} */ (this.props.dialogService);
+
+      alert("Operation not supported.");
       return;
     }
 
-    gioService.spawn({
+    spawn({
       argv: ["x-terminal-emulator"].concat(argv || []),
       cwd: location.replace(/^file:\/\//, ""),
     });
@@ -138,23 +169,31 @@ class DirectoryService {
    * modification time.
    */
   touch() {
-    const { dialogService, gioService, panelService } = this.props;
+    const { alert, prompt } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { touch } =
+      /** @type {GioService} */ (this.props.gioService);
+
+    const { refresh } =
+      /** @type {PanelService} */ (this.props.panelService);
+
     const location = this.getLocation();
 
-    dialogService.prompt("Name of the new file:", "", name => {
+    prompt("Name of the new file:", "", name => {
       if (!name) {
         return;
       }
 
       const uri = this.getChild(location, name);
 
-      gioService.touch(uri, error => {
+      touch(uri, error => {
         if (error) {
-          dialogService.alert(error.message);
+          alert(error.message);
           return;
         }
 
-        panelService.refresh();
+        refresh();
       });
     });
   }
@@ -181,8 +220,10 @@ class DirectoryService {
    * @private
    */
   getLocation() {
-    const { panelService } = this.props;
-    const { location } = panelService.getActiveTab();
+    const { getActiveTab } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { location } = getActiveTab();
 
     return location;
   }

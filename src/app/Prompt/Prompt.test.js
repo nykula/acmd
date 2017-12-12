@@ -34,7 +34,7 @@ describe("Prompt", () => {
       directoryService,
       panelService,
     })
-      .activate({ text: "x-terminal-emulator -e ranger" });
+      .handleActivate({ text: "x-terminal-emulator -e ranger" });
 
     expect(directoryService.exec).toHaveBeenCalledWith("x-terminal-emulator -e ranger");
   });

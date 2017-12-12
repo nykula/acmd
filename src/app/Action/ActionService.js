@@ -48,7 +48,7 @@ class ActionService {
       });
     }
 
-    return this.actions.get(id);
+    return /** @type {Action} */ (this.actions.get(id));
   }
 }
 

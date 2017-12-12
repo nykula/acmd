@@ -1,6 +1,8 @@
-function WorkerSuccess() { }
-
-/** @type {'success'} */
-WorkerSuccess.prototype.type = "success";
+class WorkerSuccess {
+  constructor() {
+    /** @type {'success'} */
+    this.type = "success";
+  }
+}
 
 exports.WorkerSuccess = WorkerSuccess;

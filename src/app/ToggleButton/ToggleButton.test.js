@@ -1,6 +1,6 @@
 const expect = require("expect");
-const h = require("inferno-hyperscript").default;
 const noop = require("lodash/noop");
+const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 const ToggleButton = require("./ToggleButton").default;
 
@@ -8,7 +8,7 @@ describe("ToggleButton", () => {
   it("renders without crashing", () => {
     shallow(h(ToggleButton, {
       active: false,
-      on_clicked: noop,
+      pressedCallback: noop,
     }, []));
   });
 
@@ -34,13 +34,15 @@ describe("ToggleButton", () => {
 });
 
 function setup() {
-  function Node() {
-    this.active = null;
-    this.set_state_flags = () => { this.active = true; };
-    this.unset_state_flags = () => { this.active = false; };
+  class Node {
+    constructor() {
+      this.active = null;
+      this.set_state_flags = () => { this.active = true; };
+      this.unset_state_flags = () => { this.active = false; };
+    }
   }
 
   return {
-    node: new Node(),
+    node: /** @type {any} */ (new Node()),
   };
 }

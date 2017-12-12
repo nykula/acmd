@@ -1,46 +1,46 @@
+const { Box } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
-const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
+const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
 const TabListItem = require("./TabListItem").default;
 
 /**
  * @typedef IProps
  * @property {number} panelId
- * @property {PanelService} panelService
+ * @property {PanelService?} [panelService]
  *
- * @param {IProps} props
+ * @extends Component<IProps>
  */
-function TabList(props) {
-  Component.call(this, props);
-  autoBind(this, TabList.prototype, __filename);
-}
+class TabList extends Component {
+  /**
+   * @param {IProps} props
+   */
+  constructor(props) {
+    super(props);
+    autoBind(this, TabList.prototype, __filename);
+  }
 
-TabList.prototype = Object.create(Component.prototype);
+  render() {
+    const { entities } =
+      /** @type {PanelService} */ (this.props.panelService);
 
-/**
- * @type {IProps}
- */
-TabList.prototype.props = undefined;
+    const panel = entities[this.props.panelId];
+    const { activeTabId, tabIds } = panel;
 
-TabList.prototype.render = function() {
-  const panel = this.props.panelService.entities[this.props.panelId];
-  const { activeTabId, tabIds } = panel;
-
-  return tabIds.length === 1 ? h("box") : (
-      h("box", [
-        tabIds.map(id => (
-          h(TabListItem, {
-            active: activeTabId === id,
-            id: id,
-            key: id,
-            panelId: this.props.panelId,
-          })
-        )),
-      ])
+    return tabIds.length === 1 ? h(Box) : (
+      h(Box, tabIds.map(id => (
+        h(TabListItem, {
+          active: activeTabId === id,
+          id: id,
+          key: id,
+          panelId: this.props.panelId,
+        })),
+      ))
     );
-};
+  }
+}
 
 exports.TabList = TabList;
 exports.default = connect(["panelService"])(TabList);

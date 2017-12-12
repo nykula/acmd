@@ -1,10 +1,9 @@
-const { ReliefStyle } = imports.gi.Gtk;
+const { Box, Button, ReliefStyle, VSeparator } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
-const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
-const ActionBarRm = require("./ActionBarRm").default;
-const { ActionService } = require("./ActionService");
+const { h } = require("../Gjs/GtkInferno");
+const ActionBarItem = require("./ActionBarItem").default;
 
 const actions = [
   { id: "cursorService.view", label: "View", shortcut: "F3" },
@@ -16,42 +15,24 @@ const actions = [
   { id: "windowService.exit", label: "Exit", shortcut: "Alt+F4" },
 ];
 
-/**
- * @typedef IProps
- * @property {ActionService} actionService
- *
- * @param {IProps} props
- */
-function ActionBar(props) {
-  Component.call(this, props);
-  autoBind(this, ActionBar.prototype, __filename);
+class ActionBar extends Component {
+  constructor() {
+    super();
+    autoBind(this, ActionBar.prototype, __filename);
+  }
+
+  render() {
+    return (
+      h(Box, { expand: false }, actions.reduce((prev, action) => prev.concat([
+        h(ActionBarItem, {
+          action,
+          key: action.id,
+        }),
+
+        h(VSeparator, { key: action.id + "+" }),
+      ]), /** @type {any[]} */ ([])))
+    );
+  }
 }
 
-ActionBar.prototype = Object.create(Component.prototype);
-
-/**
- * @type {IProps}
- */
-ActionBar.prototype.props = undefined;
-
-ActionBar.prototype.render = function() {
-  return (
-    h("box", { expand: false }, actions.reduce((prev, action) => prev.concat([
-      action.id === "rm" ? h(ActionBarRm, {
-          key: action.id,
-          label: action.shortcut + " " + action.label,
-        }) : h("button", {
-          can_focus: false,
-          expand: true,
-          key: action.id,
-          label: action.shortcut + " " + action.label,
-          on_pressed: this.props.actionService.get(action.id).handler,
-          relief: ReliefStyle.NONE,
-        }),
-      h("v-separator", { key: action.id + "+" }),
-    ]), []))
-  );
-};
-
 exports.ActionBar = ActionBar;
-exports.default = connect(["actionService"])(ActionBar);

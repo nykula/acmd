@@ -32,10 +32,8 @@ describe("DirectoryService", () => {
     };
 
     const directoryService = new DirectoryService({
-      clipboardService: undefined,
       dialogService,
       gioService: new GioService(Gio),
-      jobService: undefined,
       panelService,
     });
 
@@ -59,10 +57,7 @@ describe("DirectoryService", () => {
     };
 
     const directoryService = new DirectoryService({
-      clipboardService: undefined,
-      dialogService: undefined,
       gioService: new GioService(Gio),
-      jobService: undefined,
       panelService,
     });
 

@@ -1,25 +1,16 @@
 const { FileType } = imports.gi.Gio;
 const expect = require("expect");
-const h = require("inferno-hyperscript").default;
 const { File } = require("../../domain/File/File");
-const { DirectoryFile } = require("./DirectoryFile");
+const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 const { TreeView } = require("../TreeView/TreeView");
+const { DirectoryFile } = require("./DirectoryFile");
 
 describe("DirectoryFile", () => {
   it("renders without crashing", () => {
-    const file = {
-      fileType: FileType.REGULAR,
-      icon: "some gio icon",
-      iconType: "GICON",
-      modificationTime: 1490397889,
-      name: "foo.bar",
-      size: 1000,
-    };
-
     shallow(
       h(DirectoryFile, {
-        file,
+        file: new File(),
         isSelected: false,
       }),
     );

@@ -19,9 +19,9 @@ const { TabService } = require("../Tab/TabService");
 class PanelService {
   /**
    * @typedef IProps
-   * @property {DialogService} dialogService
-   * @property {PlaceService} placeService
-   * @property {TabService} tabService
+   * @property {DialogService?} [dialogService]
+   * @property {PlaceService?} [placeService]
+   * @property {TabService?} [tabService]
    *
    * @param {IProps} props
    */
@@ -269,11 +269,9 @@ class PanelService {
   /**
    * Sets the next tab in panel as active, or the first if the last
    * is active.
-   *
-   * @param {number} panelId
    */
-  nextTab(panelId) {
-    const { activeTabId, tabIds } = this.entities[panelId];
+  nextTab() {
+    const { activeTabId, tabIds } = this.entities[this.activeId];
 
     let index = tabIds.indexOf(activeTabId) + 1;
 
@@ -287,11 +285,9 @@ class PanelService {
   /**
    * Sets the previous tab in panel as active, or the last if the first
    * is active.
-   *
-   * @param {number} panelId
    */
-  prevTab(panelId) {
-    const { activeTabId, tabIds } = this.entities[panelId];
+  prevTab() {
+    const { activeTabId, tabIds } = this.entities[this.activeId];
 
     let index = tabIds.indexOf(activeTabId) - 1;
 

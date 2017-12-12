@@ -264,18 +264,18 @@ function Selected(selected) {
   }
 
   const xs = selected.split(" ").map(x => Number(x));
-  const _selected = [];
+  const selectedArray = [];
 
   for (let i = 0; i < xs.length; i += 2) {
     const iFirst = xs[i];
     const iLast = xs[i + 1];
 
     for (let j = iFirst; j <= iLast; j++) {
-      _selected.push(j);
+      selectedArray.push(j);
     }
   }
 
-  return _selected;
+  return selectedArray;
 }
 
 /**

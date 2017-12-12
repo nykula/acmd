@@ -127,7 +127,7 @@ class TabService {
     this.showHidSys = false;
 
     /** @type {{ [id: string]: File[] }} */
-    this.visibleFiles = undefined;
+    this.visibleFiles = {};
 
     autoBind(this, TabService.prototype, __filename);
 

@@ -1,6 +1,6 @@
-const { Orientation, PolicyType } = imports.gi.Gtk;
-const h = require("inferno-hyperscript").default;
+const { Box, HSeparator, Orientation, PolicyType, ScrolledWindow } = imports.gi.Gtk;
 const Directory = require("../Directory/Directory").default;
+const { h } = require("../Gjs/GtkInferno");
 const Location = require("../Location/Location").default;
 const Mount = require("../Mount/Mount").default;
 const Stats = require("../Stats/Stats").default;
@@ -8,13 +8,13 @@ const TabList = require("../Tab/TabList").default;
 
 exports.default = Panel;
 /**
- * @param {{ id: string }} props
+ * @param {{ id: number }} props
  */
 function Panel(props) {
   const panelId = props.id;
 
   return (
-    h("box", { orientation: Orientation.VERTICAL }, [
+    h(Box, { orientation: Orientation.VERTICAL }, [
       h(Mount, {
         key: "MOUNT",
         panelId,
@@ -23,13 +23,13 @@ function Panel(props) {
         key: "TAB_LIST",
         panelId,
       }),
-      h("h-separator"),
+      h(HSeparator),
       h(Location, {
         key: "LOCATION",
         panelId,
       }),
-      h("h-separator"),
-      h("scrolled-window", {
+      h(HSeparator),
+      h(ScrolledWindow, {
         expand: true,
         hscrollbar_policy: PolicyType.NEVER,
         key: "DIRECTORY",

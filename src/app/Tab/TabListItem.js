@@ -1,8 +1,8 @@
-const { IconSize, ReliefStyle } = imports.gi.Gtk;
+const { Box, IconSize, Image, Label, ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
-const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
+const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
@@ -13,51 +13,52 @@ const ToggleButton = require("../ToggleButton/ToggleButton").default;
  * @property {string} icon
  * @property {number} id
  * @property {number} panelId
- * @property {PanelService} panelService
- * @property {TabService} tabService
+ * @property {PanelService?} [panelService]
+ * @property {TabService?} [tabService]
  *
- * @param {IProps} props
+ * @extends Component<IProps>
  */
-function TabListItem(props) {
-  Component.call(this, props);
-  autoBind(this, TabListItem.prototype, __filename);
+class TabListItem extends Component {
+  /**
+   * @param {IProps} props
+   */
+  constructor(props) {
+    super(props);
+    autoBind(this, TabListItem.prototype, __filename);
+  }
+
+  handleClicked() {
+    const panelService = /** @type {PanelService} */ (this.props.panelService);
+    panelService.setActiveTab(this.props.id);
+  }
+
+  render() {
+    const { active, icon } = this.props;
+    const { entities } = /** @type {TabService} */ (this.props.tabService);
+
+    const { location } = entities[this.props.id];
+    let text = location.replace(/^.*\//, "") || "/";
+
+    return (
+      h(ToggleButton, {
+        active: active,
+        can_focus: false,
+        pressedCallback: this.handleClicked,
+        relief: ReliefStyle.NONE,
+      }, [
+          h(Box, { spacing: 4 }, [
+            icon ? (
+              h(Image, {
+                icon_name: icon + "-symbolic",
+                icon_size: IconSize.SMALL_TOOLBAR,
+              })
+            ) : null,
+            h(Label, { label: text }),
+          ]),
+        ])
+    );
+  }
 }
-
-TabListItem.prototype = Object.create(Component.prototype);
-
-/**
- * @type {IProps}
- */
-TabListItem.prototype.props = undefined;
-
-TabListItem.prototype.handleClicked = function() {
-  this.props.panelService.setActiveTab(this.props.id);
-};
-
-TabListItem.prototype.render = function() {
-  const { active, icon } = this.props;
-  const { location } = this.props.tabService.entities[this.props.id];
-  let text = location.replace(/^.*\//, "") || "/";
-
-  return (
-    h(ToggleButton, {
-      active: active,
-      can_focus: false,
-      on_clicked: this.handleClicked,
-      relief: ReliefStyle.NONE,
-    }, [
-        h("box", { spacing: 4 }, [
-          icon ? (
-            h("image", {
-              icon_name: icon + "-symbolic",
-              icon_size: IconSize.SMALL_TOOLBAR,
-            })
-          ) : null,
-          h("label", { label: text }),
-        ]),
-      ])
-  );
-};
 
 exports.TabListItem = TabListItem;
 exports.default = connect(["panelService", "tabService"])(TabListItem);

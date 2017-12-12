@@ -1,12 +1,12 @@
 const { ModifierType, Rectangle } = imports.gi.Gdk;
 const Gtk = imports.gi.Gtk;
-const { ListStore, TreeModel } = Gtk;
+const { ListStore, TreeModel, TreePath } = Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
-const { TreeViewRow } = require("../../domain/TreeView/TreeViewRow");
 const { autoBind } = require("../Gjs/autoBind");
 const KeyListener = require("../Gjs/KeyListener").default;
 const { configureColumn, setCols, setValue } = require("../ListStore/ListStore");
+const { TreeViewRow } = require("./TreeViewRow");
 
 /**
  * @typedef Col
@@ -28,7 +28,7 @@ const { configureColumn, setCols, setValue } = require("../ListStore/ListStore")
  * @param {TreeView} node
  */
 function TreeView(node) {
-  this.useNodeAsThis.call(node);
+  TreeView.prototype.useNodeAsThis.call(node);
   return node;
 }
 
@@ -94,10 +94,10 @@ TreeView.prototype.useNodeAsThis = function() {
  * @param {Col[]} cols
  */
 TreeView.prototype.setCols = function(cols) {
-  this.setCols = (/** @type {Col[]} */ _cols) => {
+  this.setCols = (/** @type {Col[]} */ nextCols) => {
     const tvCols = this.get_columns();
-    for (let i = 0; i < _cols.length; i++) {
-      tvCols[i].title = _cols[i].title;
+    for (let i = 0; i < nextCols.length; i++) {
+      tvCols[i].title = nextCols[i].title;
     }
   };
 
@@ -176,8 +176,8 @@ TreeView.prototype.setCursorCallback = function(callback) {
       const mouseEvent = this.mouseEvent;
       this.mouseEvent = undefined;
 
-      /** @type {any} FIXME */
-      const index = cursor[0].get_indices()[0];
+      const path = /** @type {TreePath} */ (cursor[0]);
+      const index = path.get_indices()[0];
 
       callback({ index, mouseEvent });
     }
@@ -192,7 +192,8 @@ TreeView.prototype.setKeyPressEventCallback = function(callback) {
 
   new KeyListener(this).on("key-press-event", (/** @type {any} */ ev) => {
     const visible = this.get_visible_range();
-    const top = visible[1] ? visible[1].get_indices()[0] : 0;
+    const path = /** @type {TreePath} */ visible[1];
+    const top = path ? path.get_indices()[0] : 0;
 
     const cursor = Gtk.TreePath.new_from_string(String(this._cursor));
     const rect = this.get_cell_area(cursor, null);
@@ -220,7 +221,7 @@ TreeView.prototype.setCursor = function(rowIndex) {
 
   sel.unselect_all();
   sel.select_path(path);
-  this.set_cursor(path, this.get_columns()[1], null);
+  this.set_cursor(path, this.get_columns()[1], false);
   this._cursor = rowIndex;
 
   this.shouldReactToCursorChanges = true;

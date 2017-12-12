@@ -1,5 +1,6 @@
-const h = require("inferno-hyperscript").default;
+const { Box } = imports.gi.Gtk;
 const { connect } = require("inferno-mobx");
+const { h } = require("../Gjs/GtkInferno");
 const minLength = require("../MinLength/minLength").default;
 const PlacesEntry = require("./PlacesEntry").default;
 const { PlaceService } = require("./PlaceService");
@@ -7,22 +8,22 @@ const { PlaceService } = require("./PlaceService");
 /**
  * @typedef IProps
  * @property {number} panelId
- * @property {PlaceService} placeService
+ * @property {PlaceService?} [placeService]
  *
  * @param {IProps} props
  */
 function Places(props) {
   const { entities, names } = props.placeService;
 
-  return h("box", [
-    names.map(x => entities[x]).map(place => {
-      return h(PlacesEntry, {
+  return (
+    h(Box, names.map(x => entities[x]).map(place => (
+      h(PlacesEntry, {
         panelId: this.props.panelId,
         place,
         short: minLength(names, place.name),
-      });
-    }),
-  ]);
+      })
+    )))
+  );
 }
 
 exports.Places = Places;

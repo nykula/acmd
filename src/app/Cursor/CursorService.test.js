@@ -17,9 +17,6 @@ describe("CursorService", () => {
     const cursorService = new CursorService({
       dialogService,
       directoryService,
-      gioService: undefined,
-      panelService: undefined,
-      tabService: undefined,
     });
 
     cursorService.env = { EDITOR: undefined };
@@ -53,7 +50,6 @@ describe("CursorService", () => {
     const cursorService = new CursorService({
       dialogService,
       directoryService,
-      gioService: undefined,
       panelService,
       tabService,
     });
@@ -89,7 +85,6 @@ describe("CursorService", () => {
     const cursorService = new CursorService({
       dialogService,
       directoryService,
-      gioService: undefined,
       panelService,
       tabService,
     });
@@ -118,9 +113,6 @@ describe("CursorService", () => {
     const cursorService = new CursorService({
       dialogService,
       directoryService,
-      gioService: undefined,
-      panelService: undefined,
-      tabService: undefined,
     });
 
     cursorService.env = { PAGER: undefined };
@@ -154,7 +146,6 @@ describe("CursorService", () => {
     const cursorService = new CursorService({
       dialogService,
       directoryService,
-      gioService: undefined,
       panelService,
       tabService,
     });
@@ -190,7 +181,6 @@ describe("CursorService", () => {
     const cursorService = new CursorService({
       dialogService,
       directoryService,
-      gioService: undefined,
       panelService,
       tabService,
     });

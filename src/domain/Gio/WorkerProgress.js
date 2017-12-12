@@ -1,14 +1,16 @@
-function WorkerProgress() { }
-
-/** @type {'progress'} */
-WorkerProgress.prototype.type = "progress";
-WorkerProgress.prototype.uri = "";
-WorkerProgress.prototype.dest = "";
-WorkerProgress.prototype.doneSize = 0;
-WorkerProgress.prototype.size = 0;
-WorkerProgress.prototype.totalDoneSize = 0;
-WorkerProgress.prototype.totalSize = 0;
-WorkerProgress.prototype.totalDoneCount = 0;
-WorkerProgress.prototype.totalCount = 0;
+class WorkerProgress {
+  constructor() {
+    /** @type {'progress'} */
+    this.type = "progress";
+    this.uri = "";
+    this.dest = "";
+    this.doneSize = 0;
+    this.size = 0;
+    this.totalDoneSize = 0;
+    this.totalSize = 0;
+    this.totalDoneCount = 0;
+    this.totalCount = 0;
+  }
+}
 
 exports.WorkerProgress = WorkerProgress;

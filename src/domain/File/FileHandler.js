@@ -1,12 +1,14 @@
-function FileHandler() { }
+class FileHandler {
+  constructor() {
+    this.commandline = "";
 
-FileHandler.prototype.commandline = "";
+    this.displayName = "";
 
-FileHandler.prototype.displayName = "";
-
-/**
- * @type {string | null}
- */
-FileHandler.prototype.icon = null;
+    /**
+     * @type {string | null}
+     */
+    this.icon = null;
+  }
+}
 
 exports.FileHandler = FileHandler;

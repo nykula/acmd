@@ -1,9 +1,9 @@
-const { IconSize, ReliefStyle } = imports.gi.Gtk;
+const { Box, IconSize, Image, ReliefStyle, VSeparator } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
-const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { ActionService } = require("../Action/ActionService");
 const { autoBind } = require("../Gjs/autoBind");
+const { h } = require("../Gjs/GtkInferno");
 const { TabService } = require("../Tab/TabService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
 const ToolbarJobs = require("./ToolbarJobs").default;
@@ -76,59 +76,59 @@ const items = [
 
 /**
  * @typedef {{ [key: string]: any }} IProps
- * @property {ActionService} actionService
+ * @property {ActionService?} [actionService]
+ * @property {TabService?} [tabService]
  *
- * @param {IProps} props
+ * @extends Component<IProps>
  */
-function Toolbar(props) {
-  Component.call(this, props);
-  autoBind(this, Toolbar.prototype, __filename);
+class Toolbar extends Component {
+  /**
+   * @param {IProps} props
+   */
+  constructor(props) {
+    super(props);
+    autoBind(this, Toolbar.prototype, __filename);
+  }
+
+  render() {
+    const { actionService, tabService } = this.props;
+
+    return (
+      h(Box, items.map(item => {
+        if (item === "jobs-") {
+          return h(Box, { hexpand: true, key: item });
+        }
+
+        if (item === "jobs") {
+          return h(ToolbarJobs, { key: item });
+        }
+
+        if (typeof item === "string") {
+          return h(VSeparator, { key: item });
+        }
+
+        return (
+          h(ToggleButton, {
+            active:
+              item.icon === "format-justify-fill" ||
+              (item.id === "windowService.showHidSys" && tabService.showHidSys),
+            can_focus: false,
+            key: item.icon,
+            pressedCallback: item.id ? actionService.get(item.id).handler : null,
+            relief: ReliefStyle.NONE,
+            sensitive: item.icon !== "format-justify-left",
+            tooltip_text: item.label,
+          }, [
+              h(Image, {
+                icon_name: item.icon + "-symbolic",
+                icon_size: IconSize.SMALL_TOOLBAR,
+              }),
+            ])
+        );
+      }))
+    );
+  }
 }
-
-Toolbar.prototype = Object.create(Component.prototype);
-
-/**
- * @type {IProps}
- */
-Toolbar.prototype.props = undefined;
-
-Toolbar.prototype.render = function() {
-  const { actionService, tabService } = this.props;
-  return (
-    h("box", items.map(item => {
-      if (item === "jobs-") {
-        return h("box", { hexpand: true, key: item });
-      }
-
-      if (item === "jobs") {
-        return h(ToolbarJobs, { key: item });
-      }
-
-      if (typeof item === "string") {
-        return h("v-separator", { key: item });
-      }
-
-      return (
-        h(ToggleButton, {
-          active:
-            item.icon === "format-justify-fill" ||
-            (item.id === "windowService.showHidSys" && tabService.showHidSys),
-          can_focus: false,
-          key: item.icon,
-          on_pressed: item.id ? actionService.get(item.id).handler : null,
-          relief: ReliefStyle.NONE,
-          sensitive: item.icon !== "format-justify-left",
-          tooltip_text: item.label,
-        }, [
-            h("image", {
-              icon_name: item.icon + "-symbolic",
-              icon_size: IconSize.SMALL_TOOLBAR,
-            }),
-          ])
-      );
-    }))
-  );
-};
 
 exports.Toolbar = Toolbar;
 exports.default = connect(["actionService", "tabService"])(Toolbar);

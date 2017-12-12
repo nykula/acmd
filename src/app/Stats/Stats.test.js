@@ -1,6 +1,6 @@
 const expect = require("expect");
-const h = require("inferno-hyperscript").default;
 const { Stats } = require("./Stats");
+const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 
 describe("Stats", () => {

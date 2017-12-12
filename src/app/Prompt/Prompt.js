@@ -1,52 +1,66 @@
+const { Box, Entry, Label } = imports.gi.Gtk;
 const { EllipsizeMode } = imports.gi.Pango;
 const Component = require("inferno-component").default;
-const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { DirectoryService } = require("../Directory/DirectoryService");
 const { autoBind } = require("../Gjs/autoBind");
+const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
 
 /**
  * @typedef IProps
- * @property {DirectoryService} directoryService
- * @property {PanelService} panelService
+ * @property {DirectoryService?} [directoryService]
+ * @property {PanelService?} [panelService]
  *
- * @param {IProps} props
+ * @extends Component<IProps>
  */
-function Prompt(props) {
-  Component.call(this, props);
-  autoBind(this, Prompt.prototype, __filename);
-}
-
-Prompt.prototype = Object.create(Component.prototype);
-
-/** @type {IProps} */
-Prompt.prototype.props = undefined;
-
-/**
- * @param {{ text?: string }} node
- */
-Prompt.prototype.activate = function(node) {
-  if (node.text) {
-    this.props.directoryService.exec(node.text);
+class Prompt extends Component {
+  /**
+   * @param {IProps} props
+   */
+  constructor(props) {
+    super(props);
+    autoBind(this, Prompt.prototype, __filename);
   }
-};
 
-Prompt.prototype.render = function() {
-  const { location } = this.props.panelService.getActiveTab();
+  /**
+   * @param {{ text: string | null }} entry
+   */
+  handleActivate(entry) {
+    const { exec } =
+      /** @type {DirectoryService} */ (this.props.directoryService);
 
-  return (
-    h("box", { expand: false }, [
-      h("box", { border_width: 4 }),
-      h("label", {
-        ellipsize: EllipsizeMode.MIDDLE,
-        label: location.replace(/^file:\/\//, "") + "$",
-      }),
-      h("box", { border_width: 4 }),
-      h("entry", { expand: true, on_activate: this.activate }),
-    ])
-  );
-};
+    if (entry.text) {
+      exec(entry.text);
+    }
+  }
+
+  /**
+   * @param {Entry} entry
+   */
+  ref(entry) {
+    entry.connect("activate", this.handleActivate);
+  }
+
+  render() {
+    const { getActiveTab } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { location } = getActiveTab();
+
+    return (
+      h(Box, { expand: false }, [
+        h(Box, { border_width: 4 }),
+        h(Label, {
+          ellipsize: EllipsizeMode.MIDDLE,
+          label: location.replace(/^file:\/\//, "") + "$",
+        }),
+        h(Box, { border_width: 4 }),
+        h(Entry, { expand: true, ref: this.ref }),
+      ])
+    );
+  }
+}
 
 exports.Prompt = Prompt;
 exports.default = connect(["directoryService", "panelService"])(Prompt);

@@ -1,9 +1,10 @@
-const h = require("inferno-hyperscript").default;
+const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 const { Places } = require("./Places");
 
 describe("Places", () => {
   it("renders without crashing", () => {
+    /** @type {any} */
     const placeService = {
       entities: {
         Music: {
@@ -22,32 +23,10 @@ describe("Places", () => {
       names: ["System", "Music"],
     };
 
-    const panelService = {
-      entities: {
-        "0": { activeTabId: 0 },
-      },
-    };
-
-    const tabService = {
-      entities: {
-        "0": {
-          files: [
-            {
-              mountUri: "file:///media/System",
-              name: ".",
-            },
-          ],
-          location: "file:///media/System/tmp",
-        },
-      },
-    };
-
     shallow(
       h(Places, {
         panelId: 0,
-        panelService: panelService,
         placeService: placeService,
-        tabService: tabService,
       }),
     );
   });

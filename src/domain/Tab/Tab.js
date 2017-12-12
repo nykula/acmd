@@ -1,21 +1,23 @@
 const { File } = require("../File/File");
 
-function Tab() {
-  this.cursor = 0;
+class Tab {
+  constructor() {
+    this.cursor = 0;
 
-  /**
-   * @type {File[]}
-   */
-  this.files = [];
+    /**
+     * @type {File[]}
+     */
+    this.files = [];
 
-  this.location = "file:///";
+    this.location = "file:///";
 
-  /**
-   * @type {number[]}
-   */
-  this.selected = [];
+    /**
+     * @type {number[]}
+     */
+    this.selected = [];
 
-  this.sortedBy = "ext";
+    this.sortedBy = "ext";
+  }
 }
 
 exports.Tab = Tab;

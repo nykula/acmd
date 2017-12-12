@@ -8,10 +8,10 @@ const { TabService } = require("../Tab/TabService");
 class WindowService {
   /**
    * @typedef IProps
-   * @property {PanelService} panelService
-   * @property {PlaceService} placeService
-   * @property {TabService} tabService
-   * @property {Window} window
+   * @property {PanelService?} [panelService]
+   * @property {PlaceService?} [placeService]
+   * @property {TabService?} [tabService]
+   * @property {Window?} [window]
    *
    * @param {IProps} props
    */
@@ -23,7 +23,7 @@ class WindowService {
   }
 
   exit() {
-    const { window } = this.props;
+    const window = /** @type {Window} */ (this.props.window);
     window.destroy();
   }
 
@@ -38,12 +38,12 @@ class WindowService {
 
   refresh() {
     const { panelService, placeService } = this.props;
-    panelService.refresh();
-    placeService.refresh();
+    (/** @type {PanelService} */ (panelService)).refresh();
+    (/** @type {PlaceService} */ (placeService)).refresh();
   }
 
   showHidSys() {
-    const { tabService } = this.props;
+    const tabService = /** @type {TabService} */ (this.props.tabService);
     tabService.showHidSys = !tabService.showHidSys;
   }
 }

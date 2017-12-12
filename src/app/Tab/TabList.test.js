@@ -1,10 +1,11 @@
 const assign = require("lodash/assign");
-const h = require("inferno-hyperscript").default;
+const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 const { TabList } = require("./TabList");
 
 describe("TabList", () => {
   it("renders without crashing", () => {
+    /** @type {any} */
     const panelService = {
       entities: {
         "0": {
@@ -17,7 +18,7 @@ describe("TabList", () => {
     shallow(
       h(TabList, {
         panelId: 0,
-        panelService: panelService,
+        panelService,
       }),
     );
   });

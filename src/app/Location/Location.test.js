@@ -1,11 +1,12 @@
 const expect = require("expect");
-const h = require("inferno-hyperscript").default;
 const { observable } = require("mobx");
-const { Location } = require("./Location");
+const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
+const { Location } = require("./Location");
 
 describe("Location", () => {
   it("renders without crashing", () => {
+    /** @type {any} */
     const panelService = {
       entities: {
         "0": {
@@ -14,6 +15,7 @@ describe("Location", () => {
       },
     };
 
+    /** @type {any} */
     const tabService = {
       entities: {
         "0": {

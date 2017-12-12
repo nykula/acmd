@@ -13,9 +13,7 @@ describe("Directory", () => {
     const panelService = {
       activeId: 0,
 
-      entities: {
-        "0": { activeTabId: 0 },
-      },
+      getActiveTabId: () => 0,
     };
 
     /** @type {any} */
@@ -55,9 +53,7 @@ describe("Directory", () => {
     /** @type {any} */
     const panelService = {
       activeId: 0,
-      entities: {
-        "0": { activeTabId: 0 },
-      },
+      getActiveTabId: () => 0,
     };
 
     /** @type {any} */
@@ -68,17 +64,9 @@ describe("Directory", () => {
     };
 
     const instance = new Directory({
-      cursorService: undefined,
-      directoryService: undefined,
-      jobService: undefined,
-      oppositeService: undefined,
       panelId: 0,
       panelService,
-      placeService: undefined,
-      refService: undefined,
-      selectionService: undefined,
       tabService,
-      windowService: undefined,
     });
 
     tabService.entities[0].sortedBy = "ext";
@@ -105,17 +93,8 @@ describe("Directory", () => {
     });
 
     const instance = new Directory({
-      cursorService: undefined,
-      directoryService: undefined,
-      jobService: undefined,
-      oppositeService: undefined,
       panelId: 0,
       panelService,
-      placeService: undefined,
-      refService: undefined,
-      selectionService: undefined,
-      tabService: undefined,
-      windowService: undefined,
     });
 
     panelService.activeId = 0;
@@ -144,16 +123,8 @@ describe("Directory", () => {
 
     const instance = new Directory({
       cursorService,
-      directoryService: undefined,
-      jobService: undefined,
-      oppositeService: undefined,
       panelId: 0,
       panelService,
-      placeService: undefined,
-      refService: undefined,
-      selectionService: undefined,
-      tabService: undefined,
-      windowService: undefined,
     });
 
     instance.handleActivated(2);
@@ -167,9 +138,7 @@ describe("Directory", () => {
     const panelService = {
       activeId: 0,
       cursor: createSpy().andReturn(undefined),
-      entities: {
-        "0": { activeTabId: 0 },
-      },
+      getActiveTabId: () => 0,
       selected: createSpy().andReturn(undefined),
     };
 
@@ -184,17 +153,9 @@ describe("Directory", () => {
     };
 
     const instance = new Directory({
-      cursorService: undefined,
-      directoryService: undefined,
-      jobService: undefined,
-      oppositeService: undefined,
       panelId: 0,
       panelService,
-      placeService: undefined,
-      refService: undefined,
-      selectionService: undefined,
       tabService,
-      windowService: undefined,
     });
 
     instance.handleCursor({ index: 1 });
@@ -210,9 +171,7 @@ describe("Directory", () => {
     /** @type {any} */
     const panelService = {
       activeId: 0,
-      entities: {
-        "0": { activeTabId: 0 },
-      },
+      getActiveTabId: () => 0,
     };
 
     /** @type {any} */
@@ -221,17 +180,9 @@ describe("Directory", () => {
     };
 
     const instance = new Directory({
-      cursorService: undefined,
-      directoryService: undefined,
-      jobService: undefined,
-      oppositeService: undefined,
       panelId: 0,
       panelService,
-      placeService: undefined,
-      refService: undefined,
-      selectionService: undefined,
       tabService,
-      windowService: undefined,
     });
 
     instance.handleClicked("ext");

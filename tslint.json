@@ -3,10 +3,7 @@
   "extends": [
     "tslint:latest"
   ],
-  "jsRules": {
-    "no-empty": false,
-    "variable-name": false
-  },
+  "jsRules": {},
   "rules": {},
   "rulesDirectory": []
 }

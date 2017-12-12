@@ -1,7 +1,8 @@
+const { MenuBar, MenuItem } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
-const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
-const { ActionService } = require("../Action/ActionService");
+const { h } = require("../Gjs/GtkInferno");
+const MenuBarAction = require("./MenuBarAction").default;
 
 const menus = [
   {
@@ -58,37 +59,19 @@ const menus = [
   },
 ];
 
-/**
- * @typedef IProps
- * @property {ActionService} actionService
- *
- * @param {IProps} props
- */
-function MenuBar(props) {
-  Component.call(this, props);
+class MenuBarComponent extends Component {
+  render() {
+    return (
+      h(MenuBar, menus.map(menu => (
+        h("menu-item-with-submenu", {
+          key: menu.label,
+          label: menu.label,
+        },
+          menu.children.map(action => h(MenuBarAction, { action })),
+        )
+      )))
+    );
+  }
 }
 
-MenuBar.prototype = Object.create(Component.prototype);
-
-/** @type {IProps} */
-MenuBar.prototype.props = undefined;
-
-MenuBar.prototype.render = function() {
-  return (
-    h("menu-bar",
-      menus.map(menu => (
-        h("menu-item-with-submenu", { key: menu.label, label: menu.label },
-          menu.children.map(child => (
-            h("menu-item", {
-              label: child.label,
-              on_activate: this.props.actionService.get(child.id).handler,
-            })
-          )),
-        )),
-      ),
-    )
-  );
-};
-
-exports.MenuBar = MenuBar;
-exports.default = connect(["actionService"])(MenuBar);
+exports.MenuBar = MenuBarComponent;

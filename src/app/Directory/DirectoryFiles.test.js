@@ -1,10 +1,4 @@
-const expect = require("expect");
-const h = require("inferno-hyperscript").default;
-const assign = require("lodash/assign");
-const { observable } = require("mobx");
-const { createSpy } = expect;
 const { DirectoryFiles } = require("./DirectoryFiles");
-const { shallow } = require("../Test/Test");
 
 describe("DirectoryFiles", () => {
   it("renders without crashing", () => {

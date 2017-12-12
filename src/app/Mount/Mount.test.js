@@ -43,7 +43,6 @@ describe("Mount", () => {
     new Mount({
       panelId: 0,
       panelService,
-      placeService: undefined,
       refService: new RefService(),
     }).handleLevelUp();
 

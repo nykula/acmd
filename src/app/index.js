@@ -10,23 +10,26 @@ const { Provider } = require("inferno-mobx");
 const GtkDom = require("./Gjs/GtkDom");
 const { Services } = require("./Services");
 
-/**
- * @param {any} props
- */
-function View(props) {
-  Component.call(this, props);
-  this.state = { render: this.props.render };
+class View extends Component {
+  /**
+   * @param {any} props
+   */
+  constructor(props) {
+    super(props);
+    this.state = { render: this.props.render };
+  }
+
+  render() {
+    return this.state.render();
+  }
 }
 
-View.prototype = Object.create(Component.prototype);
+/** @type {Component} */
+View.instance = (/** @type {any} */ (undefined));
 
-/**
- * @type {any}
- */
-View.prototype.props = undefined;
-
-View.prototype.render = function() {
-  return this.state.render();
+/** @param {Component} instance */
+View.ref = instance => {
+  View.instance = instance;
 };
 
 const title = "Acme Commander";
@@ -48,29 +51,21 @@ application.connect("startup", () => {
   // Dependency injection container.
   const services = new Services(win);
 
-  /** @type {any} */
-  const parentDom = win;
-
-  /** @type {Component} */
-  let view;
-
-  /** @param {Component} instance */
-  const ref = instance => {
-    view = instance;
-  };
-
   const vnodeView = h(View, {
-    ref,
+    ref: View.ref,
     render: require("./App").render,
   });
 
-  render(h(Provider, services, vnodeView), parentDom);
+  render(
+    h(Provider, services, vnodeView),
+    /** @type {any} */ (win),
+  );
 
   services.windowService.refresh();
 
   if (process.env.NODE_ENV === "development" && module.hot) {
     module.hot.accept("./App", () => {
-      view.setState({ render: require("./App").render });
+      View.instance.setState({ render: require("./App").render });
     });
   }
 });

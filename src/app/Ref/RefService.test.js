@@ -1,8 +1,5 @@
 const expect = require("expect");
-const Component = require("inferno-component").default;
-const h = require("inferno-hyperscript").default;
 const { RefService } = require("./RefService");
-const { render } = require("inferno");
 
 describe("RefService", () => {
   it("stores reference", () => {

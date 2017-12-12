@@ -1,12 +1,14 @@
-function WorkerProps() { }
+class WorkerProps {
+  constructor() {
+    /** @type {'cp' | 'mv' | 'rm'} */
+    this.type = "cp";
 
-/** @type {'cp' | 'mv' | 'rm'} */
-WorkerProps.prototype.type = undefined;
+    /** @type {string[]} */
+    this.uris = [];
 
-/** @type {string[]} */
-WorkerProps.prototype.uris = undefined;
-
-/** @type {string} */
-WorkerProps.prototype.destUri = undefined;
+    /** @type {string} */
+    this.destUri = "";
+  }
+}
 
 exports.WorkerProps = WorkerProps;

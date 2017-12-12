@@ -8,281 +8,280 @@ const { autoBind } = require("../Gjs/autoBind");
 /**
  * Tasks intended to run in a separate process because they are heavy on IO or
  * GObject Introspection doesn't provide respective asynchronous methods.
- *
- * @param {WorkerProps} props
- * @param {(event: WorkerError | WorkerProgress | WorkerSuccess) => void} emit
  */
-function Worker(props, emit, Gio = imports.gi.Gio) {
-  this.emit = emit;
-  this.Gio = Gio;
-  this.props = props;
-  autoBind(this, Worker.prototype, __filename);
-}
-
-/**
- * Performs the requested action.
- */
-Worker.prototype.run = function() {
-  try {
-    this[this.props.type]();
-  } catch (error) {
-    this.emit({
-      message: error.message,
-      stack: error.stack,
-      type: "error",
-    });
-    return;
+class Worker {
+  /**
+   * @param {WorkerProps} props
+   * @param {(event: WorkerError | WorkerProgress | WorkerSuccess) => void} emit
+   */
+  constructor(props, emit, Gio = imports.gi.Gio) {
+    this.emit = emit;
+    this.Gio = Gio;
+    this.props = props;
+    autoBind(this, Worker.prototype, __filename);
   }
 
-  this.emit({ type: "success" });
-};
-
-/**
- * Copies sources to a destination directory. Recurses if a source is a
- * directory. Splices the first URI component relative to the source if the
- * source URI ends with a slash, or if there is only one source URI and the
- * destination isn't an existing directory.
- */
-Worker.prototype.cp = function() {
-  const data = this.prepare();
-
-  data.files.forEach((file, totalDoneCount) => {
-    if (file.gFileInfo.get_file_type() === FileType.DIRECTORY) {
-      this.cpDirNode(file);
+  /**
+   * Performs the requested action.
+   */
+  run() {
+    try {
+      this[this.props.type]();
+    } catch (error) {
+      this.emit({
+        message: error.message,
+        stack: error.stack,
+        type: "error",
+      });
       return;
     }
 
-    const uri = file.gFile.get_uri();
-    const dest = file.dest.get_uri();
+    this.emit({ type: "success" });
+  }
 
-    /** @type {File} */
-    const gFile = file.gFile;
-
-    gFile.copy(
-      file.dest,
-      FileCopyFlags.OVERWRITE +
+  /**
+   * Copies sources to a destination directory. Recurses if a source is a
+   * directory. Splices the first URI component relative to the source if the
+   * source URI ends with a slash, or if there is only one source URI and the
+   * destination isn't an existing directory.
+   */
+  cp() {
+    const data = this.prepare();
+    data.files.forEach((file, totalDoneCount) => {
+      if (file.gFileInfo.get_file_type() === FileType.DIRECTORY) {
+        this.cpDirNode(file);
+        return;
+      }
+      const uri = file.gFile.get_uri();
+      const dest = file.dest.get_uri();
+      /** @type {File} */
+      const gFile = file.gFile;
+      gFile.copy(
+        file.dest,
+        FileCopyFlags.OVERWRITE +
         FileCopyFlags.NOFOLLOW_SYMLINKS +
         FileCopyFlags.ALL_METADATA,
-      null,
-      (doneSize, size) => {
-        this.emit({
-          dest,
-          doneSize,
-          size,
-          totalCount: data.files.length,
-          totalDoneCount,
-          totalDoneSize: data.totalDoneSize + doneSize,
-          totalSize: data.totalSize,
-          type: "progress",
-          uri,
-        });
-      },
-    );
+        null,
+        (doneSize, size) => {
+          this.emit({
+            dest,
+            doneSize,
+            size,
+            totalCount: data.files.length,
+            totalDoneCount,
+            totalDoneSize: data.totalDoneSize + doneSize,
+            totalSize: data.totalSize,
+            type: "progress",
+            uri,
+          });
+        },
+      );
 
-    data.totalDoneSize += file.gFileInfo.get_size();
-  });
-};
-
-/**
- * Moves sources to a destination directory. Uses cp followed by rm.
- */
-Worker.prototype.mv = function() {
-  this.cp();
-  this.rm();
-};
-
-/**
- * Deletes files. Recurses into directories.
- */
-Worker.prototype.rm = function() {
-  /** @type {any[]} */
-  const gFiles = this.props.uris.map(x => this.Gio.file_new_for_uri(x));
+      data.totalDoneSize += file.gFileInfo.get_size();
+    });
+  }
 
   /**
-   * @type {any[]}
+   * Moves sources to a destination directory. Uses cp followed by rm.
    */
-  const files = gFiles.reduce((prev, gFile) => {
-    return prev.concat(this.flatten(gFile).files);
-  }, []);
+  mv() {
+    this.cp();
+    this.rm();
+  }
 
-  files.reverse();
+  /**
+   * Deletes files. Recurses into directories.
+   */
+  rm() {
+    /** @type {any[]} */
+    const gFiles = this.props.uris.map(x => this.Gio.file_new_for_uri(x));
 
-  files.forEach((file, totalDoneCount) => {
-    const uri = file.gFile.get_uri();
-    file.gFile.delete(null);
+    /**
+     * @type {any[]}
+     */
+    const files = gFiles.reduce((prev, gFile) => {
+      return prev.concat(this.flatten(gFile).files);
+    }, []);
 
-    this.emit({
-      dest: "",
-      doneSize: 0,
-      size: 0,
-      totalCount: files.length,
-      totalDoneCount,
+    files.reverse();
+
+    files.forEach((file, totalDoneCount) => {
+      const uri = file.gFile.get_uri();
+      file.gFile.delete(null);
+
+      this.emit({
+        dest: "",
+        doneSize: 0,
+        size: 0,
+        totalCount: files.length,
+        totalDoneCount,
+        totalDoneSize: 0,
+        totalSize: 0,
+        type: "progress",
+        uri,
+      });
+    });
+  }
+
+  /**
+   * Traverses source URIs. Maps every source file to a destination file.
+   * Initializes fields to keep track of processed size.
+   */
+  prepare() {
+    const { destUri, uris } = this.props;
+
+    const dest = this.Gio.file_new_for_uri(destUri);
+
+    const isDestExistingDir =
+      dest.query_exists(null) &&
+      dest
+        .query_info("standard::*", FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null)
+        .get_file_type() === FileType.DIRECTORY;
+
+    const willCreateDest = uris.length === 1 && !isDestExistingDir;
+
+    /** @type {any[]} */
+    const files = [];
+
+    const data = {
+      files,
       totalDoneSize: 0,
       totalSize: 0,
-      type: "progress",
-      uri,
-    });
-  });
-};
+    };
 
-/**
- * Traverses source URIs. Maps every source file to a destination file.
- * Initializes fields to keep track of processed size.
- */
-Worker.prototype.prepare = function() {
-  const { destUri, uris } = this.props;
+    for (const srcUri of uris) {
+      const src = this.Gio.file_new_for_uri(srcUri);
+      const srcName = src.get_basename();
+      const splice = srcUri[srcUri.length - 1] === "/" || willCreateDest;
+      const uriData = this.flatten(src);
 
-  const dest = this.Gio.file_new_for_uri(destUri);
+      uriData.files.forEach(file => {
+        if (!splice && !file.relativePath) {
+          file.destUri = dest.get_child(srcName).get_uri();
+          file.dest = this.Gio.file_new_for_uri(file.destUri);
+          return;
+        }
 
-  const isDestExistingDir =
-    dest.query_exists(null) &&
-    dest
-      .query_info("standard::*", FileQueryInfoFlags.NOFOLLOW_SYMLINKS, null)
-      .get_file_type() === FileType.DIRECTORY;
+        if (!splice && file.relativePath) {
+          file.destUri = dest
+            .get_child(srcName)
+            .get_child(file.relativePath)
+            .get_uri();
+          file.dest = this.Gio.file_new_for_uri(file.destUri);
+          return;
+        }
 
-  const willCreateDest = uris.length === 1 && !isDestExistingDir;
+        if (splice && !file.relativePath) {
+          file.destUri = dest.get_uri();
+          file.dest = dest;
+          return;
+        }
 
-  /** @type {any[]} */
-  const files = [];
+        if (splice && file.relativePath) {
+          file.destUri = dest.get_child(file.relativePath).get_uri();
+          file.dest = this.Gio.file_new_for_uri(file.destUri);
+        }
+      });
 
-  const data = {
-    files,
-    totalDoneSize: 0,
-    totalSize: 0,
-  };
+      data.files = data.files.concat(uriData.files);
+      data.totalSize += uriData.totalSize;
+    }
 
-  for (const srcUri of uris) {
-    const src = this.Gio.file_new_for_uri(srcUri);
-    const srcName = src.get_basename();
-    const splice = srcUri[srcUri.length - 1] === "/" || willCreateDest;
-    const uriData = this.flatten(src);
-
-    uriData.files.forEach(file => {
-      if (!splice && !file.relativePath) {
-        file.destUri = dest.get_child(srcName).get_uri();
-        file.dest = this.Gio.file_new_for_uri(file.destUri);
-        return;
-      }
-
-      if (!splice && file.relativePath) {
-        file.destUri = dest
-          .get_child(srcName)
-          .get_child(file.relativePath)
-          .get_uri();
-        file.dest = this.Gio.file_new_for_uri(file.destUri);
-        return;
-      }
-
-      if (splice && !file.relativePath) {
-        file.destUri = dest.get_uri();
-        file.dest = dest;
-        return;
-      }
-
-      if (splice && file.relativePath) {
-        file.destUri = dest.get_child(file.relativePath).get_uri();
-        file.dest = this.Gio.file_new_for_uri(file.destUri);
-      }
-    });
-
-    data.files = data.files.concat(uriData.files);
-    data.totalSize += uriData.totalSize;
+    return data;
   }
-
-  return data;
-};
-
-/**
- * Creates a given directory if it doesn't exist. Copies source attributes
- * to the destination.
- *
- * @param {any} file
- */
-Worker.prototype.cpDirNode = function(file) {
-  if (!file.dest.query_exists(null)) {
-    file.dest.make_directory(null);
-  }
-
-  file.gFile.copy_attributes(file.dest, FileCopyFlags.ALL_METADATA, null);
-};
-
-/**
- * Given a point in a file hierarchy, finds all files and their total size.
- *
- * @param {File} gFile
- */
-Worker.prototype.flatten = function(gFile) {
-  /** @type {any[]} */
-  const files = [];
-
-  const data = {
-    files,
-    totalSize: 0,
-  };
 
   /**
-   * @param {any} x
+   * Creates a given directory if it doesn't exist. Copies source attributes
+   * to the destination.
+   *
+   * @param {any} file
    */
-  const handleFile = x => {
-    data.files.push(x);
-    data.totalSize += x.gFileInfo.get_size();
-
-    if (x.gFileInfo.get_file_type() === FileType.DIRECTORY) {
-      this.children(gFile, x.gFile).forEach(handleFile);
+  cpDirNode(file) {
+    if (!file.dest.query_exists(null)) {
+      file.dest.make_directory(null);
     }
-  };
 
-  /** @type {string} */
-  const relativePath = null;
+    file.gFile.copy_attributes(file.dest, FileCopyFlags.ALL_METADATA, null);
+  }
 
-  const file = {
-    gFile: gFile,
-    gFileInfo: gFile.query_info(
+  /**
+   * Given a point in a file hierarchy, finds all files and their total size.
+   *
+   * @param {File} gFile
+   */
+  flatten(gFile) {
+    /** @type {any[]} */
+    const files = [];
+
+    const data = {
+      files,
+      totalSize: 0,
+    };
+
+    /**
+     * @param {any} x
+     */
+    const handleFile = x => {
+      data.files.push(x);
+      data.totalSize += x.gFileInfo.get_size();
+
+      if (x.gFileInfo.get_file_type() === FileType.DIRECTORY) {
+        this.children(gFile, x.gFile).forEach(handleFile);
+      }
+    };
+
+    /** @type {string} */
+    const relativePath = null;
+
+    const file = {
+      gFile: gFile,
+      gFileInfo: gFile.query_info(
+        "standard::*",
+        FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
+        null,
+      ),
+      relativePath,
+    };
+
+    handleFile(file);
+
+    return data;
+  }
+
+  /**
+   * For every child of a parent, gets Gio.File and Gio.FileInfo references
+   * and a path relative to the given ancestor.
+   *
+   * @param {File} ancestor
+   * @param {File} parent
+   */
+  children(ancestor, parent) {
+    const enumerator = parent.enumerate_children(
       "standard::*",
       FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
       null,
-    ),
-    relativePath,
-  };
+    );
 
-  handleFile(file);
+    const files = [];
 
-  return data;
-};
+    while (true) {
+      const gFileInfo = enumerator.next_file(null);
 
-/**
- * For every child of a parent, gets Gio.File and Gio.FileInfo references
- * and a path relative to the given ancestor.
- *
- * @param {File} ancestor
- * @param {File} parent
- */
-Worker.prototype.children = function(ancestor, parent) {
-  const enumerator = parent.enumerate_children(
-    "standard::*",
-    FileQueryInfoFlags.NOFOLLOW_SYMLINKS,
-    null,
-  );
+      if (!gFileInfo) {
+        break;
+      }
 
-  const files = [];
+      const gFile = parent.get_child(gFileInfo.get_name());
 
-  while (true) {
-    const gFileInfo = enumerator.next_file(null);
-
-    if (!gFileInfo) {
-      break;
+      files.push({
+        gFile,
+        gFileInfo,
+        relativePath: ancestor.get_relative_path(gFile),
+      });
     }
 
-    const gFile = parent.get_child(gFileInfo.get_name());
-
-    files.push({
-      gFile,
-      gFileInfo,
-      relativePath: ancestor.get_relative_path(gFile),
-    });
+    return files;
   }
-
-  return files;
-};
+}
 
 exports.Worker = Worker;

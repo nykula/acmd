@@ -1,9 +1,9 @@
-const Gtk = imports.gi.Gtk;
-const h = require("inferno-hyperscript").default;
-const ActionBar = require("./Action/ActionBar").default;
+const { Box, HBox, HSeparator, Orientation } = imports.gi.Gtk;
+const { ActionBar } = require("./Action/ActionBar");
 const CtxMenu = require("./CtxMenu/CtxMenu").default;
+const { h } = require("./Gjs/GtkInferno");
 const Jobs = require("./Job/Jobs").default;
-const MenuBar = require("./Menu/MenuBar").default;
+const { MenuBar } = require("./Menu/MenuBar");
 const Panel = require("./Panel/Panel").default;
 const Places = require("./Place/Places").default;
 const Prompt = require("./Prompt/Prompt").default;
@@ -11,16 +11,16 @@ const Toolbar = require("./Toolbar/Toolbar").default;
 
 exports.render = () => {
   return (
-    h("box", { orientation: Gtk.Orientation.VERTICAL }, [
+    h(Box, { orientation: Orientation.VERTICAL }, [
       h(MenuBar),
       h(Toolbar),
-      h("h-separator"),
-      h("h-box", [
+      h(HSeparator),
+      h(HBox, [
         h(Places, { panelId: 0 }),
         h(Places, { panelId: 1 }),
       ]),
-      h("h-separator"),
-      h("h-box", { homogeneous: true, spacing: 1 }, [0, 1].map(panelId => h(Panel, {
+      h(HSeparator),
+      h(HBox, { homogeneous: true, spacing: 1 }, [0, 1].map(panelId => h(Panel, {
         id: panelId,
         key: panelId,
       }))),

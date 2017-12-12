@@ -27,35 +27,37 @@ describe("gioAsync", () => {
   });
 
   function setup() {
-    function AsyncResult() {
-      this.type = "ASYNC_RESULT";
-    }
-
-    /**
-     * @param {boolean} exists
-     */
-    function GioFile(exists) {
-      this.make_directory_async = this.make_directory_async.bind(this);
-      this.make_directory_finish = this.make_directory_finish.bind(this);
-      this.exists = exists;
-    }
-
-    GioFile.prototype.make_directory_async = function() {
-      arguments[arguments.length - 1](null, new AsyncResult());
-    };
-
-    /**
-     * @param {AsyncResult} asyncResult
-     */
-    GioFile.prototype.make_directory_finish = function(asyncResult) {
-      expect(asyncResult.type).toBe("ASYNC_RESULT");
-
-      if (this.exists) {
-        throw new Error("Directory exists.");
-      } else {
-        return true;
+    class AsyncResult {
+      constructor() {
+        this.type = "ASYNC_RESULT";
       }
-    };
+    }
+
+    class GioFile {
+      /**
+       * @param {boolean} exists
+       */
+      constructor(exists) {
+        this.exists = exists;
+
+        /**
+         * @param {AsyncResult} asyncResult
+         */
+        this.make_directory_finish = (asyncResult) => {
+          expect(asyncResult.type).toBe("ASYNC_RESULT");
+
+          if (this.exists) {
+            throw new Error("Directory exists.");
+          } else {
+            return true;
+          }
+        };
+      }
+
+      make_directory_async() {
+        arguments[arguments.length - 1](null, new AsyncResult());
+      }
+    }
 
     return { GioFile: GioFile };
   }

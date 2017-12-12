@@ -16,13 +16,13 @@ const { TabService } = require("../Tab/TabService");
 class SelectionService {
   /**
    * @typedef IProps
-   * @property {ClipboardService} clipboardService
-   * @property {DialogService} dialogService
-   * @property {GioService} gioService
-   * @property {JobService} jobService
-   * @property {PanelService} panelService
-   * @property {RefService} refService
-   * @property {TabService} tabService
+   * @property {ClipboardService?} [clipboardService]
+   * @property {DialogService?} [dialogService]
+   * @property {GioService?} [gioService]
+   * @property {JobService?} [jobService]
+   * @property {PanelService?} [panelService]
+   * @property {RefService?} [refService]
+   * @property {TabService?} [tabService]
    *
    * @param {IProps} props
    */
@@ -46,7 +46,9 @@ class SelectionService {
    * Stores URIs in clipboard, for another app to copy.
    */
   copy() {
-    const { copy } = this.props.clipboardService;
+    const { copy } =
+      /** @type {ClipboardService} */ (this.props.clipboardService);
+
     copy(this.getUris());
   }
 
@@ -54,7 +56,9 @@ class SelectionService {
    * Stores URIs in clipboard, for another app to move.
    */
   cut() {
-    const { cut } = this.props.clipboardService;
+    const { cut } =
+      /** @type {ClipboardService} */ (this.props.clipboardService);
+
     cut(this.getUris());
   }
 
@@ -62,23 +66,35 @@ class SelectionService {
    * Deselects all files.
    */
   deselectAll() {
-    const { panelService, tabService } = this.props;
-    tabService.deselectAll(panelService.getActiveTabId());
+    const { getActiveTabId } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { deselectAll } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    deselectAll(getActiveTabId());
   }
 
   /**
    * Deselects files, prompting for name pattern.
    */
   deselectGlob() {
-    const { dialogService, panelService, tabService } = this.props;
+    const { prompt } =
+      /** @type {DialogService} */ (this.props.dialogService);
 
-    dialogService.prompt("Pattern:", "", pattern => {
+    const { getActiveTabId } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { deselectGlob } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    prompt("Pattern:", "", pattern => {
       if (!pattern) {
         return;
       }
 
-      tabService.deselectGlob({
-        id: panelService.getActiveTabId(),
+      deselectGlob({
+        id: getActiveTabId(),
         pattern,
       });
     });
@@ -97,13 +113,19 @@ class SelectionService {
    * Returns file objects.
    */
   getFiles() {
-    const { panelService, tabService } = this.props;
+    const { getActiveTabId } =
+      /** @type {PanelService} */ (this.props.panelService);
 
-    const activeTabId = panelService.getActiveTabId();
-    const { cursor, selected } = tabService.entities[activeTabId];
-    const files = tabService.visibleFiles[activeTabId];
+    const { entities, visibleFiles } =
+      /** @type {TabService} */ (this.props.tabService);
 
-    return selected.length ? selected.map(index => files[index]) : [files[cursor]];
+    const activeTabId = getActiveTabId();
+    const { cursor, selected } = entities[activeTabId];
+    const files = visibleFiles[activeTabId];
+
+    return selected.length
+      ? selected.map(index => files[index])
+      : [files[cursor]];
   }
 
   /**
@@ -117,33 +139,46 @@ class SelectionService {
    * Deselects selected files, and selects non-selected files.
    */
   invert() {
-    const { panelService, tabService } = this.props;
-    tabService.invert(panelService.getActiveTabId());
+    const { getActiveTabId } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { invert } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    invert(getActiveTabId());
   }
 
   /**
    * @param {{ keyEvent?: Event, mouseEvent?: Event, rect?: Rectangle, win?: Window }} props
    */
   menu(props) {
-    const { dialogService, gioService, refService } = this.props;
+    const { alert } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { getHandlers } =
+      /** @type {GioService} */ (this.props.gioService);
+
+    const { get } =
+    /** @type {RefService} */ (this.props.refService);
+
     const { keyEvent, mouseEvent, rect, win } = props;
     const uri = this.getUris()[0];
 
-    gioService.getHandlers(uri, (error, result) => {
+    getHandlers(uri, (error, result) => {
       if (error) {
-        dialogService.alert(error.message);
+        alert(error.message);
         return;
       }
 
       const { contentType, handlers } = result;
 
       if (!handlers.length) {
-        dialogService.alert("No handlers registered for " + contentType + ".");
+        alert("No handlers registered for " + contentType + ".");
         return;
       }
 
       this.setHandlers(handlers);
-      const menu = refService.get("ctxMenu");
+      const menu = get("ctxMenu");
 
       if (mouseEvent) {
         menu.popup_at_pointer(mouseEvent);
@@ -159,9 +194,14 @@ class SelectionService {
    * Removes files, prompting for confirmation.
    */
   rm() {
-    const { confirm } = this.props.dialogService;
-    const { run } = this.props.jobService;
-    const { refresh } = this.props.panelService;
+    const { confirm } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { run } =
+      /** @type {JobService} */ (this.props.jobService);
+
+    const { refresh } =
+      /** @type {PanelService} */ (this.props.panelService);
 
     const uris = this.getUris();
     const urisStr = this.formatUris();
@@ -186,8 +226,13 @@ class SelectionService {
    * Selects all files.
    */
   selectAll() {
-    const { panelService, tabService } = this.props;
-    tabService.selectAll(panelService.getActiveTabId());
+    const { getActiveTabId } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { selectAll } =
+    /** @type {TabService} */ (this.props.tabService);
+
+    selectAll(getActiveTabId());
   }
 
   /**
@@ -195,24 +240,32 @@ class SelectionService {
    * opposite panel.
    */
   selectDiff() {
-    const { panelService, tabService } = this.props;
+    const { entities } =
+      /** @type {PanelService} */ (this.props.panelService);
 
-    tabService.selectDiff(
-      panelService.entities[0].activeTabId,
-      panelService.entities[1].activeTabId,
-    );
+    const { selectDiff } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    selectDiff(entities[0].activeTabId, entities[1].activeTabId);
   }
 
   /**
    * Selects files, prompting for name pattern.
    */
   selectGlob() {
-    const { dialogService, panelService, tabService } = this.props;
+    const { prompt } =
+      /** @type {DialogService} */ (this.props.dialogService);
 
-    dialogService.prompt("Pattern:", "", pattern => {
+    const { getActiveTabId } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { selectGlob } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    prompt("Pattern:", "", pattern => {
       if (pattern) {
-        tabService.selectGlob({
-          id: panelService.getActiveTabId(),
+        selectGlob({
+          id: getActiveTabId(),
           pattern,
         });
       }
@@ -226,16 +279,6 @@ class SelectionService {
    */
   setHandlers(handlers) {
     this.handlers = handlers;
-  }
-
-  /**
-   * @private
-   */
-  getActiveTab() {
-    const { panelService, tabService } = this.props;
-    const tabId = panelService.getActiveTabId();
-
-    return tabService.entities[tabId];
   }
 }
 

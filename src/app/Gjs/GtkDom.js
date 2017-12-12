@@ -25,7 +25,7 @@ function removeAllChildren() {
   });
 }
 
-function GtkDom(GLib = imports.gi.GLib, Gtk = imports.gi.Gtk, _window = window) {
+function GtkDom(GLib = imports.gi.GLib, Gtk = imports.gi.Gtk, win = window) {
   this.createElement = this.createElement.bind(this);
   this.domify = this.domify.bind(this);
   this.require = this.require.bind(this);
@@ -35,7 +35,7 @@ function GtkDom(GLib = imports.gi.GLib, Gtk = imports.gi.Gtk, _window = window) 
   /** @type {{ [key: string]: any }} */
   this.Gtk = Gtk;
 
-  this.window = _window;
+  this.window = win;
 }
 
 /**
@@ -160,12 +160,9 @@ GtkDom.prototype.domify = function(node) {
     const ownValue = getValue(this);
 
     try {
-      const _children = this.get_children()
+      children = this.get_children()
         .map(getValue)
         .filter((/** @type {any} */ x) => x !== ownValue);
-      if (_children.length) {
-        children = _children;
-      }
     } catch (err) {
       // Is not a container.
     }

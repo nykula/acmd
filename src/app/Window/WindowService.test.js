@@ -8,12 +8,7 @@ describe("WindowService", () => {
       show_uri: expect.createSpy(),
     };
 
-    const windowService = new WindowService({
-      panelService: undefined,
-      placeService: undefined,
-      tabService: undefined,
-      window: undefined,
-    });
+    const windowService = new WindowService({});
     windowService.Gtk = Gtk;
 
     windowService.issue();
@@ -26,12 +21,7 @@ describe("WindowService", () => {
       showHidSys: undefined,
     };
 
-    const windowService = new WindowService({
-      panelService: undefined,
-      placeService: undefined,
-      tabService,
-      window: undefined,
-    });
+    const windowService = new WindowService({ tabService });
 
     windowService.showHidSys();
     expect(tabService.showHidSys).toBe(true);

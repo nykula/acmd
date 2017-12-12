@@ -1,9 +1,10 @@
+const { Box, Label } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
-const h = require("inferno-hyperscript").default;
 const { connect } = require("inferno-mobx");
 const { computed, extendObservable } = require("mobx");
 const { File } = require("../../domain/File/File");
 const { autoBind } = require("../Gjs/autoBind");
+const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
 const formatSize = require("../Size/formatSize").default;
 const { TabService } = require("../Tab/TabService");
@@ -11,60 +12,66 @@ const { TabService } = require("../Tab/TabService");
 /**
  * @typedef IProps
  * @property {number} panelId
- * @property {PanelService} panelService
- * @property {TabService} tabService
+ * @property {PanelService?} [panelService]
+ * @property {TabService?} [tabService]
  *
- * @param {IProps} props
+ * @extends Component<IProps>
  */
-function Stats(props) {
-  Component.call(this, props);
-  autoBind(this, Stats.prototype, __filename);
+class Stats extends Component {
+  /**
+   * @param {IProps} props
+   */
+  constructor(props) {
+    super(props);
 
-  extendObservable(this, {
-    data: computed(this.getData),
-  });
+    /**
+     * @type {{ selectedCount: number, selectedSize: number, totalCount: number, totalSize: number }}
+     */
+    this.data = (/** @type {any} */ (undefined));
+
+    autoBind(this, Stats.prototype, __filename);
+
+    extendObservable(this, {
+      data: computed(this.getData),
+    });
+  }
+
+  getData() {
+    const { panelId } = this.props;
+
+    const { getActiveTabId } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { entities, visibleFiles } =
+        /** @type {TabService} */ (this.props.tabService);
+
+    const tabId = getActiveTabId(panelId);
+    const tab = entities[tabId];
+
+    const files = visibleFiles[tabId];
+    const selected = tab.selected;
+
+    return {
+      selectedCount: selected.length,
+      selectedSize: TotalSize(selected.map(index => files[index])),
+      totalCount: files.length,
+      totalSize: TotalSize(files),
+    };
+  }
+
+  render() {
+    const { selectedCount, selectedSize, totalCount, totalSize } = this.data;
+
+    return (
+      h(Box, { border_width: 4 }, [
+        h(Label, {
+          label: formatSize(selectedSize) + " / " + formatSize(totalSize) +
+            " in " + selectedCount + " / " + totalCount + " file(s)",
+        }),
+      ])
+    );
+  }
 }
-
-Stats.prototype = Object.create(Component.prototype);
-
-/**
- * @type {{ selectedCount: number, selectedSize: number, totalCount: number, totalSize: number }}
- */
-Stats.prototype.data = undefined;
-
-/**
- * @type {IProps}
- */
-Stats.prototype.props = undefined;
-
-Stats.prototype.getData = function() {
-  const { panelId, panelService, tabService } = this.props;
-  const tabId = panelService.getActiveTabId(panelId);
-  const tab = tabService.entities[tabId];
-
-  const files = tabService.visibleFiles[tabId];
-  const selected = tab.selected;
-
-  return {
-    selectedCount: selected.length,
-    selectedSize: TotalSize(selected.map(index => files[index])),
-    totalCount: files.length,
-    totalSize: TotalSize(files),
-  };
-};
-
-Stats.prototype.render = function() {
-  const { selectedCount, selectedSize, totalCount, totalSize } = this.data;
-
-  return (
-    h("box", { border_width: 4 }, [
-      h("label", {
-        label: formatSize(selectedSize) + " / " + formatSize(totalSize) +
-        " in " + selectedCount + " / " + totalCount + " file(s)",
-      }),
-    ])
-  );
-};
 
 exports.Stats = Stats;
 exports.default = connect(["panelService", "tabService"])(Stats);

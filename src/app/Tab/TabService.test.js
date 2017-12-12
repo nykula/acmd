@@ -99,7 +99,7 @@ describe("TabService", () => {
       return file;
     });
     tabService.entities[0].selected = [];
-    tabService.entities[0].sortedBy = undefined;
+    tabService.entities[0].sortedBy = "";
 
     tabService.sorted({ tabId: 0, by: "filename" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([
@@ -178,9 +178,9 @@ describe("TabService", () => {
       file.name = name;
 
       return file;
-    }),
-      tabService.entities[0].selected = [];
-    tabService.entities[0].sortedBy = undefined;
+    });
+    tabService.entities[0].selected = [];
+    tabService.entities[0].sortedBy = "";
 
     tabService.sorted({ tabId: 0, by: "ext" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([

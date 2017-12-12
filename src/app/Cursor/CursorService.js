@@ -14,11 +14,11 @@ const { TabService } = require("../Tab/TabService");
 class CursorService {
   /**
    * @typedef IProps
-   * @property {DialogService} dialogService
-   * @property {DirectoryService} directoryService
-   * @property {GioService} gioService
-   * @property {PanelService} panelService
-   * @property {TabService} tabService
+   * @property {DialogService?} [dialogService]
+   * @property {DirectoryService?} [directoryService]
+   * @property {GioService?} [gioService]
+   * @property {PanelService?} [panelService]
+   * @property {TabService?} [tabService]
    *
    * @param {IProps} props
    */
@@ -33,11 +33,16 @@ class CursorService {
    * Opens file in terminal, with EDITOR environment variable.
    */
   edit() {
-    const { dialogService, directoryService } = this.props;
+    const { alert } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { terminal } =
+      /** @type {DirectoryService} */ (this.props.directoryService);
+
     const editor = this.env.EDITOR;
 
     if (!editor) {
-      dialogService.alert(`You have to define EDITOR environment variable.`);
+      alert(`You have to define EDITOR environment variable.`);
       return;
     }
 
@@ -45,41 +50,49 @@ class CursorService {
     const match = /^file:\/\/(.+)/.exec(file.uri);
 
     if (!match) {
-      dialogService.alert(`${file.uri} is not local.`);
+      alert(`${file.uri} is not local.`);
       return;
     }
 
-    directoryService.terminal(["-e", editor, decodeURIComponent(match[1])]);
+    terminal(["-e", editor, decodeURIComponent(match[1])]);
   }
 
   open() {
-    const { dialogService, gioService, panelService } = this.props;
+    const { alert } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { getHandlers, launch } =
+    /** @type {GioService} */ (this.props.gioService);
+
+    const { levelUp, ls } =
+      /** @type {PanelService} */ (this.props.panelService);
+
     const { fileType, name, uri } = this.getCursor();
 
     if (name === "..") {
-      panelService.levelUp();
+      levelUp();
       return;
     }
 
     if (fileType === FileType.DIRECTORY) {
-      panelService.ls(uri);
+      ls(uri);
       return;
     }
 
-    gioService.getHandlers(uri, (error, result) => {
+    getHandlers(uri, (error, result) => {
       if (error) {
-        dialogService.alert(error.message);
+        alert(error.message);
         return;
       }
 
       const { contentType, handlers } = result;
 
       if (!handlers.length) {
-        dialogService.alert("No handlers registered for " + contentType + ".");
+        alert("No handlers registered for " + contentType + ".");
         return;
       }
 
-      gioService.launch(handlers[0], [uri]);
+      launch(handlers[0], [uri]);
     });
   }
 
@@ -87,11 +100,16 @@ class CursorService {
    * Opens file in terminal, with PAGER environment variable.
    */
   view() {
-    const { dialogService, directoryService } = this.props;
+    const { alert } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { terminal } =
+      /** @type {DirectoryService} */ (this.props.directoryService);
+
     const pager = this.env.PAGER;
 
     if (!pager) {
-      dialogService.alert(`You have to define PAGER environment variable.`);
+      alert(`You have to define PAGER environment variable.`);
       return;
     }
 
@@ -99,21 +117,24 @@ class CursorService {
     const match = /^file:\/\/(.+)/.exec(file.uri);
 
     if (!match) {
-      dialogService.alert(`${file.uri} is not local.`);
+      alert(`${file.uri} is not local.`);
       return;
     }
 
-    directoryService.terminal(["-e", pager, decodeURIComponent(match[1])]);
+    terminal(["-e", pager, decodeURIComponent(match[1])]);
   }
 
   /**
    * @private
    */
   getCursor() {
-    const { panelService, tabService } = this.props;
-    const activeTabId = panelService.getActiveTabId();
+    const { getActiveTabId } =
+      /** @type {PanelService} */ (this.props.panelService);
 
-    return tabService.getCursor(activeTabId);
+    const { getCursor } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    return getCursor(getActiveTabId());
   }
 }
 

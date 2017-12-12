@@ -1,8 +1,12 @@
-function WorkerError() { }
+class WorkerError {
+  constructor() {
+    /** @type {'error'} */
+    this.type = "error";
 
-/** @type {'error'} */
-WorkerError.prototype.type = "error";
-WorkerError.prototype.message = "";
-WorkerError.prototype.stack = "";
+    this.message = "";
+
+    this.stack = "";
+  }
+}
 
 exports.WorkerError = WorkerError;

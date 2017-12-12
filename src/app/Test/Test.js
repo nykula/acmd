@@ -9,16 +9,16 @@ exports.EmptyArray = [];
 exports.EmptyProps = {};
 
 /** @type {string} */
-exports.NoString = null;
+exports.NoString = (/** @type {any} */ (null));
 
 let description = "";
 
 /**
- * @param {string} _description
+ * @param {string} nextDescription
  * @param {() => void} callback
  */
-function describe(_description, callback) {
-  description = _description;
+function describe(nextDescription, callback) {
+  description = nextDescription;
   callback();
   description = "";
 }

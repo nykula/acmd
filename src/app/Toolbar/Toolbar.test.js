@@ -1,6 +1,6 @@
 const expect = require("expect");
 const { Toolbar } = require("./Toolbar");
-const h = require("inferno-hyperscript").default;
+const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 
 describe("Toolbar", () => {
@@ -22,7 +22,7 @@ describe("Toolbar", () => {
       }),
     );
 
-    tree.children[0].props.on_pressed();
+    tree.children[0].props.pressedCallback();
     expect(handler).toHaveBeenCalledWith();
   });
 });

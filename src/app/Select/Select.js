@@ -1,8 +1,8 @@
 const { ComboBox } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
-const h = require("inferno-hyperscript").default;
 const isEqual = require("lodash/isEqual");
 const { autoBind } = require("../Gjs/autoBind");
+const { h } = require("../Gjs/GtkInferno");
 const ListStore = require("../ListStore/ListStore");
 
 /**
@@ -14,74 +14,74 @@ const ListStore = require("../ListStore/ListStore");
  * @property {any[]} rows
  * @property {string} value
  *
- * @param {IProps} props
+ * @extends Component<IProps>
  */
-function Select(props) {
-  Component.call(this, props);
-  autoBind(this, Select.prototype, __filename);
-}
+class Select extends Component {
+  /**
+   * @param {IProps} props
+   */
+  constructor(props) {
+    super(props);
 
-Select.prototype = Object.create(Component.prototype);
+    /**
+     * @type {ComboBox}
+     */
+    this.node = (/** @type {any} */ (undefined));
 
-/**
- * @type {ComboBox}
- */
-Select.prototype.node = undefined;
-
-/**
- * @type {IProps}
- */
-Select.prototype.props = undefined;
-
-/**
- * @param {ComboBox} node
- */
-Select.prototype.init = function(node) {
-  if (!node || this.node) {
-    return;
+    autoBind(this, Select.prototype, __filename);
   }
 
-  /** @type {any} FIXME */
-  const store = ListStore.fromProps(this.props);
+  /**
+   * @param {IProps} nextProps
+   */
+  shouldComponentUpdate(nextProps) {
+    return !isEqual(this.props, nextProps);
+  }
 
-  this.node = node;
-  node.set_model(store);
-  this.props.cols.forEach((col, i) => ListStore.configureColumn(node, col, i));
-  this.updateActive();
-  this.props.on_layout(node);
-};
+  componentDidUpdate() {
+    const store = ListStore.fromProps(this.props);
 
-/**
- * @param {IProps} nextProps
- */
-Select.prototype.shouldComponentUpdate = function(nextProps) {
-  return !isEqual(this.props, nextProps);
-};
+    this.node.set_model(store);
+    this.updateActive();
+  }
 
-Select.prototype.componentDidUpdate = function() {
-  /** @type {any} FIXME */
-  const store = ListStore.fromProps(this.props);
-
-  this.node.set_model(store);
-  this.updateActive();
-};
-
-Select.prototype.updateActive = function() {
-  for (let i = 0; i < this.props.rows.length; i++) {
-    if (this.props.rows[i].value === this.props.value) {
-      this.node.set_active(i);
-      break;
+  updateActive() {
+    for (let i = 0; i < this.props.rows.length; i++) {
+      if (this.props.rows[i].value === this.props.value) {
+        this.node.set_active(i);
+        break;
+      }
     }
   }
-};
 
-Select.prototype.render = function() {
-  return h("combo-box", {
-    focus_on_click: false,
-    on_changed: this.props.on_changed,
-    on_focus: this.props.on_focus,
-    ref: this.init,
-  });
-};
+  /**
+   * @param {ComboBox} node
+   */
+  ref(node) {
+    if (!node || this.node) {
+      return;
+    }
+
+    this.node = node;
+    node.connect("changed", this.props.on_changed);
+    node.connect("focus", this.props.on_focus);
+
+    const store = ListStore.fromProps(this.props);
+    node.set_model(store);
+    this.props.cols.forEach((col, i) => ListStore.configureColumn(node, col, i));
+
+    this.updateActive();
+    this.props.on_layout(node);
+  }
+
+  render() {
+    return (
+      h(ComboBox, {
+        focus_on_click: false,
+        ref: this.ref,
+      })
+    );
+  }
+}
 
 exports.default = Select;

@@ -7,48 +7,45 @@ const { h } = require("../Gjs/GtkInferno");
 
 /**
  * @typedef IProps
- * @property {ActionService} actionService
+ * @property {ActionService?} [actionService]
  * @property {string} icon
  * @property {number} iconSize
  * @property {string} id
  * @property {string} label
  *
- * @param {IProps} props
+ * @extends Component<IProps>
  */
-function CtxMenuAction(props) {
-  Component.call(this, props);
-  autoBind(this, CtxMenuAction.prototype, __filename);
-}
-
-CtxMenuAction.prototype = Object.create(Component.prototype);
-
-/**
- * @type {IProps}
- */
-CtxMenuAction.prototype.props = undefined;
-
-/**
- * @param {MenuItem} menuItem
- */
-CtxMenuAction.prototype.ref = function(menuItem) {
-  if (menuItem) {
-    const action = this.props.actionService.get(this.props.id);
-    menuItem.connect("activate", action.handler);
+class CtxMenuAction extends Component {
+  /**
+   * @param {IProps} props
+   */
+  constructor(props) {
+    super(props);
+    autoBind(this, CtxMenuAction.prototype, __filename);
   }
-};
 
-CtxMenuAction.prototype.render = function() {
-  return h(MenuItem, { ref: this.ref }, [
-    h(Box, [
-      h(Image, {
-        icon_name: this.props.icon + "-symbolic",
-        pixel_size: this.props.iconSize,
-      }),
+  /**
+   * @param {MenuItem} menuItem
+   */
+  ref(menuItem) {
+    if (menuItem) {
+      const { get } = /** @type {ActionService} */ (this.props.actionService);
+      menuItem.connect("activate", get(this.props.id).handler);
+    }
+  }
 
-      h(Label, { label: this.props.label }),
-    ]),
-  ]);
-};
+  render() {
+    return h(MenuItem, { ref: this.ref }, [
+      h(Box, [
+        h(Image, {
+          icon_name: this.props.icon + "-symbolic",
+          pixel_size: this.props.iconSize,
+        }),
+        h(Label, { label: this.props.label }),
+      ]),
+    ]);
+  }
+}
 
 exports.CtxMenuAction = CtxMenuAction;
 exports.default = connect(["actionService"])(CtxMenuAction);

@@ -74,11 +74,11 @@ class PlaceService {
   /**
    * Mounts a remote place, such as SFTP.
    *
-   * @param {string} _uri
+   * @param {string} uriStr
    * @param {(error: Error, uri: string) => void} callback
    */
-  mount(_uri, callback) {
-    const uri = Uri(_uri);
+  mount(uriStr, callback) {
+    const uri = Uri(uriStr);
     const { auth, username, password, host } = uri;
 
     if (!uri.pathname) {
@@ -216,15 +216,15 @@ class PlaceService {
 
     map(
       gVolumes,
-      (gVolume, _callback) => {
+      (gVolume, volumeCallback) => {
         const label = gVolume.get_identifier("label");
         const uuid = gVolume.get_identifier("uuid");
         const gMount = gVolume.get_mount();
 
         if (gMount) {
-          this.serializeMount(gMount, _callback);
+          this.serializeMount(gMount, volumeCallback);
         } else {
-          _callback(null, {
+          volumeCallback(null, {
             filesystemFree: 0,
             filesystemSize: 0,
             icon: "drive-harddisk",

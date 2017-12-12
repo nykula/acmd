@@ -19,11 +19,7 @@ describe("PanelService", () => {
       sortedBy: "-date",
     };
 
-    const panelService = new PanelService({
-      dialogService: undefined,
-      placeService: undefined,
-      tabService,
-    });
+    const panelService = new PanelService({ tabService });
     panelService.activeId = 0;
     panelService.entities[0] = {
       activeTabId: 0,
@@ -55,11 +51,7 @@ describe("PanelService", () => {
       },
     };
 
-    const panelService = new PanelService({
-      dialogService: undefined,
-      placeService: undefined,
-      tabService,
-    });
+    const panelService = new PanelService({ tabService });
 
     panelService.entities[0].activeTabId = 0;
     panelService.entities[0].history = ["file:///"];
@@ -71,10 +63,7 @@ describe("PanelService", () => {
   });
 
   it("switches panel to next tab", () => {
-    /** @type {any} */
-    const tabService = undefined;
-
-    const panelService = new PanelService(tabService);
+    const panelService = new PanelService({});
 
     const entities = {
       "0": {
@@ -84,46 +73,35 @@ describe("PanelService", () => {
     };
     panelService.entities = entities;
 
-    panelService.nextTab(0);
+    panelService.nextTab();
     expect(panelService.entities[0].activeTabId).toBe(2);
 
-    panelService.nextTab(0);
+    panelService.nextTab();
     expect(panelService.entities[0].activeTabId).toBe(8);
 
-    panelService.nextTab(0);
+    panelService.nextTab();
     expect(panelService.entities[0].activeTabId).toBe(0);
   });
 
   it("switches panel to prev tab", () => {
-    /** @type {any} */
-    const tabService = undefined;
+    const panelService = new PanelService({});
 
-    const panelService = new PanelService(tabService);
+    panelService.activeId = 0;
+    panelService.entities[0].activeTabId = 0;
+    panelService.entities[0].tabIds = [0, 2, 8];
 
-    const entities = {
-      "0": {
-        activeTabId: 0,
-        tabIds: [0, 2, 8],
-      },
-    };
-    panelService.entities = entities;
-
-    panelService.prevTab(0);
+    panelService.prevTab();
     expect(panelService.entities[0].activeTabId).toBe(8);
 
-    panelService.prevTab(0);
+    panelService.prevTab();
     expect(panelService.entities[0].activeTabId).toBe(2);
 
-    panelService.prevTab(0);
+    panelService.prevTab();
     expect(panelService.entities[0].activeTabId).toBe(0);
   });
 
   it("removes tab, active if no id", () => {
-    const panelService = new PanelService({
-      dialogService: undefined,
-      placeService: undefined,
-      tabService: undefined,
-    });
+    const panelService = new PanelService({});
 
     panelService.activeId = 1;
     panelService.entities[1].activeTabId = 1;
@@ -136,11 +114,7 @@ describe("PanelService", () => {
   });
 
   it("removes tab", () => {
-    const panelService = new PanelService({
-      dialogService: undefined,
-      placeService: undefined,
-      tabService: undefined,
-    });
+    const panelService = new PanelService({});
 
     panelService.activeId = 1;
     panelService.entities[1].activeTabId = 1;
@@ -153,11 +127,7 @@ describe("PanelService", () => {
   });
 
   it("sets active tab", () => {
-    const panelService = new PanelService({
-      dialogService: undefined,
-      placeService: undefined,
-      tabService: undefined,
-    });
+    const panelService = new PanelService({});
 
     panelService.entities[0].activeTabId = -1;
 
@@ -167,10 +137,7 @@ describe("PanelService", () => {
   });
 
   it("toggles active panel", () => {
-    /** @type {any} */
-    const tabService = undefined;
-
-    const panelService = new PanelService(tabService);
+    const panelService = new PanelService({});
     panelService.activeId = 0;
 
     panelService.toggleActive();
