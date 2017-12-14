@@ -14,10 +14,6 @@ function getNextSibling() {
   return siblings[siblings.indexOf(this) + 1] || null;
 }
 
-function getParentNode() {
-  return this.parent;
-}
-
 function removeAllChildren() {
   const node = this;
   this.forall(function(/** @type {any} */ x) {
@@ -25,12 +21,10 @@ function removeAllChildren() {
   });
 }
 
-function GtkDom(GLib = imports.gi.GLib, Gtk = imports.gi.Gtk, win = window) {
+function GtkDom(Gtk = imports.gi.Gtk, win = window) {
   this.createElement = this.createElement.bind(this);
   this.domify = this.domify.bind(this);
   this.require = this.require.bind(this);
-
-  this.GLib = GLib;
 
   /** @type {{ [key: string]: any }} */
   this.Gtk = Gtk;
@@ -63,6 +57,7 @@ GtkDom.prototype.domify = function(node) {
    * @param {any} child
    */
   node.appendChild = function(child) {
+    child.parentNode = this;
     this.add(child);
 
     Object.keys(child).filter(x => /^on_/.test(x)).forEach(x => {
@@ -77,6 +72,7 @@ GtkDom.prototype.domify = function(node) {
    * @param {any} child
    */
   node.removeChild = function(child) {
+    child.parentNode = null;
     this.remove(child);
     return child;
   };
@@ -84,7 +80,6 @@ GtkDom.prototype.domify = function(node) {
   Object.defineProperties(node, {
     firstChild: { configurable: true, get: getFirstChild },
     nextSibling: { configurable: true, get: getNextSibling },
-    parentNode: { configurable: true, get: getParentNode },
     textContent: { configurable: true, get: noop, set: removeAllChildren },
   });
 
@@ -96,6 +91,8 @@ GtkDom.prototype.domify = function(node) {
     if (newChild.parent) {
       newChild.parent.remove(newChild);
     }
+
+    newChild.parentNode = this;
 
     if (existingChild) {
       const children = this.get_children();
@@ -199,6 +196,14 @@ GtkDom.prototype.createElement = function(tagName) {
     return new Stub(this.domify(new this.Gtk.Box()));
   }
 
+  if (tagName === "combo-box") {
+    return new Stub(this.domify(new this.Gtk.ComboBox()));
+  }
+
+  if (tagName === "list-store") {
+    return new Stub(this.domify(new this.Gtk.ListStore()));
+  }
+
   if (tagName === "tree-view") {
     return new TreeView(this.domify(new this.Gtk.TreeView()));
   }
@@ -208,25 +213,7 @@ GtkDom.prototype.createElement = function(tagName) {
 };
 
 /**
- * Returns environment variables.
- */
-GtkDom.prototype.getEnv = function() {
-  /** @type {string[]} */
-  const pairs = this.GLib.get_environ();
-
-  /** @type {{ [name: string]: string }} */
-  const env = {};
-
-  for (const pair of pairs) {
-    const match = pair.match(/^([^=]+)=(.*)$/);
-    env[match[1]] = match[2];
-  }
-
-  return env;
-};
-
-/**
- * Inits GTK. Sets console, document, global, navigator and process globals.
+ * Inits GTK. Sets document, global and navigator globals.
  */
 GtkDom.prototype.require = function() {
   this.Gtk.init(null);
@@ -236,8 +223,6 @@ GtkDom.prototype.require = function() {
   window.document = window.global = window;
   window.createElement = this.createElement;
   window.navigator = {};
-  window.process = { env: this.getEnv() };
-  window.console = { error: print, log: print, warn: print };
   window.setTimeout = setTimeout;
 
   exports.domify = this.domify;

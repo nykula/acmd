@@ -76,12 +76,12 @@ describe("DirectoryFile", () => {
       },
     ];
 
-    const rows = files.map(file => new DirectoryFile({
-      file,
-      isSelected: false,
-    }));
-
     const store = {
+      children: files.map(file => new DirectoryFile({
+        file,
+        isSelected: false,
+      })),
+
       /**
        * @param {string} x
        */
@@ -90,7 +90,6 @@ describe("DirectoryFile", () => {
 
     const treeView = {
       _cursor: 1,
-      body: { children: rows },
       store,
     };
 

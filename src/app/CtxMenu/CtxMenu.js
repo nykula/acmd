@@ -4,14 +4,14 @@ const { h } = require("../Gjs/GtkInferno");
 const { connect } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { RefService } = require("../Ref/RefService");
-const { SelectionService } = require("../Selection/SelectionService");
+const { SelectService } = require("../Select/SelectService");
 const CtxMenuAction = require("./CtxMenuAction").default;
 const CtxMenuHandler = require("./CtxMenuHandler").default;
 
 /**
  * @typedef IProps
  * @property {RefService?} [refService]
- * @property {SelectionService?} [selectionService]
+ * @property {SelectService?} [selectService]
  *
  * @extends Component<IProps>
  */
@@ -27,7 +27,7 @@ class CtxMenu extends Component {
   render() {
     const { set } = /** @type {RefService} */ (this.props.refService);
     const { handlers, getUris } =
-      /** @type {SelectionService} */ (this.props.selectionService);
+      /** @type {SelectService} */ (this.props.selectService);
 
     const iconSize = 16;
     const uris = getUris();
@@ -44,14 +44,14 @@ class CtxMenu extends Component {
           h(CtxMenuAction, {
             icon: "edit-cut",
             iconSize,
-            id: "selectionService.cut",
+            id: "selectService.cut",
             label: "Cut",
           }),
 
           h(CtxMenuAction, {
             icon: "edit-copy",
             iconSize,
-            id: "selectionService.copy",
+            id: "selectService.copy",
             label: "Copy",
           }),
 
@@ -68,4 +68,4 @@ class CtxMenu extends Component {
 }
 
 exports.CtxMenu = CtxMenu;
-exports.default = connect(["refService", "selectionService"])(CtxMenu);
+exports.default = connect(["refService", "selectService"])(CtxMenu);

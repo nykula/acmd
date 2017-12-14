@@ -18,7 +18,13 @@ export function h<T>(
     orientation: number, // FIXME: Box recognized as Component, not Widget?
     ref: any
   }>,
-  children?: Array<VNode|null>
+  children?: VNode|Array<VNode|null>
+): VNode;
+
+export function h(
+  tag: "list-store",
+  props: any,
+  children: any
 ): VNode;
 
 export function h(

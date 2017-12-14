@@ -1,3 +1,5 @@
+const { TreeIter } = imports.gi.Gtk;
+
 /**
  * @param {any=} node
  */
@@ -21,9 +23,15 @@ function Stub(node) {
 Stub.prototype.children = undefined;
 
 /**
+ * @type {TreeIter | undefined}
+ */
+Stub.prototype.iter = undefined;
+
+/**
  * @param {any} newChild
  */
 Stub.prototype.appendChild = function(newChild) {
+  newChild.parentNode = this;
   this.children.push(newChild);
 };
 

@@ -21,14 +21,14 @@ const { CursorService } = require("../Cursor/CursorService");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { JobService } = require("../Job/JobService");
-const { CHECKBOX, GICON, TEXT } = require("../ListStore/ListStore");
 const { PanelService } = require("../Panel/PanelService");
 const { PlaceService } = require("../Place/PlaceService");
 const { RefService } = require("../Ref/RefService");
-const { SelectionService } = require("../Selection/SelectionService");
+const { SelectService } = require("../Select/SelectService");
 const { TabService } = require("../Tab/TabService");
 const { WindowService } = require("../Window/WindowService");
 const DirectoryFiles = require("./DirectoryFiles").default;
+const { DirectoryCols } = require("./DirectoryFiles");
 const select = require("./select").default;
 
 /**
@@ -50,7 +50,7 @@ const select = require("./select").default;
  * @property {PanelService?} [panelService]
  * @property {PlaceService?} [placeService]
  * @property {RefService?} [refService]
- * @property {SelectionService?} [selectionService]
+ * @property {SelectService?} [selectService]
  * @property {TabService?} [tabService]
  * @property {WindowService?} [windowService]
  *
@@ -62,6 +62,9 @@ class Directory extends Component {
    */
   constructor(props) {
     super(props);
+
+    /** @type {any[]} */
+    this.cols = [];
 
     /**
      * @type {{ [key: number]: { ctrl?: () => void, default?: () => void } }}
@@ -102,18 +105,18 @@ class Directory extends Component {
       [Gdk.KEY_F5]: { none: get("oppositeService.cp") },
       [Gdk.KEY_F6]: { none: get("oppositeService.mv") },
       [Gdk.KEY_F7]: { none: get("directoryService.mkdir") },
-      [Gdk.KEY_F8]: { none: get("selectionService.rm") },
-      [Gdk.KEY_a]: { ctrl: get("selectionService.selectAll") },
+      [Gdk.KEY_F8]: { none: get("selectService.rm") },
+      [Gdk.KEY_a]: { ctrl: get("selectService.selectAll") },
       [Gdk.KEY_b]: { ctrl: get("windowService.showHidSys") },
-      [Gdk.KEY_c]: { ctrl: get("selectionService.copy") },
-      [Gdk.KEY_d]: { ctrl: get("selectionService.deselectAll") },
-      [Gdk.KEY_I]: { ctrl: get("selectionService.invert") },
+      [Gdk.KEY_c]: { ctrl: get("selectService.copy") },
+      [Gdk.KEY_d]: { ctrl: get("selectService.deselectAll") },
+      [Gdk.KEY_I]: { ctrl: get("selectService.invert") },
       [Gdk.KEY_j]: { ctrl: get("jobService.list") },
       [Gdk.KEY_l]: { ctrl: get("panelService.ls") },
       [Gdk.KEY_t]: { ctrl: get("panelService.createTab") },
       [Gdk.KEY_v]: { ctrl: get("directoryService.paste") },
       [Gdk.KEY_w]: { ctrl: get("panelService.removeTab") },
-      [Gdk.KEY_x]: { ctrl: get("selectionService.cut") },
+      [Gdk.KEY_x]: { ctrl: get("selectService.cut") },
     };
   }
 
@@ -196,7 +199,7 @@ class Directory extends Component {
 
       if (button === Gdk.BUTTON_SECONDARY) {
         const { menu } =
-          /** @type {SelectionService} */ (this.props.selectionService);
+          /** @type {SelectService} */ (this.props.selectService);
 
         menu({ mouseEvent });
       }
@@ -211,7 +214,7 @@ class Directory extends Component {
    */
   handleDrag(_node, _dragContext, selectionData) {
     const { getUris } =
-      /** @type {SelectionService} */ (this.props.selectionService);
+      /** @type {SelectService} */ (this.props.selectService);
 
     const uris = getUris();
     selectionData.set_uris(uris);
@@ -275,7 +278,7 @@ class Directory extends Component {
     switch (ev.which) {
       case Gdk.KEY_Menu:
         const { menu } =
-          /** @type {SelectionService} */ (this.props.selectionService);
+          /** @type {SelectService} */ (this.props.selectService);
 
         menu({
           keyEvent: ev.nativeEvent,
@@ -378,12 +381,32 @@ class Directory extends Component {
   }
 
   getCols() {
-    return Directory.prototype.cols
-      .map(this.prefixSort)
-      .map(col => assign({}, col, {
-        on_clicked: () => this.handleClicked(col.name),
+    const titles = {
+      ext: "Ext",
+      filename: "Name",
+      mode: "Attr",
+      mtime: "Date",
+      size: "Size",
+    };
+
+    const widths = {
+      attr: 45,
+      ext: 50,
+      mtime: 125,
+      size: 55,
+    };
+
+    return DirectoryCols.map(col => {
+      const title = titles[col.name];
+
+      return this.prefixSort(assign({}, col, {
+        expand: col.name === "filename",
+        min_width: widths[col.name],
+        on_clicked: title ? () => this.handleClicked(col.name) : undefined,
         on_toggled: col.name === "isSelected" ? this.handleSelected : undefined,
+        title,
       }));
+    });
   }
 
   /**
@@ -412,20 +435,6 @@ class Directory extends Component {
   }
 }
 
-Directory.prototype.cols = [
-  {
-    name: "isSelected",
-    title: null,
-    type: CHECKBOX,
-  },
-  { title: null, name: "icon", type: GICON },
-  { title: "Name", name: "filename", type: TEXT, expand: true },
-  { title: "Ext", name: "ext", type: TEXT, min_width: 50 },
-  { title: "Size", name: "size", type: TEXT, min_width: 55 },
-  { title: "Date", name: "mtime", type: TEXT, min_width: 125 },
-  { title: "Attr", name: "mode", type: TEXT, min_width: 45 },
-];
-
 exports.Directory = Directory;
 
 exports.default = connect([
@@ -435,7 +444,7 @@ exports.default = connect([
   "panelService",
   "placeService",
   "refService",
-  "selectionService",
+  "selectService",
   "tabService",
   "windowService",
 ])(Directory);

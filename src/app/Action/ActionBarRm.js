@@ -6,13 +6,13 @@ const { connect } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { JobService } = require("../Job/JobService");
 const { PanelService } = require("../Panel/PanelService");
-const { SelectionService } = require("../Selection/SelectionService");
+const { SelectService } = require("../Select/SelectService");
 
 /**
  * @typedef IProps
  * @property {JobService?} [jobService]
  * @property {PanelService?} [panelService]
- * @property {SelectionService?} [selectionService]
+ * @property {SelectService?} [selectService]
  * @property {string} label
  *
  * @extends Component<IProps>
@@ -48,7 +48,7 @@ class ActionBarRm extends Component {
   // tslint-enable: variable-name
 
   handlePressed() {
-    const { rm } = /** @type {SelectionService} */ (this.props.selectionService);
+    const { rm } = /** @type {SelectService} */ (this.props.selectService);
     rm();
   }
 
@@ -76,6 +76,6 @@ class ActionBarRm extends Component {
 }
 
 exports.ActionBarRm = ActionBarRm;
-exports.default = connect(["jobService", "panelService", "selectionService"])(
+exports.default = connect(["jobService", "panelService", "selectService"])(
   ActionBarRm,
 );

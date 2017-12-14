@@ -4,7 +4,7 @@ const { MenuBarAction } = require("./MenuBarAction");
 describe("MenuBarAction", () => {
   it("renders", () => {
     const action = {
-      id: "selectionService.copy",
+      id: "selectService.copy",
       label: "Copy",
     };
 
@@ -25,7 +25,7 @@ describe("MenuBarAction", () => {
     };
 
     const action = {
-      id: "selectionService.copy",
+      id: "selectService.copy",
       label: "Copy",
     };
 

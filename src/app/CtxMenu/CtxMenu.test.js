@@ -7,14 +7,14 @@ describe("CtxMenu", () => {
     const refService = new RefService();
 
     /** @type {any} */
-    const selectionService = {
+    const selectService = {
       getUris: () => ["file:///foo.bar"],
       handlers: [{}],
     };
 
     new CtxMenu({
       refService,
-      selectionService,
+      selectService,
     }).render();
   });
 });

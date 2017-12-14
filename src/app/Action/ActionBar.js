@@ -11,7 +11,7 @@ const actions = [
   { id: "oppositeService.cp", label: "Copy", shortcut: "F5" },
   { id: "oppositeService.mv", label: "Move", shortcut: "F6" },
   { id: "directoryService.mkdir", label: "NewFolder", shortcut: "F7" },
-  { id: "selectionService.rm", label: "Delete", shortcut: "F8" },
+  { id: "selectService.rm", label: "Delete", shortcut: "F8" },
   { id: "windowService.exit", label: "Exit", shortcut: "Alt+F4" },
 ];
 

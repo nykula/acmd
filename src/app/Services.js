@@ -11,7 +11,7 @@ const { OppositeService } = require("./Opposite/OppositeService");
 const { PanelService } = require("./Panel/PanelService");
 const { PlaceService } = require("./Place/PlaceService");
 const { RefService } = require("./Ref/RefService");
-const { SelectionService } = require("./Selection/SelectionService");
+const { SelectService } = require("./Select/SelectService");
 const { TabService } = require("./Tab/TabService");
 const { WindowService } = require("./Window/WindowService");
 
@@ -79,7 +79,7 @@ class Services {
       tabService,
     });
 
-    const selectionService = new SelectionService({
+    const selectService = new SelectService({
       clipboardService,
       dialogService,
       gioService,
@@ -95,7 +95,7 @@ class Services {
       dialogService,
       jobService,
       panelService,
-      selectionService,
+      selectService,
       tabService,
     });
 
@@ -111,7 +111,7 @@ class Services {
     this.panelService = panelService;
     this.placeService = placeService;
     this.refService = refService;
-    this.selectionService = selectionService;
+    this.selectService = selectService;
     this.tabService = tabService;
     this.windowService = windowService;
 

@@ -13,7 +13,7 @@ const { TabService } = require("../Tab/TabService");
 /**
  * Selected files in active tab, or the cursor file as fallback.
  */
-class SelectionService {
+class SelectService {
   /**
    * @typedef IProps
    * @property {ClipboardService?} [clipboardService]
@@ -34,7 +34,7 @@ class SelectionService {
 
     this.props = props;
 
-    autoBind(this, SelectionService.prototype, __filename);
+    autoBind(this, SelectService.prototype, __filename);
 
     extendObservable(this, {
       handlers: this.handlers,
@@ -282,4 +282,4 @@ class SelectionService {
   }
 }
 
-exports.SelectionService = SelectionService;
+exports.SelectService = SelectService;

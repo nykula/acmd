@@ -3,9 +3,9 @@ const { Box, Image, Label } = Gtk;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const { Place } = require("../../domain/Place/Place");
+const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
-const Icon = require("../Icon/Icon").default;
 const minLength = require("../MinLength/minLength").default;
 const { PanelService } = require("../Panel/PanelService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
@@ -103,7 +103,7 @@ class PlacesEntry extends Component {
     }, [
         h(Box, { spacing: 4 }, [
           h(Image, {
-            gicon: Icon({ icon: icon, iconType: iconType }),
+            gicon: GioIcon.get({ icon: icon, iconType: iconType }),
             icon_size: Gtk.IconSize.SMALL_TOOLBAR,
           }),
           h(Label, { label: short }),

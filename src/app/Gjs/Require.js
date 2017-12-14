@@ -154,6 +154,24 @@ var Require = class {
   }
 
   /**
+   * Returns environment variables.
+   */
+  getEnv() {
+    /** @type {string[]} */
+    const pairs = this.GLib.get_environ();
+
+    /** @type {{ [name: string]: string }} */
+    const env = {};
+
+    for (const pair of pairs) {
+      const match = pair.match(/^([^=]+)=(.*)$/);
+      env[match[1]] = match[2];
+    }
+
+    return env;
+  }
+
+  /**
    * Returns a cached module or creates an empty one. Normalizes the path.
    *
    * @param {string} path
@@ -180,11 +198,15 @@ var Require = class {
   }
 
   /**
-   * Defines __filename, __dirname, exports, module and require. Does just
-   * enough to use some CommonJS from npm that isn't dependent on node.
+   * Shims __filename, __dirname, exports, module, require, process and
+   * console. Just enough to use some CommonJS from npm.
    */
   require() {
+    /** @type {any} */
     const window = this.window;
+
+    window.process = { env: this.getEnv() };
+    window.console = { error: print, log: print, warn: print };
 
     Object.defineProperty(window, "__filename", {
       /**

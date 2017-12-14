@@ -1,10 +1,11 @@
+const { Icon } = imports.gi.Gio;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const { File } = require("../../domain/File/File");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
+const { ListStore } = require("../ListStore/ListStore");
 const { TabService } = require("../Tab/TabService");
-const { TreeViewBody } = require("../TreeView/TreeViewBody");
 const { DirectoryFile } = require("./DirectoryFile");
 
 /**
@@ -32,7 +33,7 @@ class DirectoryFiles extends Component {
     const selected = entities[tabId].selected;
 
     return (
-      h(TreeViewBody, files.map((file, index) => {
+      h(ListStore, { cols: DirectoryCols }, files.map((file, index) => {
         return h(DirectoryFile, {
           file,
           isSelected: selected.indexOf(index) !== -1,
@@ -43,5 +44,16 @@ class DirectoryFiles extends Component {
   }
 }
 
+const DirectoryCols = [
+  { name: "isSelected", type: Boolean },
+  { name: "icon", type: Icon },
+  { name: "filename" },
+  { name: "ext" },
+  { name: "size" },
+  { name: "mtime" },
+  { name: "mode" },
+];
+
+exports.DirectoryCols = DirectoryCols;
 exports.DirectoryFiles = DirectoryFiles;
 exports.default = connect(["tabService"])(DirectoryFiles);

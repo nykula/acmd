@@ -55,15 +55,15 @@ describe("ActionBarRm", () => {
 
   it("removes selected files on click", () => {
     /** @type {any} */
-    const selectionService = {
+    const selectService = {
       rm: expect.createSpy(),
     };
 
     new ActionBarRm({
       label: "",
-      selectionService,
+      selectService,
     }).handlePressed();
 
-    expect(selectionService.rm).toHaveBeenCalled();
+    expect(selectService.rm).toHaveBeenCalled();
   });
 });

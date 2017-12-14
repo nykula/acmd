@@ -3,7 +3,7 @@ const { DialogService } = require("../Dialog/DialogService");
 const { autoBind } = require("../Gjs/autoBind");
 const { JobService } = require("../Job/JobService");
 const { PanelService } = require("../Panel/PanelService");
-const { SelectionService } = require("../Selection/SelectionService");
+const { SelectService } = require("../Select/SelectService");
 const { TabService } = require("../Tab/TabService");
 
 /**
@@ -15,7 +15,7 @@ class OppositeService {
    * @property {DialogService?} [dialogService]
    * @property {JobService?} [jobService]
    * @property {PanelService?} [panelService]
-   * @property {SelectionService?} [selectionService]
+   * @property {SelectService?} [selectService]
    * @property {TabService?} [tabService]
    *
    * @param {IProps} props
@@ -73,14 +73,14 @@ class OppositeService {
    * @private
    */
   getDest() {
-    const { panelService, selectionService, tabService } = this.props;
+    const { panelService, selectService, tabService } = this.props;
     const destPanelId = panelService.activeId === 0 ? 1 : 0;
 
     const { activeTabId } = panelService.entities[destPanelId];
     const { location } = tabService.entities[activeTabId];
 
     const gFile = File.new_for_uri(location);
-    const files = selectionService.getFiles();
+    const files = selectService.getFiles();
 
     return files.length === 1
       ? gFile.get_child(files[0].name).get_uri()
@@ -93,7 +93,7 @@ class OppositeService {
    * @private
    */
   getUris() {
-    const { formatUris, getUris } = this.props.selectionService;
+    const { formatUris, getUris } = this.props.selectService;
 
     const destUri = this.getDest();
     const uris = getUris();

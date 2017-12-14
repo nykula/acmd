@@ -38,7 +38,7 @@ describe("CtxMenuAction", () => {
       actionService,
       icon: "edit-copy",
       iconSize: 16,
-      id: "selectionService.copy",
+      id: "selectService.copy",
       label: "Copy",
     }).ref(menuItem);
 

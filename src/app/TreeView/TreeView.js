@@ -1,27 +1,19 @@
 const { ModifierType, Rectangle } = imports.gi.Gdk;
 const Gtk = imports.gi.Gtk;
-const { ListStore, TreeModel, TreePath } = Gtk;
+const { TreeIter, TreeModel, TreePath, TreeViewColumn } = Gtk;
 const assign = require("lodash/assign");
 const noop = require("lodash/noop");
 const { autoBind } = require("../Gjs/autoBind");
 const KeyListener = require("../Gjs/KeyListener").default;
-const { configureColumn, setCols, setValue } = require("../ListStore/ListStore");
-const { TreeViewRow } = require("./TreeViewRow");
+const { ListStore } = require("../ListStore/ListStore");
 
 /**
  * @typedef Col
  * @property {boolean=} expand
  * @property {number=} min_width
- * @property {string} name
  * @property {any=} on_clicked
  * @property {string=} title
  * @property {string} type
- */
-
-/**
- * @typedef IBody
- * @property {any[]} children
- * @property {ListStore} store
  */
 
 /**
@@ -31,11 +23,6 @@ function TreeView(node) {
   TreeView.prototype.useNodeAsThis.call(node);
   return node;
 }
-
-/**
- * @type {IBody}
- */
-TreeView.prototype.body = undefined;
 
 /**
  * Cursor row index.
@@ -61,7 +48,7 @@ TreeView.prototype.mouseEvent = undefined;
 TreeView.prototype.shouldReactToCursorChanges = undefined;
 
 /**
- * @type {ListStore}
+ * @type {{ children: any[] }}
  */
 TreeView.prototype.store = undefined;
 
@@ -78,7 +65,7 @@ TreeView.prototype.useNodeAsThis = function() {
     cursor: { set: value => this.setCursor(value) },
     cursorCallback: { set: callback => this.setCursorCallback(callback) },
     dragAction: { set: value => this.setDragAction(value) },
-    firstChild: { get: () => this.body },
+    firstChild: { get: () => this.store },
     keyPressEventCallback: { set: callback => this.setKeyPressEventCallback(callback) },
     layoutCallback: { set: callback => this.setLayoutCallback(callback) },
   });
@@ -101,13 +88,10 @@ TreeView.prototype.setCols = function(cols) {
     }
   };
 
-  const store = new Gtk.ListStore();
-  setCols(store, cols);
-
   for (let i = 0; i < cols.length; i++) {
     const col = cols[i];
-    const tvCol = new Gtk.TreeViewColumn({ title: col.title });
-    configureColumn(tvCol, col, i);
+    const tvCol = new TreeViewColumn();
+    ListStore.bindView(tvCol, col, i);
 
     if (col.expand) {
       tvCol.expand = true;
@@ -122,27 +106,21 @@ TreeView.prototype.setCols = function(cols) {
       tvCol.connect("clicked", col.on_clicked);
     }
 
+    if (col.title) {
+      tvCol.title = col.title;
+    }
+
     this.insert_column(tvCol, i);
   }
-
-  this.store = store;
 };
 
 /**
- * Initial children appended, `store` attached.
- */
-TreeView.prototype.didMount = function() {
-  this.didMount = noop;
-  this.body.store = this.store;
-};
-
-/**
- * @param {IBody} newChild
+ * @param {{ children: any[] }} newChild
  */
 TreeView.prototype.appendChild = function(newChild) {
-  this.body = newChild;
+  this.store = newChild;
 
-  Object.defineProperties(this.body, {
+  Object.defineProperties(this.store, {
     parentNode: { value: this },
   });
 };
@@ -195,7 +173,7 @@ TreeView.prototype.setKeyPressEventCallback = function(callback) {
     const path = /** @type {TreePath} */ visible[1];
     const top = path ? path.get_indices()[0] : 0;
 
-    const cursor = Gtk.TreePath.new_from_string(String(this._cursor));
+    const cursor = TreePath.new_from_string(String(this._cursor));
     const rect = this.get_cell_area(cursor, null);
     const win = this.get_window();
 
@@ -217,7 +195,7 @@ TreeView.prototype.setCursor = function(rowIndex) {
   this.shouldReactToCursorChanges = false;
 
   const sel = this.get_selection();
-  const path = Gtk.TreePath.new_from_string(String(rowIndex));
+  const path = TreePath.new_from_string(String(rowIndex));
 
   sel.unselect_all();
   sel.select_path(path);
@@ -234,10 +212,9 @@ TreeView.prototype.setLayoutCallback = function(callback) {
   this.setLayoutCallback = noop;
 
   this.connect("size_allocate", () => {
-    const rowHeight = this.get_background_area(Gtk.TreePath.new_from_string("0"), null).height;
+    const rowHeight = this.get_background_area(TreePath.new_from_string("0"), null).height;
     const height = this.get_visible_rect().height;
     this.limit = Number((height / rowHeight).toFixed(2));
-    this.didMount();
     callback(this);
   });
 };
@@ -257,14 +234,15 @@ TreeView.prototype.setDragAction = function(dragAction) {
  * @param {TreeModel} store
  * @param {any} _
  * @param {string} input
- * @param {any} iter
+ * @param {TreeIter} iter
  */
 TreeView.prototype.shouldSearchSkip = function(store, _, input, iter) {
   const index = Number(store.get_string_from_iter(iter));
+  const { children } = this.store;
 
   if (index === this._cursor) {
-    for (let i = 0; i < this.body.children.length; i++) {
-      if (i !== index && !this.body.children[i].shouldSearchSkip(input)) {
+    for (let i = 0; i < children.length; i++) {
+      if (i !== index && !children[i].shouldSearchSkip(input)) {
         return true;
       }
     }
@@ -272,7 +250,7 @@ TreeView.prototype.shouldSearchSkip = function(store, _, input, iter) {
     return false;
   }
 
-  return this.body.children[index].shouldSearchSkip(input);
+  return children[index].shouldSearchSkip(input);
 };
 
 /**

@@ -19,15 +19,15 @@ const menus = [
 
   {
     children: [
-      { id: "selectionService.cut", label: "Cut" },
-      { id: "selectionService.copy", label: "Copy" },
+      { id: "selectService.cut", label: "Cut" },
+      { id: "selectService.copy", label: "Copy" },
       { id: "directoryService.paste", label: "Paste" },
-      { id: "selectionService.selectAll", label: "Select all" },
-      { id: "selectionService.deselectAll", label: "Deselect all" },
-      { id: "selectionService.invert", label: "Invert selection" },
-      { id: "selectionService.selectGlob", label: "Select glob" },
-      { id: "selectionService.deselectGlob", label: "Deselect glob" },
-      { id: "selectionService.selectDiff", label: "Compare directories" },
+      { id: "selectService.selectAll", label: "Select all" },
+      { id: "selectService.deselectAll", label: "Deselect all" },
+      { id: "selectService.invert", label: "Invert selection" },
+      { id: "selectService.selectGlob", label: "Select glob" },
+      { id: "selectService.deselectGlob", label: "Deselect glob" },
+      { id: "selectService.selectDiff", label: "Compare directories" },
     ],
 
     label: "Edit",

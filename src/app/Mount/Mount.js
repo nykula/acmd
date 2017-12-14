@@ -1,16 +1,16 @@
-const { Box, Button, Label, ReliefStyle, VSeparator } = imports.gi.Gtk;
+const { Icon } = imports.gi.Gio;
+const { Box, Button, ComboBox, Label, ReliefStyle, VSeparator } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const noop = require("lodash/noop");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { setTimeout } = require("../Gjs/setTimeout");
-const { GICON, TEXT } = require("../ListStore/ListStore");
+const { ListStore } = require("../ListStore/ListStore");
 const minLength = require("../MinLength/minLength").default;
 const { PanelService } = require("../Panel/PanelService");
 const { PlaceService } = require("../Place/PlaceService");
 const { RefService } = require("../Ref/RefService");
-const Select = require("../Select/Select").default;
 const formatSize = require("../Size/formatSize").default;
 
 /**
@@ -28,7 +28,6 @@ class Mount extends Component {
    */
   constructor(props) {
     super(props);
-    this.onChanged = noop;
     autoBind(this, Mount.prototype, __filename);
   }
 
@@ -48,6 +47,21 @@ class Mount extends Component {
 
   handleRoot() {
     this.props.panelService.root(this.props.panelId);
+  }
+
+  /**
+   * @param {ComboBox} comboBox
+   */
+  refComboBox(comboBox) {
+    if (!comboBox) {
+      return;
+    }
+
+    comboBox.connect("changed", noop);
+    comboBox.connect("focus", this.handleFocus);
+
+    MountCols.forEach((col, i) => ListStore.bindView(comboBox, col, i));
+    this.props.refService.set("mounts" + this.props.panelId)(comboBox);
   }
 
   /**
@@ -83,24 +97,17 @@ class Mount extends Component {
     return (
       h(Box, { expand: false }, [
         h(Box, [
-          h(Select, {
-            cols: [
-              { name: "text", type: TEXT, pack: "pack_end" },
-              { name: "icon", type: GICON },
-            ],
-            on_changed: this.onChanged,
-            on_focus: this.handleFocus,
-            on_layout: this.props.refService.set("mounts" + this.props.panelId),
-            rows: names.map(x => entities[x]).map(mount => ({
-              icon: {
-                icon: mount.icon,
-                iconType: mount.iconType,
-              },
-              text: minLength(names, mount.name),
-              value: mount.name,
-            })),
-            value: name,
-          }),
+          h(ComboBox, {
+            active: names.findIndex(x => entities[x].name === name),
+            ref: this.refComboBox,
+          },
+            h(ListStore, { cols: MountCols },
+              names.map(x => entities[x]).map(mount => h("stub", {
+                icon: mount,
+                text: minLength(names, mount.name),
+              })),
+            ),
+          ),
         ]),
         h(Box, { border_width: 4, expand: true }, [
           h(Label, { label: status }),
@@ -124,6 +131,11 @@ class Mount extends Component {
     );
   }
 }
+
+const MountCols = [
+  { name: "text", pack: "pack_end" },
+  { name: "icon", type: Icon },
+];
 
 exports.Mount = Mount;
 exports.default = connect(["panelService", "placeService", "refService"])(Mount);
