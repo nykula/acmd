@@ -33,9 +33,9 @@
     "util": "^0.10.3"
   },
   "scripts": {
-    "start": "NODE_ENV=development gjs bin/start.js 2>&1 | grep -v 'Message.*node_modules'",
-    "test": "NODE_ENV=production gjs bin/test.js 2>&1 | grep -v 'Message.*node_modules'",
-    "coverage": "bash bin/coverage.sh 2>&1 | grep -v 'Message.*node_modules'",
+    "start": "NODE_ENV=development gjs bin/start.js",
+    "test": "NODE_ENV=production gjs bin/test.js",
+    "coverage": "bash bin/coverage.sh",
     "lint": "tslint 'bin/**/*.js' 'src/**/*.js' && tsc",
     "format": "tslint --fix 'bin/**/*.js' 'src/**/*.js' && tsc",
     "repl": "gjs bin/repl.js",

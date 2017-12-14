@@ -1,6 +1,7 @@
 const {
   File,
   FileInfo,
+  FileQueryInfoFlags,
   Mount,
   MountMountFlags,
   MountOperation,
@@ -9,13 +10,15 @@ const {
   Volume,
   VolumeMonitor,
 } = imports.gi.Gio;
-const { PRIORITY_DEFAULT } = imports.gi.GLib;
+const GLib = imports.gi.GLib;
+const { PRIORITY_DEFAULT } = GLib;
 const { map, series } = require("async");
 const uniqBy = require("lodash/uniqBy");
-const { action, extendObservable } = require("mobx");
+const { action, computed, extendObservable } = require("mobx");
 const Uri = require("url-parse");
 const { Place } = require("../../domain/Place/Place");
-const { gioAsync } = require("../Gio/gioAsync");
+const { GioAsync } = require("../Gio/GioAsync");
+const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
 const { RefService } = require("../Ref/RefService");
 
@@ -23,6 +26,25 @@ const { RefService } = require("../Ref/RefService");
  * Mounts drives and remote locations.
  */
 class PlaceService {
+  /**
+   * Shortens the string as much as possible without making it confusing.
+   *
+   * @param {string[]} xs
+   * @param {string} x
+   */
+  static minLength(xs, x) {
+    for (let i = 1; i < x.length; i++) {
+      const short = x.slice(0, i);
+      const same = xs.filter(other => other.slice(0, i) === short).length;
+
+      if (same === 1) {
+        return short;
+      }
+    }
+
+    return x;
+  }
+
   /**
    * @param {{ refService: RefService }} props
    */
@@ -42,6 +64,8 @@ class PlaceService {
 
     this.File = File;
 
+    this.GLib = GLib;
+
     this.MountOperation = MountOperation;
 
     this.names = ["/"];
@@ -49,6 +73,9 @@ class PlaceService {
     this.placeAttributes = "filesystem::*";
 
     this.props = props;
+
+    /** @type {{ [name: string]: string }} */
+    this.shortNames = {};
 
     this.VolumeMonitor = VolumeMonitor;
 
@@ -58,6 +85,7 @@ class PlaceService {
       entities: this.entities,
       names: this.names,
       set: action(this.set),
+      shortNames: computed(this.getShortNames),
     });
   }
 
@@ -75,7 +103,7 @@ class PlaceService {
    * Mounts a remote place, such as SFTP.
    *
    * @param {string} uriStr
-   * @param {(error: Error, uri: string) => void} callback
+   * @param {(error: Error | undefined, uri: string) => void} callback
    */
   mount(uriStr, callback) {
     const uri = Uri(uriStr);
@@ -109,7 +137,7 @@ class PlaceService {
           callback(error);
           return;
         }
-        callback(null, uri.toString());
+        callback(undefined, uri.toString());
       },
     );
   }
@@ -147,6 +175,12 @@ class PlaceService {
 
     series(
       [
+        callback =>
+          this.getSpecials((error, specials) => {
+            places = places.concat(specials);
+            callback(error);
+          }),
+
         callback =>
           this.getDrives((error, drives) => {
             places = places.concat(drives);
@@ -224,7 +258,7 @@ class PlaceService {
         if (gMount) {
           this.serializeMount(gMount, volumeCallback);
         } else {
-          volumeCallback(null, {
+          volumeCallback(undefined, {
             filesystemFree: 0,
             filesystemSize: 0,
             icon: "drive-harddisk",
@@ -235,7 +269,7 @@ class PlaceService {
           });
         }
       },
-      callback,
+      /** @type {any} */ (callback),
     );
   }
 
@@ -244,7 +278,7 @@ class PlaceService {
    * @param {(error: Error | undefined, place: Place) => void} callback
    */
   getFilesystem(callback) {
-    gioAsync(
+    GioAsync(
       this.File.new_for_uri("file:///"),
       "query_filesystem_info",
       this.placeAttributes,
@@ -274,7 +308,45 @@ class PlaceService {
    */
   getMounts(callback) {
     const gVolMon = this.VolumeMonitor.get();
-    map(gVolMon.get_mounts(), this.serializeMount, callback);
+    const mounts = gVolMon.get_mounts();
+
+    map(mounts, this.serializeMount, /** @type {any} */ (callback));
+  }
+
+  /**
+   * @private
+   */
+  getShortNames() {
+    const places = this.names.map(x => this.entities[x]);
+
+    /** @type {{ [name: string]: string }} */
+    const shortNames = {};
+
+    for (const { name, icon } of places) {
+      const sameIcon = places
+        .filter(x => x.icon === icon)
+        .map(x => x.name);
+
+      shortNames[name] = PlaceService.minLength(sameIcon, name);
+    }
+
+    return shortNames;
+  }
+
+  /**
+   * @private
+   * @param {(error: Error | undefined, places: Place[]) => void} callback
+   */
+  getSpecials(callback) {
+    let paths = [this.GLib.get_home_dir()];
+    const count = this.GLib.UserDirectory.N_DIRECTORIES;
+
+    for (let i = 0; i < count; i++) {
+      paths.push(this.GLib.get_user_special_dir(i));
+    }
+
+    paths = paths.filter(Boolean);
+    map(paths, this.serializeSpecial, /** @type {any} */ (callback));
   }
 
   /**
@@ -285,7 +357,7 @@ class PlaceService {
   serializeMount(gMount, callback) {
     const root = gMount.get_root();
 
-    gioAsync(
+    GioAsync(
       root,
       "query_filesystem_info",
       this.placeAttributes,
@@ -309,6 +381,36 @@ class PlaceService {
 
         callback(error, place);
       },
+    );
+  }
+
+  /**
+   * @private
+   * @param {string} path
+   * @param {(error: Error, place: Place) => void} callback
+   */
+  serializeSpecial(path, callback) {
+    const file = this.File.new_for_path(path);
+
+    file.query_info_async(
+      "standard::*",
+      FileQueryInfoFlags.NONE,
+      PRIORITY_DEFAULT,
+      null,
+      GioAsync.ReadyCallback(
+        result => file.query_info_finish(result),
+        (error, /** @type {FileInfo} */ info) => {
+          callback(error, {
+            filesystemFree: 0,
+            filesystemSize: 0,
+            icon: GioIcon.stringify(info.get_icon()) || "folder",
+            iconType: "GICON",
+            name: info.get_name(),
+            rootUri: file.get_uri(),
+            uuid: null,
+          });
+        },
+      ),
     );
   }
 }

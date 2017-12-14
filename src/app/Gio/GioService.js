@@ -20,7 +20,7 @@ const { File } = require("../../domain/File/File");
 const { FileHandler } = require("../../domain/File/FileHandler");
 const { Place } = require("../../domain/Place/Place");
 const { autoBind } = require("../Gjs/autoBind");
-const { gioAsync } = require("./gioAsync");
+const { GioAsync } = require("./GioAsync");
 
 /**
  * Let the front-end use drives.
@@ -69,7 +69,7 @@ class GioService {
      * @param {any} _callback
      */
     const handleRequest = _callback => {
-      gioAsync(
+      GioAsync(
         dir,
         "query_info",
         this.fileAttributes,
@@ -97,7 +97,7 @@ class GioService {
         return;
       }
 
-      gioAsync(
+      GioAsync(
         parent,
         "query_info",
         this.fileAttributes,
@@ -123,7 +123,7 @@ class GioService {
         files = files.concat(parentFile);
       }
 
-      gioAsync(
+      GioAsync(
         dir,
         "enumerate_children",
         this.fileAttributes,
@@ -139,7 +139,7 @@ class GioService {
      * @param {any} _callback
      */
     const handleChildren = (enumerator, _callback) => {
-      gioAsync(
+      GioAsync(
         enumerator,
         "next_files",
         MAXINT32,
@@ -199,7 +199,7 @@ class GioService {
   getHandlers(uri, callback) {
     const file = this.Gio.File.new_for_uri(uri);
 
-    gioAsync(
+    GioAsync(
       file,
       "query_info",
       this.fileAttributes,
@@ -265,7 +265,7 @@ class GioService {
    * @param {(error: Error) => void} callback
    */
   mkdir(uri, callback) {
-    gioAsync(
+    GioAsync(
       this.Gio.File.new_for_uri(uri),
       "make_directory",
       PRIORITY_DEFAULT,
@@ -281,7 +281,7 @@ class GioService {
    * @param {(error: Error) => void} callback
    */
   touch(uri, callback) {
-    gioAsync(
+    GioAsync(
       this.Gio.File.new_for_uri(uri),
       "create",
       FileCreateFlags.NONE,
@@ -322,7 +322,7 @@ class GioService {
 
     subprocess.init(null);
 
-    gioAsync(subprocess, "communicate_utf8", null, null, (
+    GioAsync(subprocess, "communicate_utf8", null, null, (
       /** @type {any} */
       _,
       /** @type {string[]} */

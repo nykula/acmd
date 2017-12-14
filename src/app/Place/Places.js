@@ -1,7 +1,6 @@
 const { Box } = imports.gi.Gtk;
 const { connect } = require("inferno-mobx");
 const { h } = require("../Gjs/GtkInferno");
-const minLength = require("../MinLength/minLength").default;
 const PlacesEntry = require("./PlacesEntry").default;
 const { PlaceService } = require("./PlaceService");
 
@@ -13,14 +12,15 @@ const { PlaceService } = require("./PlaceService");
  * @param {IProps} props
  */
 function Places(props) {
-  const { entities, names } = props.placeService;
+  const { names } =
+    /** @type {PlaceService} */ (props.placeService);
 
   return (
-    h(Box, names.map(x => entities[x]).map(place => (
+    h(Box, names.map(name => (
       h(PlacesEntry, {
-        panelId: this.props.panelId,
-        place,
-        short: minLength(names, place.name),
+        key: name,
+        name,
+        panelId: props.panelId,
       })
     )))
   );

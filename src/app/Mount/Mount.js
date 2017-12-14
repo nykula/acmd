@@ -7,7 +7,6 @@ const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { setTimeout } = require("../Gjs/setTimeout");
 const { ListStore } = require("../ListStore/ListStore");
-const minLength = require("../MinLength/minLength").default;
 const { PanelService } = require("../Panel/PanelService");
 const { PlaceService } = require("../Place/PlaceService");
 const { RefService } = require("../Ref/RefService");
@@ -33,7 +32,10 @@ class Mount extends Component {
 
   handleFocus() {
     setTimeout(() => {
-      const node = this.props.refService.get("panel" + this.props.panelId);
+      const { get } =
+        /** @type { RefService } */ (this.props.refService);
+
+      const node = get("panel" + this.props.panelId);
 
       if (node) {
         node.grab_focus();
@@ -42,11 +44,17 @@ class Mount extends Component {
   }
 
   handleLevelUp() {
-    this.props.panelService.levelUp(this.props.panelId);
+    const { levelUp } =
+      /** @type { PanelService } */ (this.props.panelService);
+
+    levelUp(this.props.panelId);
   }
 
   handleRoot() {
-    this.props.panelService.root(this.props.panelId);
+    const { root } =
+      /** @type { PanelService } */ (this.props.panelService);
+
+    root(this.props.panelId);
   }
 
   /**
@@ -57,11 +65,14 @@ class Mount extends Component {
       return;
     }
 
+    const { set } =
+      /** @type { RefService } */ (this.props.refService);
+
     comboBox.connect("changed", noop);
     comboBox.connect("focus", this.handleFocus);
 
     MountCols.forEach((col, i) => ListStore.bindView(comboBox, col, i));
-    this.props.refService.set("mounts" + this.props.panelId)(comboBox);
+    set("mounts" + this.props.panelId)(comboBox);
   }
 
   /**
@@ -79,20 +90,21 @@ class Mount extends Component {
   }
 
   render() {
-    const { panelId, panelService, placeService } = this.props;
-    const { entities, names } = placeService;
+    const { getActiveMountUri } =
+      /** @type { PanelService } */ (this.props.panelService);
 
-    const activeUri = panelService.getActiveMountUri(panelId);
+    const { entities, names, shortNames } =
+      /** @type { PlaceService } */ (this.props.placeService);
 
-    const activeMount = names
+    const activeUri = getActiveMountUri(this.props.panelId);
+
+    const { filesystemFree, filesystemSize, name } = names
       .map(x => entities[x])
       .filter(mount => mount.rootUri === activeUri)[0];
 
-    const name = activeMount.name;
-
     const status = "[" + name + "] " +
-      formatSize(activeMount.filesystemFree) + " of " +
-      formatSize(activeMount.filesystemSize) + " free";
+      formatSize(filesystemFree) + " of " +
+      formatSize(filesystemSize) + " free";
 
     return (
       h(Box, { expand: false }, [
@@ -104,7 +116,7 @@ class Mount extends Component {
             h(ListStore, { cols: MountCols },
               names.map(x => entities[x]).map(mount => h("stub", {
                 icon: mount,
-                text: minLength(names, mount.name),
+                text: shortNames[mount.name],
               })),
             ),
           ),

@@ -81,7 +81,8 @@ class PanelService {
    * Creates tab in active panel.
    */
   createTab() {
-    const { tabService } = this.props;
+    const tabService =
+      /** @type {TabService} */ (this.props.tabService);
 
     const tabId = this.getNextTabId();
     const panel = this.entities[this.activeId];
@@ -145,10 +146,11 @@ class PanelService {
    * @param {number=} panelId
    */
   getActiveTab(panelId) {
-    const { tabService } = this.props;
-    const tabId = this.getActiveTabId(panelId);
+    const { entities } =
+      /** @type {TabService} */ (this.props.tabService);
 
-    return tabService.entities[tabId];
+    const tabId = this.getActiveTabId(panelId);
+    return entities[tabId];
   }
 
   /**
@@ -187,9 +189,10 @@ class PanelService {
       return;
     }
 
-    const { tabService } = this.props;
+    const { ls } =
+      /** @type {TabService} */ (this.props.tabService);
 
-    tabService.ls(tabId, panel.history[panel.now + delta], () => {
+    ls(tabId, panel.history[panel.now + delta], () => {
       panel.now = panel.now + delta;
     });
   }
@@ -200,19 +203,18 @@ class PanelService {
    * @param {number=} panelId
    */
   levelUp(panelId) {
-    const { tabService } = this.props;
+    const { entities } =
+      /** @type {TabService} */ (this.props.tabService);
 
     if (typeof panelId !== "number") {
       panelId = this.activeId;
     }
 
     const tabId = this.getActiveTabId(panelId);
-    const { location } = tabService.entities[tabId];
-    const nextLocation = NativeFile.new_for_uri(location)
-      .get_parent()
-      .get_uri();
+    const { location } = entities[tabId];
+    const nextLocation = NativeFile.new_for_uri(location).get_parent();
 
-    this.ls(nextLocation, tabId);
+    this.ls(nextLocation ? nextLocation.get_uri() : "file:///", tabId);
   }
 
   /**
@@ -220,10 +222,21 @@ class PanelService {
    * @param {number=} tabId
    */
   ls(uri, tabId) {
-    const { dialogService, placeService, tabService } = this.props;
+    const { alert, prompt } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { mount, refresh } =
+      /** @type {PlaceService} */ (this.props.placeService);
+
+    const { entities, ls } =
+      /** @type {TabService} */ (this.props.tabService);
 
     if (typeof uri !== "string") {
-      dialogService.prompt("List files at URI: ", "", input => {
+      prompt("List files at URI: ", "", input => {
+        if (!input) {
+          return;
+        }
+
         if (input.indexOf("file:///") === 0) {
           this.ls(input);
           return;
@@ -234,12 +247,12 @@ class PanelService {
           return;
         }
 
-        placeService.mount(input, (error, finalUri) => {
+        mount(input, (error, finalUri) => {
           if (error) {
-            dialogService.alert(error.message);
+            alert(error.message);
           } else {
             this.ls(finalUri);
-            placeService.refresh();
+            refresh();
           }
         });
       });
@@ -251,10 +264,10 @@ class PanelService {
       tabId = this.getActiveTabId();
     }
 
-    tabService.ls(tabId, uri, error => {
+    ls(tabId, uri, error => {
       if (error) {
-        dialogService.alert(error.message, () => {
-          if (tabService.entities[tabId].location !== "file:///") {
+        alert(error.message, () => {
+          if (entities[tabId].location !== "file:///") {
             this.ls("file:///", tabId);
           }
         });
@@ -317,18 +330,22 @@ class PanelService {
    * @param {{ message: string }=} error
    */
   refresh(error) {
-    const { dialogService, tabService } = this.props;
+    const { alert } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { entities, ls } =
+      /** @type {TabService} */ (this.props.tabService);
 
     if (error) {
-      dialogService.alert(error.message);
+      alert(error.message);
       return;
     }
 
     const panel0TabId = this.entities[0].activeTabId;
     const panel1TabId = this.entities[1].activeTabId;
 
-    tabService.ls(panel0TabId, tabService.entities[panel0TabId].location);
-    tabService.ls(panel1TabId, tabService.entities[panel1TabId].location);
+    ls(panel0TabId, entities[panel0TabId].location);
+    ls(panel1TabId, entities[panel1TabId].location);
   }
 
   /**

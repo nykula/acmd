@@ -5,7 +5,7 @@ class Place {
     this.icon = "";
     this.iconType = "";
     this.name = "";
-    this.rootUri = "";
+    this.rootUri = /** @type {string | null} */ ("");
     this.uuid = "";
   }
 }

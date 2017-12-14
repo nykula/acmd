@@ -45,13 +45,23 @@ describe("PanelService", () => {
 
   it("lists files", () => {
     /** @type {any} */
+    const dialogService = {};
+
+    /** @type {any} */
+    const placeService = {};
+
+    /** @type {any} */
     const tabService = {
       ls: function() {
         arguments[arguments.length - 1]();
       },
     };
 
-    const panelService = new PanelService({ tabService });
+    const panelService = new PanelService({
+      dialogService,
+      placeService,
+      tabService,
+    });
 
     panelService.entities[0].activeTabId = 0;
     panelService.entities[0].history = ["file:///"];

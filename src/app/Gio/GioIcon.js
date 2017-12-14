@@ -11,6 +11,13 @@ class GioIcon {
       ? ThemedIcon.new_from_names([props.icon])
       : Icon.new_for_string(props.icon);
   }
+
+  /**
+   * @param {Icon} icon
+   */
+  static stringify(icon) {
+    return icon ? icon.to_string() : null;
+  }
 }
 
 exports.GioIcon = GioIcon;

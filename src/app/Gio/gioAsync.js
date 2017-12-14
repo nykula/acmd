@@ -1,10 +1,12 @@
+const { AsyncResult } = imports.gi.Gio;
+
 /**
  * Calls an async method on a Gio object.
  *
  * @param {any} obj
  * @param {string} methodName
  */
-function gioAsync(obj, methodName) {
+function GioAsync(obj, methodName) {
   const args = [];
   const callback = arguments[arguments.length - 1];
 
@@ -28,4 +30,24 @@ function gioAsync(obj, methodName) {
   obj[methodName + "_async"].apply(obj, args);
 }
 
-exports.gioAsync = gioAsync;
+/**
+ * @static
+ * @param {(asyncResult: AsyncResult) => any} finish
+ * @param {(error?: any, result?: any) => void} callback
+ */
+GioAsync.ReadyCallback = (finish, callback) => {
+  return (/** @type {any} */ _, /** @type {AsyncResult} */ asyncResult) => {
+    let result;
+
+    try {
+      result = finish(asyncResult);
+    } catch (error) {
+      callback(error);
+      return;
+    }
+
+    callback(undefined, result);
+  };
+};
+
+exports.GioAsync = GioAsync;

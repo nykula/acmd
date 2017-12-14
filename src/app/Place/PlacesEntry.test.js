@@ -8,34 +8,48 @@ describe("PlacesEntry", () => {
       getActiveMountUri: () => "file:///",
     };
 
+    /** @type {any} */
+    const placeService = {
+      entities: {
+        "/": {
+          filesystemFree: 0,
+          filesystemSize: 0,
+          icon: "computer",
+          iconType: "ICON_NAME",
+          name: "/",
+          rootUri: "file:///",
+          uuid: "",
+        },
+
+        "Music": {
+          filesystemFree: 0,
+          filesystemSize: 0,
+          icon: "media-optical",
+          iconType: "ICON_NAME",
+          name: "Music",
+          rootUri: "file:///media/Music",
+          uuid: "",
+        },
+      },
+
+      shortNames: {
+        "/": "/",
+        "Music": "M",
+      },
+    };
+
     new PlacesEntry({
+      name: "/",
       panelId: 0,
       panelService,
-      place: {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "computer",
-        iconType: "ICON_NAME",
-        name: "/",
-        rootUri: "file:///",
-        uuid: "",
-      },
-      short: "/",
+      placeService,
     }).render();
 
     new PlacesEntry({
+      name: "Music",
       panelId: 0,
       panelService,
-      place: {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "media-optical",
-        iconType: "ICON_NAME",
-        name: "Music",
-        rootUri: "file:///media/Music",
-        uuid: "",
-      },
-      short: "M",
+      placeService,
     }).render();
   });
 });

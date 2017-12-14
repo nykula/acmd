@@ -21,7 +21,12 @@ describe("Mount", () => {
           rootUri: "file:///media/System",
         },
       },
+
       names: ["System"],
+
+      shortNames: {
+        "System": "S",
+      },
     };
 
     new Mount({

@@ -1,13 +1,13 @@
 const { PRIORITY_DEFAULT } = imports.gi.GLib;
 const expect = require("expect");
-const { gioAsync } = require("./gioAsync");
+const { GioAsync } = require("./GioAsync");
 
-describe("gioAsync", () => {
+describe("GioAsync", () => {
   it("wraps _async and _finish into node-style callback", () => {
     const { GioFile } = setup();
 
     const existingDir = new GioFile(true);
-    gioAsync(existingDir, "make_directory",
+    GioAsync(existingDir, "make_directory",
       PRIORITY_DEFAULT,
       null,
       (/** @type {Error} */ error, /** @type {any} */ result) => {
@@ -17,7 +17,7 @@ describe("gioAsync", () => {
     );
 
     const dir = new GioFile(false);
-    gioAsync(dir, "make_directory",
+    GioAsync(dir, "make_directory",
       PRIORITY_DEFAULT,
       null,
       (/** @type {Error} */ error, /** @type {any} */ result) => {

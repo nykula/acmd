@@ -4,6 +4,14 @@ const { Class, EmptyArray, EmptyProps, NoString } = require("../Test/Test");
 const { PlaceService } = require("./PlaceService");
 
 describe("PlaceService", () => {
+  it("shortens string", () => {
+    const xs = ["foo", "bar", "baz", "qux"];
+    expect(PlaceService.minLength(xs, "foo")).toBe("f");
+    expect(PlaceService.minLength(xs, "bar")).toBe("bar");
+    expect(PlaceService.minLength(xs, "baz")).toBe("baz");
+    expect(PlaceService.minLength(xs, "qux")).toBe("q");
+  });
+
   it("mounts uuid", () => {
     /** @type {any} */
     const MountOperation = Class;
@@ -44,6 +52,12 @@ describe("PlaceService", () => {
     };
 
     /** @type {any} */
+    const GLib = {
+      UserDirectory: { N_DIRECTORIES: 0 },
+      get_home_dir: () => false,
+    };
+
+    /** @type {any} */
     const VolumeMonitor = {
       get: () => ({
         get_connected_drives: () => EmptyArray,
@@ -53,6 +67,7 @@ describe("PlaceService", () => {
 
     const placeService = new PlaceService(EmptyProps);
     placeService.File = File;
+    placeService.GLib = GLib;
     placeService.VolumeMonitor = VolumeMonitor;
     placeService.refresh();
 
@@ -84,6 +99,12 @@ describe("PlaceService", () => {
     };
 
     /** @type {any} */
+    const GLib = {
+      UserDirectory: { N_DIRECTORIES: 0 },
+      get_home_dir: () => false,
+    };
+
+    /** @type {any} */
     const VolumeMonitor = {
       get: () => ({
         get_connected_drives: () => [{
@@ -99,6 +120,7 @@ describe("PlaceService", () => {
 
     const placeService = new PlaceService(EmptyProps);
     placeService.File = File;
+    placeService.GLib = GLib;
     placeService.VolumeMonitor = VolumeMonitor;
     placeService.refresh();
 
@@ -137,6 +159,12 @@ describe("PlaceService", () => {
           get_attribute_as_string: () => "1024",
         }),
       }),
+    };
+
+    /** @type {any} */
+    const GLib = {
+      UserDirectory: { N_DIRECTORIES: 0 },
+      get_home_dir: () => false,
     };
 
     /** @type {any} */
@@ -185,6 +213,7 @@ describe("PlaceService", () => {
 
     const placeService = new PlaceService(EmptyProps);
     placeService.File = File;
+    placeService.GLib = GLib;
     placeService.VolumeMonitor = VolumeMonitor;
     placeService.refresh();
 
@@ -226,6 +255,12 @@ describe("PlaceService", () => {
     };
 
     /** @type {any} */
+    const GLib = {
+      UserDirectory: { N_DIRECTORIES: 0 },
+      get_home_dir: () => false,
+    };
+
+    /** @type {any} */
     const VolumeMonitor = {
       get: () => ({
         get_connected_drives: () => EmptyArray,
@@ -250,6 +285,7 @@ describe("PlaceService", () => {
 
     const placeService = new PlaceService(EmptyProps);
     placeService.File = File;
+    placeService.GLib = GLib;
     placeService.VolumeMonitor = VolumeMonitor;
     placeService.refresh();
 

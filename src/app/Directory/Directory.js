@@ -390,8 +390,8 @@ class Directory extends Component {
     };
 
     const widths = {
-      attr: 45,
       ext: 50,
+      mode: 45,
       mtime: 125,
       size: 55,
     };
