@@ -1,4 +1,3 @@
-print(__filename);
 const { Icon } = imports.gi.Gio;
 const {
   CellRenderer,
@@ -18,9 +17,11 @@ const { h } = require("../Gjs/GtkInferno");
 const { Stub } = require("../Gjs/Stub");
 
 /**
+ * GtkListStore with columns as a prop, and rows as children.
+ *
  * @typedef IStub
  * @property {Stub[]} children
- * @property {{ get_model(): ListStore, set_model(store: ListStore): void }} parentNode
+ * @property {{ model: ListStore }} parentNode
  *
  * @typedef IProps
  * @property {{ name: string, type?: any }[]} cols
@@ -29,6 +30,8 @@ const { Stub } = require("../Gjs/Stub");
  */
 class ListStoreComponent extends Component {
   /**
+   * Renders a column in a ComboBox or TreeView.
+   *
    * @param {any} widget
    * @param {{ on_toggled?: (row: number) => void, pack?: string, type?: any }} col
    * @param {number} i
@@ -96,22 +99,31 @@ class ListStoreComponent extends Component {
       this.ensureInit(row);
     }
 
-    this.store.parentNode.set_model(this.store);
+    this.store.parentNode.model = this.store;
   }
 
+  /**
+   * Lets parent render new rows again, if model unset by `clear`.
+   */
   componentDidUpdate() {
-    if (this.store && !this.store.parentNode.get_model()) {
-      this.store.parentNode.set_model(this.store);
+    if (this.store && !this.store.parentNode.model) {
+      this.store.parentNode.model = this.store;
     }
   }
 
+  /**
+   * Removes all rows before a major change. Unbinds the model from parent,
+   * to delay render until all new rows are added.
+   */
   clear() {
-    this.store.parentNode.set_model(/** @type {any} */ (null));
+    this.store.parentNode.model = (/** @type {any} */ (null));
     this.store.clear();
     this.store.children.splice(0);
   }
 
   /**
+   * Connects a stub row to a store iter.
+   *
    * @param {Stub} row
    */
   ensureInit(row) {
@@ -127,22 +139,14 @@ class ListStoreComponent extends Component {
 
     row.iter = this.store.append();
 
-    /**
-     * @param {string} name
-     * @param {any} value
-     */
-    const setAttribute = (name, value) => {
-      this.setValue(row.iter, name, value);
-    };
-
     /** @type {{ [key: string]: any }} */
     const values = row;
 
     for (const name of Object.keys(row)) {
-      setAttribute(name, values[name]);
+      this.setValue(row.iter, name, values[name]);
     }
 
-    row.setAttribute = setAttribute;
+    row.setAttribute = this.setValue.bind(this, row.iter);
   }
 
   /**
@@ -214,6 +218,8 @@ class ListStoreComponent extends Component {
   }
 
   /**
+   * Saves a reference to the ListStore created by GtkDom.
+   *
    * @param {any} store
    */
   ref(store) {
