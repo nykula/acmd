@@ -339,11 +339,6 @@ class PlaceService {
    */
   getSpecials(callback) {
     let paths = [this.GLib.get_home_dir()];
-    const count = this.GLib.UserDirectory.N_DIRECTORIES;
-
-    for (let i = 0; i < count; i++) {
-      paths.push(this.GLib.get_user_special_dir(i));
-    }
 
     paths = paths.filter(Boolean);
     map(paths, this.serializeSpecial, /** @type {any} */ (callback));
