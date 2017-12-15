@@ -1,127 +1,164 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Acme Commander</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
-        crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css?family=Ubuntu:400,700" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Acme Commander</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+    crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu:400,700" rel="stylesheet">
+  <link href="https://unpkg.com/loaders.css@0.1.2/loaders.min.css" rel="stylesheet">
+  <style id="App-style">
+    body {
+      background-color: #f8f8f8;
+      font-family: Ubuntu, sans-serif;
+    }
+
+    .container {
+      max-width: 840px;
+    }
+
+    @media (min-width: 992px) {
+      .container {
+        min-height: 100vh;
+      }
+    }
+
+    .container>* {
+      margin-bottom: 2rem;
+    }
+
+    .ball-pulse {
+      display: table;
+    }
+
+    .ball-pulse:not(:last-child) {
+      display: none;
+    }
+
+    .ball-pulse>div {
+      background-color: #007bff;
+    }
+  </style>
 </head>
 
 <body>
-    <style id="App-style">
-        body {
-            background-color: #f8f8f8;
-            font-family: Ubuntu, sans-serif;
-        }
+  <div class="App">
+    <style id="Floppy-style">
+      .Floppy {
+        background-color: #fff;
+        border: solid currentColor;
+        border-radius: 0.25em 1.25em 0.125em 0.125em;
+        border-width: 5.75em 1.25em 0.25em;
+        display: inline-block;
+        height: 13.75em;
+        position: relative;
+        width: 13em;
+      }
+
+      .Floppy:after {
+        background-color: currentColor;
+        border: solid #fff;
+        border-radius: 0 0 0.25em 0.25em;
+        border-width: 0.75em 1em 0.25em 4em;
+        content: "";
+        height: 4.5em;
+        left: 2em;
+        position: absolute;
+        top: -5.75em;
+        width: 7em;
+      }
     </style>
 
-    <div class="App">
-        <style id="Floppy-style">
-            .Floppy {
-                background-color: #fff;
-                border: solid currentColor;
-                border-radius: 0.25em 1.25em 0.125em 0.125em;
-                border-width: 5.75em 1.25em 0.25em;
-                display: inline-block;
-                height: 13.75em;
-                position: relative;
-                width: 13em;
-            }
+    <style id="Header-style">
+      .Header {
+        padding-bottom: 4em;
+        padding-top: 4em;
+        text-align: center;
+      }
 
-            .Floppy:after {
-                background-color: currentColor;
-                border: solid #fff;
-                border-radius: 0 0 0.25em 0.25em;
-                border-width: 0.75em 1em 0.25em 4em;
-                content: "";
-                height: 4.5em;
-                left: 2em;
-                position: absolute;
-                top: -5.75em;
-                width: 7em;
-            }
-        </style>
+      @media (min-width: 992px) {
+        .Header {
+          align-items: center;
+          display: flex;
+          text-align: left;
+        }
+      }
 
-        <style id="Header-style">
-            .Header {
-                max-width: 840px;
-                padding-bottom: 4em;
-                padding-top: 4em;
-                text-align: center;
-            }
+      .Header-floppy {
+        font-size: 0.25em;
+        margin-bottom: 1.5em;
+      }
 
-            @media (min-width: 992px) {
-                .Header {
-                    align-items: center;
-                    display: flex;
-                    min-height: 100vh;
-                    text-align: left;
-                }
-            }
+      @media (min-width: 992px) {
+        .Header-floppy {
+          font-size: 18px;
+          order: 1;
+          margin-bottom: 0;
+          padding-top: 6px;
+          width: 234px;
+        }
+      }
 
-            .Header-floppy {
-                font-size: 0.25em;
-                margin-bottom: 1.5em;
-            }
+      .Header-content {
+        flex: 1;
+      }
 
-            @media (min-width: 992px) {
-                .Header-floppy {
-                    font-size: 18px;
-                    order: 1;
-                    margin-bottom: 0;
-                    padding-top: 6px;
-                    width: 234px;
-                }
-            }
+      .Header-content>* {
+        margin-left: auto;
+        margin-right: auto;
+      }
 
-            .Header-content {
-                flex: 1;
-            }
+      @media (min-width: 992px) {
+        .Header-content>* {
+          margin-left: 0;
+        }
+      }
 
-            .Header-content>* {
-                margin-left: auto;
-                margin-right: auto;
-            }
+      .Header h1 {
+        font-weight: 700;
+        max-width: 8em;
+      }
 
-            @media (min-width: 992px) {
-                .Header-content>* {
-                    margin-left: 0;
-                }
-            }
+      @media (min-width: 992px) {
+        .Header h1 {
+          font-size: 72px;
+          margin-bottom: 24px;
+        }
+      }
 
-            .Header h1 {
-                font-weight: 700;
-                max-width: 8em;
-            }
+      .Header .lead {
+        max-width: 11em;
+      }
+    </style>
 
-            @media (min-width: 992px) {
-                .Header h1 {
-                    font-size: 72px;
-                    margin-bottom: 24px;
-                }
-            }
+    <header class="Header container">
+      <div class="Header-floppy">
+        <div class="Floppy"></div>
+      </div>
 
-            .Header .lead {
-                max-width: 11em;
-            }
-        </style>
+      <div class="Header-content">
+        <h1>Acme Commander</h1>
+        <p class="lead">Orthodox file manager for modern Linux desktop</p>
+      </div>
+    </header>
 
-        <header class="Header container">
-            <div class="Header-floppy">
-                <div class="Floppy"></div>
-            </div>
+    <section class="Releases container">
+      <h2>Releases</h2>
 
-            <div class="Header-content">
-                <h1>Acme Commander</h1>
-                <p class="lead">Orthodox file manager for modern Linux desktop</p>
-            </div>
-        </header>
-    </div>
+      <a class="ball-pulse" href="https://github.com/makepost/acme-commander/releases">
+        <div></div>
+        <div></div>
+        <div></div>
+      </a>
+    </section>
+  </div>
 
-    <script src="https://unpkg.com/github-api/dist/GitHub.bundle.min.js"></script>
+  <script src="https://unpkg.com/github-api/dist/GitHub.bundle.min.js"></script>
+  <script src="https://unpkg.com/remarkable@1.7.1/dist/remarkable.min.js"></script>
+  <script src="App.js"></script>
+  <script>new App("https://github.com/makepost/acme-commander").render(document);</script>
 </body>
 
 </html>
