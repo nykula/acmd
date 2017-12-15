@@ -30,10 +30,12 @@ class CtxMenuHandler extends Component {
   }
 
   /**
-   * @param {MenuItem} menuItem
+   * @param {MenuItem | null} menuItem
    */
   ref(menuItem) {
-    menuItem.connect("activate", this.handleActivate);
+    if (menuItem) {
+      menuItem.connect("activate", this.handleActivate);
+    }
   }
 
   render() {
