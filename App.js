@@ -40,6 +40,25 @@ App.prototype.$ = document.querySelector.bind(document);
 /** @type {typeof console.log} */
 App.prototype.debug = console.log.bind(console);
 
+App.prototype.getScreenshot = function() {
+  this.repo.getReadme(undefined, true)
+    .then((/** @type {any} */ res) => {
+      const matches = /http[^\)]+?\.(jpg|png)/.exec(res.data);
+
+      if (!matches) {
+        return;
+      }
+
+      const img = e("img");
+      img.className = "img-fluid";
+      img.src = matches[0];
+
+      const section = this.$(".Screen");
+      section.appendChild(img);
+    })
+    .catch(this.debug);
+};
+
 App.prototype.listPulse = function() {
   /**
    * @typedef Resource
@@ -203,6 +222,7 @@ App.prototype.listReleases = function() {
  */
 App.prototype.render = function(parent) {
   this.$ = parent.querySelector.bind(parent);
+  this.getScreenshot();
   this.listPulse();
   this.listReleases();
 };
