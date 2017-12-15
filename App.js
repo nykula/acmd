@@ -123,6 +123,14 @@ App.prototype.listPulse = function() {
         .forEach(list.appendChild.bind(list));
 
       section.appendChild(list);
+
+      const action = Action({
+        className: "btn-outline-danger",
+        href: this.baseUrl + "/issues",
+        textContent: "Report issue",
+      });
+
+      section.appendChild(action);
     })
     .catch(this.debug);
 };
