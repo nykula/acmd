@@ -1,6 +1,6 @@
 {
   "name": "acme-commander",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Twin-panel file manager",
   "bin": "bin/acme-commander.sh",
   "repository": "https://github.com/makepost/acme-commander",
