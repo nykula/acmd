@@ -25,7 +25,11 @@
       }
     }
 
-    .container>* {
+    section {
+      padding-bottom: 1em;
+    }
+
+    section>* {
       margin-bottom: 2rem;
     }
 
@@ -144,15 +148,37 @@
       </div>
     </header>
 
-    <section class="Releases container">
-      <h2>Releases</h2>
+    <div class="container">
+      <div class="row">
+        <section class="Releases col-12 col-md">
+          <h2>Releases</h2>
 
-      <a class="ball-pulse" href="https://github.com/makepost/acme-commander/releases">
-        <div></div>
-        <div></div>
-        <div></div>
-      </a>
-    </section>
+          <a class="ball-pulse" href="https://github.com/makepost/acme-commander/releases">
+            <div></div>
+            <div></div>
+            <div></div>
+          </a>
+        </section>
+
+        <style id="Pulse-style">
+          @media (min-width: 992px) {
+            .Pulse {
+              left: 70px;
+            }
+          }
+        </style>
+
+        <section class="Pulse col-12 col-md">
+          <h2>Pulse</h2>
+
+          <a class="ball-pulse" href="https://github.com/makepost/acme-commander/issues">
+            <div></div>
+            <div></div>
+            <div></div>
+          </a>
+        </section>
+      </div>
+    </div>
   </div>
 
   <script src="https://unpkg.com/github-api/dist/GitHub.bundle.min.js"></script>
