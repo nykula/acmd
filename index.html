@@ -91,6 +91,7 @@
         .Header {
           align-items: center;
           display: flex;
+          flex-wrap: wrap;
           text-align: left;
         }
       }
@@ -103,7 +104,6 @@
       @media (min-width: 992px) {
         .Header-floppy {
           font-size: 18px;
-          order: 1;
           margin-bottom: 0;
           padding-top: 6px;
           width: 234px;
@@ -112,6 +112,7 @@
 
       .Header-content {
         flex: 1;
+        order: -1;
       }
 
       .Header-content>* {
@@ -151,6 +152,12 @@
         <h1>Acme Commander</h1>
         <p class="lead">Orthodox file manager for modern Linux desktop</p>
       </div>
+
+      <pre class="bg-primary text-white p-4 w-100"># Ubuntu 17.10 or newer
+sudo apt update &amp;&amp; sudo apt install gjs nodejs python-gtk2
+echo prefix=~/.local >> ~/.npmrc
+npm i -g acme-commander
+acme-commander</pre>
     </header>
 
     <div class="container">
