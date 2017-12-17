@@ -84,7 +84,7 @@ TreeView.prototype.setCols = function(cols) {
   this.setCols = (/** @type {Col[]} */ nextCols) => {
     const tvCols = this.get_columns();
     for (let i = 0; i < nextCols.length; i++) {
-      tvCols[i].title = nextCols[i].title;
+      tvCols[i].title = nextCols[i].title || "";
     }
   };
 
