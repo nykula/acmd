@@ -67,7 +67,7 @@ class Directory extends Component {
     this.cols = [];
 
     /**
-     * @type {{ [key: number]: { ctrl?: () => void, default?: () => void } }}
+     * @type {{ [key: number]: { ctrl?: () => void, none?: () => void } }}
      */
     this.handlers = {};
 
@@ -324,8 +324,8 @@ class Directory extends Component {
       default:
         const handler = this.handlers[ev.which];
 
-        if (handler && !ev.ctrlKey && handler.default) {
-          handler.default();
+        if (handler && !ev.ctrlKey && handler.none) {
+          handler.none();
           return true;
         }
 
