@@ -24,9 +24,13 @@ class ToolbarJobs extends Component {
   }
 
   /**
-   * @param {Button} button
+   * @param {Button | null} button
    */
   useButton(button) {
+    if (!button) {
+      return;
+    }
+
     const { list } = /** @type {JobService} */ (this.props.jobService);
     const { set } = /** @type {RefService} */ (this.props.refService);
 

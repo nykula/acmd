@@ -23,9 +23,13 @@ class ActionBarItem extends Component {
   }
 
   /**
-   * @param {Button} button
+   * @param {Button | null} button
    */
   ref(button) {
+    if (!button) {
+      return;
+    }
+
     const { get } = /** @type {ActionService} */ (this.props.actionService);
     button.connect("pressed", get(this.props.action.id).handler);
   }

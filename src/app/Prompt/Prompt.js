@@ -36,10 +36,12 @@ class Prompt extends Component {
   }
 
   /**
-   * @param {Entry} entry
+   * @param {Entry | null} entry
    */
   ref(entry) {
-    entry.connect("activate", this.handleActivate);
+    if (entry) {
+      entry.connect("activate", this.handleActivate);
+    }
   }
 
   render() {

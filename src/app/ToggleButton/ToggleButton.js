@@ -31,9 +31,13 @@ class ToggleButton extends Component {
   }
 
   /**
-   * @param {Button} node
+   * @param {Button | null} node
    */
   ref(node) {
+    if (!node) {
+      return;
+    }
+
     this.node = node;
     this.resetActive();
 

@@ -58,7 +58,7 @@ class Mount extends Component {
   }
 
   /**
-   * @param {ComboBox} comboBox
+   * @param {ComboBox | null} comboBox
    */
   refComboBox(comboBox) {
     if (!comboBox) {
@@ -76,17 +76,21 @@ class Mount extends Component {
   }
 
   /**
-   * @param {Button} button
+   * @param {Button | null} button
    */
   refLevelUp(button) {
-    button.connect("clicked", this.handleLevelUp);
+    if (button) {
+      button.connect("clicked", this.handleLevelUp);
+    }
   }
 
   /**
-   * @param {Button} button
+   * @param {Button | null} button
    */
   refRoot(button) {
-    button.connect("clicked", this.handleRoot);
+    if (button) {
+      button.connect("clicked", this.handleRoot);
+    }
   }
 
   render() {

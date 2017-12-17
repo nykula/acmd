@@ -53,9 +53,13 @@ class ActionBarRm extends Component {
   }
 
   /**
-   * @param {Button} node
+   * @param {Button | null} node
    */
   ref(node) {
+    if (!node) {
+      return;
+    }
+
     node.connect("drag-data-received", this.handleDrop);
     node.connect("pressed", this.handlePressed);
     node.drag_dest_set(DestDefaults.ALL, [], DragAction.MOVE);
