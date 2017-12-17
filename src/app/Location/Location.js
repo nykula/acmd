@@ -84,7 +84,10 @@ class Location extends Component {
 
   render() {
     const { location } = this.tab();
-    const label = location.replace(/\/?$/, "/*").replace(/^file:\/\//, "");
+    const label = decodeURI(location)
+      .replace(/\/?$/, "/*")
+      .replace(/^file:\/\//, "");
+
     return (
       h(ListBox, { ref: this.refList }, [
         h(ListBoxRow, { ref: this.refRow }, [

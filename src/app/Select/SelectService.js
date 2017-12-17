@@ -104,7 +104,7 @@ class SelectService {
    * Joins URIs in a single string, for display in a dialog.
    */
   formatUris() {
-    const uris = this.getUris();
+    const uris = this.getUris().map(decodeURI);
 
     return uris.length > 1 ? "\n" + uris.join("\n") + "\n" : uris[0] + " ";
   }

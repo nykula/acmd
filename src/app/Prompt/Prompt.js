@@ -55,7 +55,7 @@ class Prompt extends Component {
         h(Box, { border_width: 4 }),
         h(Label, {
           ellipsize: EllipsizeMode.MIDDLE,
-          label: location.replace(/^file:\/\//, "") + "$",
+          label: decodeURI(location).replace(/^file:\/\//, "") + "$",
         }),
         h(Box, { border_width: 4 }),
         h(Entry, { expand: true, ref: this.ref }),

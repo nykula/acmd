@@ -37,7 +37,7 @@ class OppositeService {
 
       jobService.run(
         {
-          destUri: finalDestUri,
+          destUri: encodeURI(finalDestUri),
           type: "cp",
           uris,
         },
@@ -58,7 +58,7 @@ class OppositeService {
 
       jobService.run(
         {
-          destUri: finalDestUri,
+          destUri: encodeURI(finalDestUri),
           type: "mv",
           uris,
         },
@@ -95,7 +95,7 @@ class OppositeService {
   getUris() {
     const { formatUris, getUris } = this.props.selectService;
 
-    const destUri = this.getDest();
+    const destUri = decodeURI(this.getDest());
     const uris = getUris();
     const urisStr = formatUris();
 
