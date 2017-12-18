@@ -5,32 +5,23 @@ describe("PlacesEntry", () => {
   it("renders entry without crashing", () => {
     /** @type {any} */
     const panelService = {
-      getActiveMountUri: () => "file:///",
+      getActiveTab: () => 0,
+    };
+
+    const place = {
+      canUnmount: false,
+      filesystemFree: 0,
+      filesystemSize: 0,
+      icon: "computer",
+      iconType: "ICON_NAME",
+      name: "/",
+      rootUri: "file:///",
+      uuid: "",
     };
 
     /** @type {any} */
     const placeService = {
-      entities: {
-        "/": {
-          filesystemFree: 0,
-          filesystemSize: 0,
-          icon: "computer",
-          iconType: "ICON_NAME",
-          name: "/",
-          rootUri: "file:///",
-          uuid: "",
-        },
-
-        "Music": {
-          filesystemFree: 0,
-          filesystemSize: 0,
-          icon: "media-optical",
-          iconType: "ICON_NAME",
-          name: "Music",
-          rootUri: "file:///media/Music",
-          uuid: "",
-        },
-      },
+      getActive: () => place,
 
       shortNames: {
         "/": "/",
@@ -39,16 +30,25 @@ describe("PlacesEntry", () => {
     };
 
     new PlacesEntry({
-      name: "/",
       panelId: 0,
       panelService,
+      place,
       placeService,
     }).render();
 
     new PlacesEntry({
-      name: "Music",
       panelId: 0,
       panelService,
+      place: {
+        canUnmount: true,
+        filesystemFree: 0,
+        filesystemSize: 0,
+        icon: "media-optical",
+        iconType: "ICON_NAME",
+        name: "Music",
+        rootUri: "file:///media/Music",
+        uuid: "",
+      },
       placeService,
     }).render();
   });

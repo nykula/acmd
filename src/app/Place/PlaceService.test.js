@@ -71,9 +71,8 @@ describe("PlaceService", () => {
     placeService.VolumeMonitor = VolumeMonitor;
     placeService.refresh();
 
-    expect(toJS(placeService.names)).toEqual(["/"]);
-
-    expect(toJS(placeService.entities["/"])).toEqual({
+    expect(toJS(placeService.root)).toEqual({
+      canUnmount: false,
       filesystemFree: 1024,
       filesystemSize: 1024,
       icon: "computer",
@@ -94,6 +93,7 @@ describe("PlaceService", () => {
 
         query_filesystem_info_finish: () => ({
           get_attribute_as_string: () => "1024",
+          get_attribute_boolean: () => false,
         }),
       }),
     };
@@ -124,9 +124,8 @@ describe("PlaceService", () => {
     placeService.VolumeMonitor = VolumeMonitor;
     placeService.refresh();
 
-    expect(toJS(placeService.names)).toEqual(["/", "random-uuid"]);
-
-    expect(toJS(placeService.entities["/"])).toEqual({
+    expect(toJS(placeService.root)).toEqual({
+      canUnmount: false,
       filesystemFree: 1024,
       filesystemSize: 1024,
       icon: "computer",
@@ -136,7 +135,8 @@ describe("PlaceService", () => {
       uuid: null,
     });
 
-    expect(toJS(placeService.entities["random-uuid"])).toEqual({
+    expect(toJS(placeService.drives.find(x => x.name === "random-uuid"))).toEqual({
+      canUnmount: false,
       filesystemFree: 0,
       filesystemSize: 0,
       icon: "drive-harddisk",
@@ -205,8 +205,13 @@ describe("PlaceService", () => {
 
             query_filesystem_info_finish: () => ({
               get_attribute_as_string: () => "23423",
+              get_attribute_boolean: () => false,
+              get_icon: () => ({
+                to_string: () => ". GThemedIcon drive-harddisk-usb drive-harddisk drive",
+              }),
             }),
           }),
+          get_uuid: () => "random-uuid",
         }],
       }),
     };
@@ -217,9 +222,8 @@ describe("PlaceService", () => {
     placeService.VolumeMonitor = VolumeMonitor;
     placeService.refresh();
 
-    expect(toJS(placeService.names)).toEqual(["/", "System"]);
-
-    expect(toJS(placeService.entities["/"])).toEqual({
+    expect(toJS(placeService.root)).toEqual({
+      canUnmount: false,
       filesystemFree: 1024,
       filesystemSize: 1024,
       icon: "computer",
@@ -229,14 +233,15 @@ describe("PlaceService", () => {
       uuid: null,
     });
 
-    expect(toJS(placeService.entities.System)).toEqual({
+    expect(toJS(placeService.mounts.find(x => x.name === "System"))).toEqual({
+      canUnmount: false,
       filesystemFree: 23423,
       filesystemSize: 23423,
       icon: ". GThemedIcon drive-harddisk-usb drive-harddisk drive",
       iconType: "GICON",
       name: "System",
       rootUri: "file:///media/System",
-      uuid: null,
+      uuid: "random-uuid",
     });
   });
 
@@ -265,9 +270,6 @@ describe("PlaceService", () => {
       get: () => ({
         get_connected_drives: () => EmptyArray,
         get_mounts: () => [{
-          get_icon: () => ({
-            to_string: () => ". GThemedIcon folder-remote folder",
-          }),
           get_name: () => "foo on bar.example.com",
           get_root: () => ({
             get_uri: () => "sftp:///foo@bar.example.com/",
@@ -277,8 +279,13 @@ describe("PlaceService", () => {
 
             query_filesystem_info_finish: () => ({
               get_attribute_as_string: () => false,
+              get_attribute_boolean: () => false,
+              get_icon: () => ({
+                to_string: () => ". GThemedIcon folder-remote folder",
+              }),
             }),
           }),
+          get_uuid: () => "random-uuid",
         }],
       }),
     };
@@ -289,7 +296,8 @@ describe("PlaceService", () => {
     placeService.VolumeMonitor = VolumeMonitor;
     placeService.refresh();
 
-    expect(placeService.entities["/"]).toEqual({
+    expect(placeService.root).toEqual({
+      canUnmount: false,
       filesystemFree: 1024,
       filesystemSize: 1024,
       icon: "computer",
@@ -299,80 +307,15 @@ describe("PlaceService", () => {
       uuid: null,
     });
 
-    expect(placeService.entities["foo on bar.example.com"]).toEqual({
+    expect(placeService.mounts.find(x => x.name === "foo on bar.example.com")).toEqual({
+      canUnmount: false,
       filesystemFree: 0,
       filesystemSize: 0,
       icon: ". GThemedIcon folder-remote folder",
       iconType: "GICON",
       name: "foo on bar.example.com",
       rootUri: "sftp:///foo@bar.example.com/",
-      uuid: null,
-    });
-  });
-
-  it("saves places, ordered by name", () => {
-    const placeService = new PlaceService(EmptyProps);
-
-    placeService.set([
-      {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "computer",
-        iconType: "ICON_NAME",
-        name: "/",
-        rootUri: "file:///",
-        uuid: NoString,
-      },
-      {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "drive-harddisk",
-        iconType: "ICON_NAME",
-        name: "abc",
-        rootUri: NoString,
-        uuid: NoString,
-      },
-      {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "drive-harddisk",
-        iconType: "ICON_NAME",
-        name: "System",
-        rootUri: "file:///media/System",
-        uuid: NoString,
-      },
-    ]);
-
-    expect(toJS(placeService.names)).toEqual(["/", "System", "abc"]);
-
-    expect(toJS(placeService.entities)).toEqual({
-      "/": {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "computer",
-        iconType: "ICON_NAME",
-        name: "/",
-        rootUri: "file:///",
-        uuid: null,
-      },
-      System: {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "drive-harddisk",
-        iconType: "ICON_NAME",
-        name: "System",
-        rootUri: "file:///media/System",
-        uuid: null,
-      },
-      abc: {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "drive-harddisk",
-        iconType: "ICON_NAME",
-        name: "abc",
-        rootUri: null,
-        uuid: null,
-      },
+      uuid: "random-uuid",
     });
   });
 

@@ -126,21 +126,6 @@ class PanelService {
   }
 
   /**
-   * @param {number} panelId
-   */
-  getActiveMountUri(panelId) {
-    const files = this.getActiveTab(panelId).files;
-
-    for (let i = 0; i < files.length; i++) {
-      if (files[i].name === ".") {
-        return files[i].mountUri;
-      }
-    }
-
-    return "file:///";
-  }
-
-  /**
    * Returns active tab in panel.
    *
    * @param {number=} panelId
@@ -379,9 +364,14 @@ class PanelService {
    * @param {number} panelId
    */
   root(panelId) {
-    const tabId = this.entities[panelId].activeTabId;
-    const nextLocation = this.getActiveMountUri(panelId);
-    this.ls(nextLocation, tabId);
+    const { getActive } =
+      /** @type {PlaceService} */ (this.props.placeService);
+
+    const tabId = this.getActiveTabId(panelId);
+    const { location } = this.getActiveTab(panelId);
+    const { rootUri } = getActive(location);
+
+    this.ls(/** @type {string} */(rootUri), tabId);
   }
 
   /**

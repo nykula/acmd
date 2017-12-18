@@ -12,9 +12,9 @@ const {
 } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const { PRIORITY_DEFAULT } = GLib;
-const { map, series } = require("async");
+const { map, parallel } = require("async");
 const uniqBy = require("lodash/uniqBy");
-const { action, computed, extendObservable } = require("mobx");
+const { computed, extendObservable, runInAction } = require("mobx");
 const Uri = require("url-parse");
 const { Place } = require("../../domain/Place/Place");
 const { GioAsync } = require("../Gio/GioAsync");
@@ -49,44 +49,86 @@ class PlaceService {
    * @param {{ refService: RefService }} props
    */
   constructor(props) {
-    /** @type {{ [name: string]: Place }} */
-    this.entities = {
-      "/": {
-        filesystemFree: 0,
-        filesystemSize: 0,
-        icon: "computer",
-        iconType: "ICON_NAME",
-        name: "/",
-        rootUri: "file:///",
-        uuid: null,
-      },
-    };
+    /** @type {Place[]} */
+    this.drives = [];
 
     this.File = File;
 
     this.GLib = GLib;
 
+    /** @type {Place | undefined} */
+    this.home = undefined;
+
     this.MountOperation = MountOperation;
 
-    this.names = ["/"];
+    /** @type {Place[]} */
+    this.mounts = [];
 
-    this.placeAttributes = "filesystem::*";
+    /** @type {Place[]} */
+    this.places = [];
 
     this.props = props;
 
+    /** @type {Place} */
+    this.root = {
+      canUnmount: false,
+      filesystemFree: 0,
+      filesystemSize: 0,
+      icon: "computer",
+      iconType: "ICON_NAME",
+      name: "/",
+      rootUri: "file:///",
+      uuid: null,
+    };
+
     /** @type {{ [name: string]: string }} */
     this.shortNames = {};
+
+    /** @type {Place[]} */
+    this.specials = [];
+
+    /** @type {Place | undefined} */
+    this.trash = undefined;
 
     this.VolumeMonitor = VolumeMonitor;
 
     autoBind(this, PlaceService.prototype, __filename);
 
     extendObservable(this, {
-      entities: this.entities,
-      names: this.names,
-      set: action(this.set),
+      drives: this.drives,
+      home: this.home,
+      mounts: this.mounts,
+      places: computed(this.getPlaces),
+      root: this.root,
       shortNames: computed(this.getShortNames),
+      specials: this.specials,
+      trash: this.trash,
     });
+  }
+
+  /**
+   * Returns the place a URI belongs to.
+   *
+   * @param {string} uri
+   */
+  getActive(uri) {
+    const places = this.places.filter(place => {
+      const root = place.rootUri;
+      return root && root.length <= uri.length && uri.indexOf(root) === 0;
+    });
+
+    if (!places.length) {
+      return this.root;
+    }
+
+    places.sort((a, b) => {
+      const aUri = /** @type {string} */ (a.rootUri);
+      const bUri = /** @type {string} */ (b.rootUri);
+
+      return bUri.length - aUri.length;
+    });
+
+    return places[0];
   }
 
   /**
@@ -170,51 +212,22 @@ class PlaceService {
    * Gets a places list from system.
    */
   refresh() {
-    /** @type {Place[]} */
-    let places = [];
-
-    series(
+    parallel(
       [
-        callback =>
-          this.getSpecials((error, specials) => {
-            places = places.concat(specials);
-            callback(error);
-          }),
-
-        callback =>
-          this.getDrives((error, drives) => {
-            places = places.concat(drives);
-            callback(error);
-          }),
-
-        callback =>
-          this.getMounts((error, mounts) => {
-            places = places.concat(mounts);
-            places = uniqBy(places, place => place.uuid || place.name);
-            callback(error);
-          }),
-
-        callback =>
-          this.getFilesystem((error, fs) => {
-            places.unshift(fs);
-            callback(error);
-          }),
+        this.refreshDrives,
+        this.refreshHome,
+        this.refreshMounts,
+        this.refreshRoot,
+        this.refreshSpecials,
+        this.refreshTrash,
       ],
-      _ => this.set(places),
+
+      (error) => {
+        if (error) {
+          print(error);
+        }
+      },
     );
-  }
-
-  /**
-   * Stores given places.
-   *
-   * @param {Place[]} places
-   */
-  set(places) {
-    this.names = places.map(x => x.name).sort();
-
-    for (const place of places) {
-      this.entities[place.name] = place;
-    }
   }
 
   /**
@@ -234,90 +247,82 @@ class PlaceService {
 
   /**
    * @private
-   * @param {(error: Error | undefined, places: Place[]) => void} callback
+   * @param {File} file
+   * @param {(error?: Error, mount?: Mount) => void} callback
    */
-  getDrives(callback) {
-    const gVolMon = this.VolumeMonitor.get();
+  findEnclosingMount(file, callback) {
+    GioAsync.ReadyCallback(
+      readyCallback => file.find_enclosing_mount_async(
+        PRIORITY_DEFAULT,
+        null,
+        readyCallback,
+      ),
 
-    /** @type {Volume[]} */
-    const gVolumes = [];
+      result => file.find_enclosing_mount_finish(result),
 
-    for (const gDrive of gVolMon.get_connected_drives()) {
-      for (const gVolume of gDrive.get_volumes()) {
-        gVolumes.push(gVolume);
+      (error, mount) => {
+        if (!mount && error.toString().indexOf("Gio.IOErrorEnum") === 0) {
+          callback();
+        } else {
+          callback(error, mount);
+        }
+      },
+    );
+  }
+
+  /**
+   * @private
+   * @param {FileInfo} info
+   */
+  getFilesystemFree(info) {
+    return Number(info.get_attribute_as_string("filesystem::free"));
+  }
+
+  /**
+   * @private
+   * @param {FileInfo} info
+   */
+  getFilesystemSize(info) {
+    return Number(info.get_attribute_as_string("filesystem::size"));
+  }
+
+  /**
+   * @private
+   */
+  getPlaces() {
+    /** @type {Place[]} */
+    const places = [];
+
+    for (const drive of this.drives) {
+      if (!drive.rootUri) {
+        places.push(drive);
       }
     }
 
-    map(
-      gVolumes,
-      (gVolume, volumeCallback) => {
-        const label = gVolume.get_identifier("label");
-        const uuid = gVolume.get_identifier("uuid");
-        const gMount = gVolume.get_mount();
+    for (const mount of this.mounts) {
+      places.push(mount);
+    }
 
-        if (gMount) {
-          this.serializeMount(gMount, volumeCallback);
-        } else {
-          volumeCallback(undefined, {
-            filesystemFree: 0,
-            filesystemSize: 0,
-            icon: "drive-harddisk",
-            iconType: "ICON_NAME",
-            name: label || uuid,
-            rootUri: null,
-            uuid,
-          });
-        }
-      },
-      /** @type {any} */ (callback),
-    );
-  }
+    places.sort((a, b) => a.name.localeCompare(b.name));
 
-  /**
-   * @private
-   * @param {(error: Error | undefined, place: Place) => void} callback
-   */
-  getFilesystem(callback) {
-    GioAsync(
-      this.File.new_for_uri("file:///"),
-      "query_filesystem_info",
-      this.placeAttributes,
-      PRIORITY_DEFAULT,
-      null,
-      (/** @type {Error} */ error, /** @type {FileInfo} */ rootInfo) => {
-        callback(error, {
-          filesystemFree: Number(
-            rootInfo.get_attribute_as_string("filesystem::free"),
-          ),
-          filesystemSize: Number(
-            rootInfo.get_attribute_as_string("filesystem::size"),
-          ),
-          icon: "computer",
-          iconType: "ICON_NAME",
-          name: "/",
-          rootUri: "file:///",
-          uuid: null,
-        });
-      },
-    );
-  }
+    if (this.home) {
+      places.unshift(this.home);
+    }
 
-  /**
-   * @private
-   * @param {(error: Error | undefined, places: Place[]) => void} callback
-   */
-  getMounts(callback) {
-    const gVolMon = this.VolumeMonitor.get();
-    const mounts = gVolMon.get_mounts();
+    if (this.trash) {
+      places.push(this.trash);
+    }
 
-    map(mounts, this.serializeMount, /** @type {any} */ (callback));
+    places.push(this.root);
+
+    return places;
   }
 
   /**
    * @private
    */
   getShortNames() {
-    const places = this.names.map(x => this.entities[x]);
+    const places = this.places;
 
     /** @type {{ [name: string]: string }} */
     const shortNames = {};
@@ -335,78 +340,302 @@ class PlaceService {
 
   /**
    * @private
-   * @param {(error: Error | undefined, places: Place[]) => void} callback
+   * @param {File} file
+   * @param {(error?: Error, info?: FileInfo) => void} callback
    */
-  getSpecials(callback) {
-    let paths = [this.GLib.get_home_dir()];
+  queryFileInfo(file, callback) {
+    GioAsync.ReadyCallback(
+      readyCallback => file.query_info_async(
+        "standard::*",
+        FileQueryInfoFlags.NONE,
+        PRIORITY_DEFAULT,
+        null,
+        readyCallback,
+      ),
 
-    paths = paths.filter(Boolean);
-    map(paths, this.serializeSpecial, /** @type {any} */ (callback));
+      result => file.query_info_finish(result),
+
+      callback,
+    );
   }
 
   /**
    * @private
-   * @param {Mount} gMount
-   * @param {(error: Error, place: Place) => void} callback
+   * @param {File} file
+   * @param {(error?: Error, info?: FileInfo) => void} callback
    */
-  serializeMount(gMount, callback) {
-    const root = gMount.get_root();
+  queryFilesystemInfo(file, callback) {
+    GioAsync.ReadyCallback(
+      readyCallback => file.query_filesystem_info_async(
+        "filesystem::*,mountable::*",
+        PRIORITY_DEFAULT,
+        null,
+        readyCallback,
+      ),
 
-    GioAsync(
-      root,
-      "query_filesystem_info",
-      this.placeAttributes,
-      PRIORITY_DEFAULT,
-      null,
-      (/** @type {Error} */ error, /** @type {FileInfo} */ rootInfo) => {
+      (result) => file.query_filesystem_info_finish(result),
+
+      callback,
+    );
+  }
+
+  /**
+   * @private
+   * @param {(error: Error | undefined, places: Place[]) => void} callback
+   */
+  refreshDrives(callback) {
+    const gVolMon = this.VolumeMonitor.get();
+
+    /** @type {Volume[]} */
+    const volumes = [];
+
+    for (const drive of gVolMon.get_connected_drives()) {
+      for (const volume of drive.get_volumes()) {
+        volumes.push(volume);
+      }
+    }
+
+    map(
+      volumes,
+
+      (volume, next) => {
+        const label = volume.get_identifier("label");
+        const uuid = volume.get_identifier("uuid");
+        const gMount = volume.get_mount();
+
         /** @type {Place} */
         const place = {
-          filesystemFree: Number(
-            rootInfo.get_attribute_as_string("filesystem::free"),
-          ),
-          filesystemSize: Number(
-            rootInfo.get_attribute_as_string("filesystem::size"),
-          ),
-          icon: gMount.get_icon().to_string(),
-          iconType: "GICON",
-          name: gMount.get_name(),
-          rootUri: root.get_uri(),
-          uuid: null,
+          canUnmount: !!gMount,
+          filesystemFree: 0,
+          filesystemSize: 0,
+          icon: "drive-harddisk",
+          iconType: "ICON_NAME",
+          name: label || uuid,
+          rootUri: gMount ? gMount.get_root().get_uri() : null,
+          uuid,
         };
 
-        callback(error, place);
+        next(undefined, place);
+      },
+
+      (error, places) => {
+        if (!places) {
+          callback(error);
+          return;
+        }
+
+        runInAction(() => {
+          this.drives = places;
+        });
+
+        callback();
       },
     );
   }
 
   /**
    * @private
-   * @param {string} path
-   * @param {(error: Error, place: Place) => void} callback
+   * @param {File} file
+   * @param {(error?: Error, place?: Place) => void} callback
    */
-  serializeSpecial(path, callback) {
-    const file = this.File.new_for_path(path);
+  refreshFile(file, callback) {
+    parallel(
+      [
+        next => this.findEnclosingMount(file, next),
+        next => this.queryFileInfo(file, next),
+        next => this.queryFilesystemInfo(file, next),
+      ],
 
-    file.query_info_async(
-      "standard::*",
-      FileQueryInfoFlags.NONE,
-      PRIORITY_DEFAULT,
-      null,
-      GioAsync.ReadyCallback(
-        result => file.query_info_finish(result),
-        (error, /** @type {FileInfo} */ info) => {
-          callback(error, {
-            filesystemFree: 0,
-            filesystemSize: 0,
+      (error, results) => {
+        if (error) {
+          callback(error);
+          return;
+        }
+
+        const [mount, info, fsInfo] =
+          /** @type {[Mount, FileInfo, FileInfo]} */ (results);
+
+        callback(undefined, {
+          canUnmount: false,
+          filesystemFree: this.getFilesystemFree(fsInfo),
+          filesystemSize: this.getFilesystemSize(fsInfo),
+          icon: GioIcon.stringify(info.get_icon()) || "folder",
+          iconType: "GICON",
+          name: info.get_display_name(),
+          rootUri: mount ? mount.get_root().get_uri() : file.get_uri(),
+          uuid: mount ? mount.get_uuid() : null,
+        });
+      },
+    );
+  }
+
+  /**
+   * @private
+   * @param {(error?: Error) => void} callback
+   */
+  refreshHome(callback) {
+    const path = this.GLib.get_home_dir();
+
+    if (!path) {
+      callback();
+      return;
+    }
+
+    const file = File.new_for_path(path);
+
+    this.refreshFile(file, (error, place) => {
+      if (!place) {
+        callback(error);
+        return;
+      }
+
+      runInAction(() => {
+        this.home = place;
+      });
+
+      callback();
+    });
+  }
+
+  /**
+   * @private
+   * @param {(error?: Error) => void} callback
+   */
+  refreshMounts(callback) {
+    const gVolMon = this.VolumeMonitor.get();
+    const mounts = gVolMon.get_mounts();
+
+    map(
+      mounts,
+
+      (mount, next) => {
+        const root = mount.get_root();
+
+        this.queryFilesystemInfo(root, (error, info) => {
+          if (!info) {
+            next(error);
+            return;
+          }
+
+          /** @type {Place} */
+          const place = {
+            canUnmount: info.get_attribute_boolean("mountable::can-unmount"),
+            filesystemFree: this.getFilesystemFree(info),
+            filesystemSize: this.getFilesystemSize(info),
             icon: GioIcon.stringify(info.get_icon()) || "folder",
             iconType: "GICON",
-            name: info.get_name(),
-            rootUri: file.get_uri(),
-            uuid: null,
-          });
-        },
-      ),
+            name: mount.get_name(),
+            rootUri: root.get_uri(),
+            uuid: mount.get_uuid(),
+          };
+
+          next(undefined, place);
+        });
+      },
+
+      (error, places) => {
+        if (!places) {
+          callback(error);
+          return;
+        }
+
+        runInAction(() => {
+          this.mounts = places;
+        });
+
+        callback();
+      },
     );
+  }
+
+  /**
+   * @private
+   * @param {(error?: Error) => void} callback
+   */
+  refreshRoot(callback) {
+    const file = this.File.new_for_uri("file:///");
+
+    this.queryFilesystemInfo(file, (error, info) => {
+      if (!info) {
+        callback(error);
+        return;
+      }
+
+      /** @type {Place} */
+      const place = {
+        canUnmount: false,
+        filesystemFree: this.getFilesystemFree(info),
+        filesystemSize: this.getFilesystemSize(info),
+        icon: "computer",
+        iconType: "ICON_NAME",
+        name: "/",
+        rootUri: "file:///",
+        uuid: null,
+      };
+
+      runInAction(() => {
+        this.root = place;
+      });
+
+      callback();
+    });
+  }
+
+  /**
+   * @private
+   * @param {(error?: Error) => void} callback
+   */
+  refreshSpecials(callback) {
+    /** @type {File[]} */
+    const files = [];
+    const count = this.GLib.UserDirectory.N_DIRECTORIES;
+
+    for (let i = 0; i < count; i++) {
+      const path = this.GLib.get_user_special_dir(i);
+
+      if (path) {
+        files.push(File.new_for_path(path));
+      }
+    }
+
+    map(files, this.refreshFile, (error, places) => {
+      if (!places) {
+        callback(error);
+        return;
+      }
+
+      runInAction(() => {
+        this.specials = /** @type {any} */ (places);
+      });
+
+      callback();
+    });
+  }
+
+  /**
+   * @private
+   * @param {(error?: Error, place?: Place) => void} callback
+   */
+  refreshTrash(callback) {
+    const file = File.new_for_uri("trash://");
+
+    this.refreshFile(file, (error, place) => {
+      if (!place && String(error).indexOf("Gio.IOErrorEnum") === 0) {
+        callback();
+        return;
+      }
+
+      if (!place) {
+        callback(error);
+        return;
+      }
+
+      runInAction(() => {
+        this.trash = place;
+      });
+
+      callback();
+    });
   }
 }
 

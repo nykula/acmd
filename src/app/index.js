@@ -64,6 +64,8 @@ application.connect("startup", () => {
   services.windowService.refresh();
 
   if (process.env.NODE_ENV === "development" && module.hot) {
+    (/** @type {any} */ (window)).services = services;
+
     module.hot.accept("./App", () => {
       View.instance.setState({ render: require("./App").render });
     });

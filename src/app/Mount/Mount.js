@@ -94,17 +94,15 @@ class Mount extends Component {
   }
 
   render() {
-    const { getActiveMountUri } =
+    const { getActiveTab } =
       /** @type { PanelService } */ (this.props.panelService);
 
-    const { entities, names, shortNames } =
+    const { getActive, places, shortNames } =
       /** @type { PlaceService } */ (this.props.placeService);
 
-    const activeUri = getActiveMountUri(this.props.panelId);
-
-    const { filesystemFree, filesystemSize, name } = names
-      .map(x => entities[x])
-      .filter(mount => mount.rootUri === activeUri)[0];
+    const { location } = getActiveTab(this.props.panelId);
+    const place = getActive(location);
+    const { filesystemFree, filesystemSize, name } = place;
 
     const status = "[" + name + "] " +
       formatSize(filesystemFree) + " of " +
@@ -114,21 +112,24 @@ class Mount extends Component {
       h(Box, { expand: false }, [
         h(Box, [
           h(ComboBox, {
-            active: names.findIndex(x => entities[x].name === name),
+            active: places.indexOf(place),
             ref: this.refComboBox,
           },
             h(ListStore, { cols: MountCols },
-              names.map(x => entities[x]).map(mount => h("stub", {
-                icon: mount,
-                text: shortNames[mount.name],
+              places.map(x => h("stub", {
+                icon: x,
+                text: shortNames[x.name],
               })),
             ),
           ),
         ]),
+
         h(Box, { border_width: 4, expand: true }, [
           h(Label, { label: status }),
         ]),
+
         h(VSeparator),
+
         h(Box, [
           h(Button, {
             ref: this.refRoot,
@@ -136,6 +137,7 @@ class Mount extends Component {
           }, [
               h(Label, { label: "\\" }),
             ]),
+
           h(Button, {
             ref: this.refLevelUp,
             relief: ReliefStyle.NONE,

@@ -32,11 +32,12 @@ function GioAsync(obj, methodName) {
 
 /**
  * @static
+ * @param {(readyCallback: (_: any, result: AsyncResult) => void) => void} start
  * @param {(asyncResult: AsyncResult) => any} finish
  * @param {(error?: any, result?: any) => void} callback
  */
-GioAsync.ReadyCallback = (finish, callback) => {
-  return (/** @type {any} */ _, /** @type {AsyncResult} */ asyncResult) => {
+GioAsync.ReadyCallback = (start, finish, callback) => {
+  start((_, asyncResult) => {
     let result;
 
     try {
@@ -47,7 +48,7 @@ GioAsync.ReadyCallback = (finish, callback) => {
     }
 
     callback(undefined, result);
-  };
+  });
 };
 
 exports.GioAsync = GioAsync;

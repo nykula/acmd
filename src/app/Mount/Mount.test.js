@@ -1,6 +1,7 @@
 const assign = require("lodash/assign");
 const expect = require("expect");
 const { createSpy } = require("expect");
+const { Place } = require("../../domain/Place/Place");
 const { RefService } = require("../Ref/RefService");
 const { Mount } = require("./Mount");
 
@@ -8,21 +9,26 @@ describe("Mount", () => {
   it("renders without crashing", () => {
     /** @type {any} */
     const panelService = {
-      getActiveMountUri: () => "file:///media/System",
+      getActiveTab: () => 0,
+    };
+
+    /** @type {Place} */
+    const place = {
+      canUnmount: false,
+      filesystemFree: 0,
+      filesystemSize: 0,
+      icon: "computer",
+      iconType: "GICON",
+      name: "System",
+      rootUri: "file:///media/System",
+      uuid: null,
     };
 
     /** @type {any} */
     const placeService = {
-      entities: {
-        System: {
-          filesystemFree: 0,
-          filesystemSize: 0,
-          name: "System",
-          rootUri: "file:///media/System",
-        },
-      },
+      getActive: () => place,
 
-      names: ["System"],
+      places: [place],
 
       shortNames: {
         "System": "S",

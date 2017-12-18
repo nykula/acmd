@@ -2,7 +2,6 @@ const Gtk = imports.gi.Gtk;
 const { Box, Image, Label } = Gtk;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
-const { computed, extendObservable } = require("mobx");
 const { Place } = require("../../domain/Place/Place");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
@@ -13,9 +12,9 @@ const { PlaceService } = require("./PlaceService");
 
 /**
  * @typedef IProps
- * @property {string} name
  * @property {number} panelId
  * @property {PanelService?} [panelService]
+ * @property {Place} place
  * @property {PlaceService?} [placeService]
  *
  * @extends Component<IProps>
@@ -27,49 +26,34 @@ class PlacesEntry extends Component {
   constructor(props) {
     super(props);
     autoBind(this, PlacesEntry.prototype, __filename);
-
-    /**
-     * @type {Place}
-     */
-    this.place = (/** @type {any} */ (undefined));
-
-    extendObservable(this, {
-      place: computed(this.getPlace),
-    });
-  }
-
-  activeUri() {
-    const { getActiveMountUri } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    return getActiveMountUri(this.props.panelId);
-  }
-
-  getPlace() {
-    const { entities } =
-      /** @type {PlaceService} */ (this.props.placeService);
-
-    return entities[this.props.name];
   }
 
   isActive() {
-    return this.place.rootUri === this.activeUri();
+    const { getActiveTab } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { getActive } =
+    /** @type {PlaceService} */ (this.props.placeService);
+
+    const { location } = getActiveTab(this.props.panelId);
+    const place = getActive(location);
+
+    return place === this.props.place;
   }
 
   handleClicked() {
-    const { getActiveTab, ls, refresh } =
+    const { ls, refresh } =
       /** @type {PanelService} */ (this.props.panelService);
 
     const { mountUuid, unmount } =
     /** @type {PlaceService} */ (this.props.placeService);
 
-    const { rootUri, uuid } = this.place;
-    const { location } = getActiveTab();
+    const { canUnmount, rootUri, uuid } = this.props.place;
 
     const menu = new Gtk.Menu();
     let item;
 
-    if (rootUri && rootUri !== location) {
+    if (rootUri && !this.isActive()) {
       item = new Gtk.MenuItem();
       item.label = "Open";
       item.connect("activate", () => {
@@ -78,7 +62,7 @@ class PlacesEntry extends Component {
       menu.add(item);
     }
 
-    if (rootUri && !this.isActive()) {
+    if (rootUri && canUnmount && !this.isActive()) {
       item = new Gtk.MenuItem();
       item.label = "Unmount";
       item.connect("activate", () => {
@@ -87,7 +71,7 @@ class PlacesEntry extends Component {
       menu.add(item);
     }
 
-    if (!rootUri) {
+    if (!rootUri && uuid) {
       item = new Gtk.MenuItem();
       item.label = "Mount";
       item.connect("activate", () => {
@@ -108,7 +92,7 @@ class PlacesEntry extends Component {
     const { shortNames } =
       /** @type {PlaceService} */ (this.props.placeService);
 
-    const { icon, iconType, name } = this.place;
+    const { icon, iconType, name } = this.props.place;
 
     return h(ToggleButton, {
       active: this.isActive(),

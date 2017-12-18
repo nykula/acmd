@@ -12,15 +12,14 @@ const { PlaceService } = require("./PlaceService");
  * @param {IProps} props
  */
 function Places(props) {
-  const { names } =
+  const { places } =
     /** @type {PlaceService} */ (props.placeService);
 
   return (
-    h(Box, names.map(name => (
+    h(Box, places.map(place => (
       h(PlacesEntry, {
-        key: name,
-        name,
         panelId: props.panelId,
+        place,
       })
     )))
   );
