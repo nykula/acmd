@@ -8,27 +8,15 @@ describe("Location", () => {
   it("renders without crashing", () => {
     /** @type {any} */
     const panelService = {
-      entities: {
-        "0": {
-          activeTabId: 0,
-        },
-      },
-    };
-
-    /** @type {any} */
-    const tabService = {
-      entities: {
-        "0": {
-          location: "file:///",
-        },
-      },
+      getActiveTab: () => ({
+        location: "file:///",
+      }),
     };
 
     shallow(
       h(Location, {
         panelId: 0,
-        panelService: panelService,
-        tabService: tabService,
+        panelService,
       }),
     );
   });
@@ -39,13 +27,9 @@ describe("Location", () => {
       activeId: 1,
     });
 
-    /** @type {any} */
-    const tabService = {};
-
     const instance = new Location({
       panelId: 0,
-      panelService: panelService,
-      tabService: tabService,
+      panelService,
     });
 
     panelService.activeId = 0;
@@ -72,13 +56,9 @@ describe("Location", () => {
       entities: {},
     });
 
-    /** @type {any} */
-    const tabService = {};
-
     const instance = new Location({
       panelId: 0,
-      panelService: panelService,
-      tabService: tabService,
+      panelService,
     });
 
     panelService.activeId = 1;
@@ -96,32 +76,5 @@ describe("Location", () => {
     instance.refList(list);
 
     expect(list.unselect_row).toHaveBeenCalledWith(row);
-  });
-
-  it("maps state to expected props", () => {
-    /** @type {any} */
-    const panelService = {
-      activeId: 0,
-      entities: {
-        "0": { activeTabId: 0 },
-      },
-    };
-
-    /** @type {any} */
-    const tabService = {
-      entities: {
-        "0": { location: "file:///" },
-        "1": { location: "file:///media" },
-      },
-    };
-
-    const instance = new Location({
-      panelId: 0,
-      panelService: panelService,
-      tabService: tabService,
-    });
-
-    expect(instance.isActive()).toBeTruthy();
-    expect(instance.tab().location).toBe("file:///");
   });
 });

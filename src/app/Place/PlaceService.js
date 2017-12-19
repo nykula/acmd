@@ -285,7 +285,7 @@ class PlaceService {
    * @param {(error?: Error, mount?: Mount) => void} callback
    */
   findEnclosingMount(file, callback) {
-    GioAsync.ReadyCallback(
+    GioAsync(
       readyCallback => file.find_enclosing_mount_async(
         PRIORITY_DEFAULT,
         null,
@@ -374,7 +374,7 @@ class PlaceService {
    * @param {(error?: Error, info?: FileInfo) => void} callback
    */
   queryFileInfo(file, callback) {
-    GioAsync.ReadyCallback(
+    GioAsync(
       readyCallback => file.query_info_async(
         "standard::*",
         FileQueryInfoFlags.NONE,
@@ -395,7 +395,7 @@ class PlaceService {
    * @param {(error?: Error, info?: FileInfo) => void} callback
    */
   queryFilesystemInfo(file, callback) {
-    GioAsync.ReadyCallback(
+    GioAsync(
       readyCallback => file.query_filesystem_info_async(
         "filesystem::*,mountable::*",
         PRIORITY_DEFAULT,

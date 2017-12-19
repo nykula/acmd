@@ -96,7 +96,7 @@ class JobService {
    * Spawns a worker. Returns its pid. Calls back on error or success.
    *
    * @param {WorkerProps} props
-   * @param {(error?: { message: string }) => void} callback
+   * @param {(error: { message: string }) => void} callback
    */
   run(props, callback = noop) {
     const subprocess = new this.Subprocess({
@@ -171,8 +171,8 @@ class JobService {
    */
   remove(pid) {
     this.pids = this.pids.filter(x => x !== pid);
-    this.jobs[pid] = undefined;
-    this.types[pid] = undefined;
+    this.jobs[pid] = /** @type {any} */ (undefined);
+    this.types[pid] = /** @type {any} */ (undefined);
   }
 
   /**

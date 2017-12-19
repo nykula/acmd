@@ -42,7 +42,7 @@ class ClipboardService {
   /**
    * Lists copied or cut files.
    *
-   * @param {(error: Error, text: string) => void} callback
+   * @param {(error?: Error, text?: string) => void} callback
    */
   paste(callback) {
     const { gioService } = this.props;

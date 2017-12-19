@@ -16,12 +16,6 @@ class MenuItemWithSubmenu {
      */
     this.submenu = undefined;
 
-    /**
-     * Native method. Sets submenu.
-     * @type {(gtkMenu: any) => void}
-     */
-    this.set_submenu = undefined;
-
     node.document = document;
     this.useNodeAsThis.call(node);
     return node;
@@ -30,7 +24,6 @@ class MenuItemWithSubmenu {
   useNodeAsThis() {
     autoBind(this, MenuItemWithSubmenu.prototype, __filename);
     this.submenu = this.document.createElement("menu");
-    this.set_submenu(this.submenu);
 
     Object.defineProperties(this, {
       firstChild: { get: () => this.submenu.firstChild },

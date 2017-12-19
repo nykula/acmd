@@ -10,13 +10,14 @@ describe("MenuItemWithSubmenu", () => {
       createElement: expect.createSpy().andReturn(menu),
     };
 
-    /** @type {any} */
-    const menuItem = {
-      set_submenu: expect.createSpy(),
-    };
+    const set = expect.createSpy();
+
+    const menuItem = Object.defineProperties({}, {
+      submenu: { set },
+    });
 
     expect(new MenuItemWithSubmenu(menuItem, document)).toBe(menuItem);
-    expect(menuItem.set_submenu).toHaveBeenCalledWith(menu);
+    expect(set).toHaveBeenCalledWith(menu);
   });
 
   it("proxies dom methods to gtkdom menu", () => {
@@ -34,10 +35,7 @@ describe("MenuItemWithSubmenu", () => {
     };
 
     /** @type {any} */
-    let menuItem = {
-      set_submenu: expect.createSpy(),
-    };
-
+    let menuItem = {};
     menuItem = new MenuItemWithSubmenu(menuItem, document);
 
     expect(menuItem.firstChild).toBe(menu.firstChild);

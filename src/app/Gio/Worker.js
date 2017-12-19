@@ -230,8 +230,7 @@ class Worker {
       }
     };
 
-    /** @type {string} */
-    const relativePath = null;
+    const relativePath = "";
 
     const file = {
       gFile: gFile,

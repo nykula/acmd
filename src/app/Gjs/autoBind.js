@@ -33,7 +33,8 @@ function autoBind(self, prototype, filename) {
 
         self[key] = function() {
           const args = Array.prototype.slice.call(arguments);
-          const perfKey = `${/([^/]*).js$/.exec(filename)[1]}.${key}`;
+          const match = /([^/]*).js$/.exec(filename) || ["", filename];
+          const perfKey = `${match[1]}.${key}`;
 
           const start = Date.now();
           const result = bound.apply(self, args);

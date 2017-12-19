@@ -80,8 +80,8 @@ class CursorService {
     }
 
     getHandlers(uri, (error, result) => {
-      if (error) {
-        alert(error.message);
+      if (!result) {
+        alert(String(error));
         return;
       }
 

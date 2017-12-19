@@ -165,8 +165,8 @@ class SelectService {
     const uri = this.getUris()[0];
 
     getHandlers(uri, (error, result) => {
-      if (error) {
-        alert(error.message);
+      if (!result) {
+        alert(String(error));
         return;
       }
 

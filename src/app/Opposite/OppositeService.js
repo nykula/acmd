@@ -26,43 +26,57 @@ class OppositeService {
   }
 
   cp() {
-    const { jobService, panelService } = this.props;
-    const { prompt } = this.props.dialogService;
+    const { prompt } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { run } =
+    /** @type {JobService} */ (this.props.jobService);
+
+    const { refresh } =
+    /** @type {PanelService} */ (this.props.panelService);
+
     const { destUri, uris, urisStr } = this.getUris();
 
-    prompt("Copy " + urisStr + "to:", destUri, finalDestUri => {
+    prompt(`Copy ${urisStr} to:`, destUri, finalDestUri => {
       if (!finalDestUri) {
         return;
       }
 
-      jobService.run(
+      run(
         {
           destUri: encodeURI(finalDestUri),
           type: "cp",
           uris,
         },
-        panelService.refresh,
+        refresh,
       );
     });
   }
 
   mv() {
-    const { jobService, panelService } = this.props;
-    const { prompt } = this.props.dialogService;
+    const { prompt } =
+      /** @type {DialogService} */ (this.props.dialogService);
+
+    const { run } =
+    /** @type {JobService} */ (this.props.jobService);
+
+    const { refresh } =
+    /** @type {PanelService} */ (this.props.panelService);
+
     const { destUri, uris, urisStr } = this.getUris();
 
-    prompt("Move " + urisStr + "to:", destUri, finalDestUri => {
+    prompt(`Move ${urisStr} to:`, destUri, finalDestUri => {
       if (!finalDestUri) {
         return;
       }
 
-      jobService.run(
+      run(
         {
           destUri: encodeURI(finalDestUri),
           type: "mv",
           uris,
         },
-        panelService.refresh,
+        refresh,
       );
     });
   }
@@ -73,14 +87,17 @@ class OppositeService {
    * @private
    */
   getDest() {
-    const { panelService, selectService, tabService } = this.props;
-    const destPanelId = panelService.activeId === 0 ? 1 : 0;
+    const { activeId, getActiveTab } =
+      /** @type {PanelService} */ (this.props.panelService);
 
-    const { activeTabId } = panelService.entities[destPanelId];
-    const { location } = tabService.entities[activeTabId];
+    const { getFiles } =
+    /** @type {SelectService} */ (this.props.selectService);
+
+    const destPanelId = activeId === 0 ? 1 : 0;
+    const { location } = getActiveTab(destPanelId);
 
     const gFile = File.new_for_uri(location);
-    const files = selectService.getFiles();
+    const files = getFiles();
 
     return files.length === 1
       ? gFile.get_child(files[0].name).get_uri()
@@ -93,7 +110,8 @@ class OppositeService {
    * @private
    */
   getUris() {
-    const { formatUris, getUris } = this.props.selectService;
+    const { formatUris, getUris } =
+      /** @type {SelectService} */ (this.props.selectService);
 
     const destUri = decodeURI(this.getDest());
     const uris = getUris();

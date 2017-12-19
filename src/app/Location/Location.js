@@ -6,13 +6,11 @@ const { action, autorun, extendObservable, observable } = require("mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
-const { TabService } = require("../Tab/TabService");
 
 /**
  * @typedef IProps
  * @property {number} panelId
  * @property {PanelService?} [panelService]
- * @property {TabService?} [tabService]
  *
  * @extends Component<IProps>
  */
@@ -23,15 +21,11 @@ class Location extends Component {
   constructor(props) {
     super(props);
 
-    /**
-     * @type {{ select_row(node: any): void, unselect_row(node: any): void }}
-     */
-    this.list = undefined;
+    /** @type {ListBox} */
+    this.list = (/** @type {any} */ (undefined));
 
-    /**
-     * @type {any}
-     */
-    this.row = undefined;
+    /** @type {ListBoxRow} */
+    this.row = (/** @type {any} */ (undefined));
 
     autoBind(this, Location.prototype, __filename);
     extendObservable(this, {
@@ -48,12 +42,10 @@ class Location extends Component {
   }
 
   isActive() {
-    return this.props.panelService.activeId === this.props.panelId;
-  }
+    const { activeId } =
+      /** @type {PanelService} */ (this.props.panelService);
 
-  tab() {
-    const { activeTabId } = this.props.panelService.entities[this.props.panelId];
-    return this.props.tabService.entities[activeTabId];
+    return activeId === this.props.panelId;
   }
 
   /**
@@ -83,7 +75,11 @@ class Location extends Component {
   }
 
   render() {
-    const { location } = this.tab();
+    const { getActiveTab } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    const { location } = getActiveTab(this.props.panelId);
+
     const label = decodeURI(location)
       .replace(/\/?$/, "/*")
       .replace(/^file:\/\//, "");
@@ -105,4 +101,4 @@ class Location extends Component {
 }
 
 exports.Location = Location;
-exports.default = connect(["panelService", "tabService"])(Location);
+exports.default = connect(["panelService"])(Location);

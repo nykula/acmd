@@ -64,7 +64,7 @@ describe("GioService", () => {
 
     gioService.getHandlers("file:///foo.bar", callback);
 
-    expect(callback).toHaveBeenCalledWith(null, {
+    expect(callback).toHaveBeenCalledWith(undefined, {
       contentType: "text/plain",
       handlers: [
         {

@@ -7,32 +7,40 @@ describe("GioAsync", () => {
     const { GioFile } = setup();
 
     const existingDir = new GioFile(true);
-    GioAsync(existingDir, "make_directory",
-      PRIORITY_DEFAULT,
-      null,
-      (/** @type {Error} */ error, /** @type {any} */ result) => {
+
+    GioAsync(
+      readyCallback => existingDir.make_directory_async(
+        PRIORITY_DEFAULT,
+        null,
+        readyCallback,
+      ),
+
+      result => existingDir.make_directory_finish(result),
+
+      (error, result) => {
         expect(error.message).toBe("Directory exists.");
         expect(result).toBe(undefined);
       },
     );
 
     const dir = new GioFile(false);
-    GioAsync(dir, "make_directory",
-      PRIORITY_DEFAULT,
-      null,
-      (/** @type {Error} */ error, /** @type {any} */ result) => {
+
+    GioAsync(
+      readyCallback => dir.make_directory_async(
+        PRIORITY_DEFAULT,
+        null,
+        readyCallback,
+      ),
+
+      result => dir.make_directory_finish(result),
+
+      (error, result) => {
         expect(error).toNotExist();
         expect(result).toBe(true);
       });
   });
 
   function setup() {
-    class AsyncResult {
-      constructor() {
-        this.type = "ASYNC_RESULT";
-      }
-    }
-
     class GioFile {
       /**
        * @param {boolean} exists
@@ -41,11 +49,9 @@ describe("GioAsync", () => {
         this.exists = exists;
 
         /**
-         * @param {AsyncResult} asyncResult
+         * @param {any} _
          */
-        this.make_directory_finish = (asyncResult) => {
-          expect(asyncResult.type).toBe("ASYNC_RESULT");
-
+        this.make_directory_finish = (_) => {
           if (this.exists) {
             throw new Error("Directory exists.");
           } else {
@@ -55,7 +61,7 @@ describe("GioAsync", () => {
       }
 
       make_directory_async() {
-        arguments[arguments.length - 1](null, new AsyncResult());
+        arguments[arguments.length - 1](null, {});
       }
     }
 

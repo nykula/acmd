@@ -5,6 +5,7 @@ const {
   AppInfo,
   AppInfoCreateFlags,
   FileCreateFlags,
+  FileEnumerator,
   FileInfo,
   FileQueryInfoFlags,
   Mount,
@@ -54,7 +55,7 @@ class GioService {
    * Lists every file in a given directory.
    *
    * @param {string} uri
-   * @param {(error: Error, files: File[]) => void} callback
+   * @param {(error?: Error, files?: File[]) => void} callback
    */
   ls(uri, callback) {
     /**
@@ -70,12 +71,16 @@ class GioService {
      */
     const handleRequest = _callback => {
       GioAsync(
-        dir,
-        "query_info",
-        this.fileAttributes,
-        FileQueryInfoFlags.NONE,
-        PRIORITY_DEFAULT,
-        null,
+        (readyCallback) => dir.query_info_async(
+          this.fileAttributes,
+          FileQueryInfoFlags.NONE,
+          PRIORITY_DEFAULT,
+          null,
+          readyCallback,
+        ),
+
+        (result) => dir.query_info_finish(result),
+
         _callback,
       );
     };
@@ -98,12 +103,16 @@ class GioService {
       }
 
       GioAsync(
-        parent,
-        "query_info",
-        this.fileAttributes,
-        FileQueryInfoFlags.NONE,
-        PRIORITY_DEFAULT,
-        null,
+        readyCallback => parent.query_info_async(
+          this.fileAttributes,
+          FileQueryInfoFlags.NONE,
+          PRIORITY_DEFAULT,
+          null,
+          readyCallback,
+        ),
+
+        result => parent.query_info_finish(result),
+
         _callback,
       );
     };
@@ -119,32 +128,40 @@ class GioService {
         parentFile.name = "..";
         parentFile.icon = "go-up";
         parentFile.iconType = "ICON_NAME";
-        parentFile.uri = parent.get_uri();
+        parentFile.uri = (/** @type {GioFile} */ (parent)).get_uri();
         files = files.concat(parentFile);
       }
 
       GioAsync(
-        dir,
-        "enumerate_children",
-        this.fileAttributes,
-        FileQueryInfoFlags.NONE,
-        PRIORITY_DEFAULT,
-        null,
+        (readyCallback) => dir.enumerate_children_async(
+          this.fileAttributes,
+          FileQueryInfoFlags.NONE,
+          PRIORITY_DEFAULT,
+          null,
+          readyCallback,
+        ),
+
+        result => dir.enumerate_children_finish(result),
+
         _callback,
       );
     };
 
     /**
-     * @param {any} enumerator
+     * @param {FileEnumerator} enumerator
      * @param {any} _callback
      */
     const handleChildren = (enumerator, _callback) => {
       GioAsync(
-        enumerator,
-        "next_files",
-        MAXINT32,
-        PRIORITY_DEFAULT,
-        null,
+        readyCallback => enumerator.next_files_async(
+          MAXINT32,
+          PRIORITY_DEFAULT,
+          null,
+          readyCallback,
+        ),
+
+        result => enumerator.next_files_finish(result),
+
         _callback,
       );
     };
@@ -165,12 +182,14 @@ class GioService {
       const mode = gFileInfo.get_attribute_as_string("unix::mode");
       const name = gFileInfo.get_name();
 
+      const icon = gFileInfo.get_icon().to_string();
+
       /** @type {File} */
       const file = {
         displayName: gFileInfo.get_display_name(),
         fileType: gFileInfo.get_file_type(),
-        icon: gFileInfo.get_icon().to_string(),
-        iconType: "GICON",
+        icon: icon || "text-x-generic",
+        iconType: icon ? "GICON" : "ICON_NAME",
         mode: Number(mode)
           .toString(8)
           .slice(-4),
@@ -194,19 +213,23 @@ class GioService {
    * Gets content type of a given file, and apps that can open it.
    *
    * @param {string} uri
-   * @param {(error: Error, result: { contentType: string, handlers: FileHandler[] }) => void} callback
+   * @param {(error?: Error, result?: { contentType: string, handlers: FileHandler[] }) => void} callback
    */
   getHandlers(uri, callback) {
     const file = this.Gio.File.new_for_uri(uri);
 
     GioAsync(
-      file,
-      "query_info",
-      this.fileAttributes,
-      FileQueryInfoFlags.NONE,
-      PRIORITY_DEFAULT,
-      null,
-      (/** @type {Error} */ error, /** @type {FileInfo} */ gFileInfo) => {
+      readyCallback => file.query_info_async(
+        this.fileAttributes,
+        FileQueryInfoFlags.NONE,
+        PRIORITY_DEFAULT,
+        null,
+        readyCallback,
+      ),
+
+      result => file.query_info_finish(result),
+
+      (error, /** @type {FileInfo} */ gFileInfo) => {
         if (error) {
           callback(error);
           return;
@@ -233,7 +256,7 @@ class GioService {
 
         handlers = uniqBy(handlers, x => x.commandline);
 
-        callback(null, {
+        callback(undefined, {
           contentType,
           handlers,
         });
@@ -265,11 +288,17 @@ class GioService {
    * @param {(error: Error) => void} callback
    */
   mkdir(uri, callback) {
+    const file = this.Gio.File.new_for_uri(uri);
+
     GioAsync(
-      this.Gio.File.new_for_uri(uri),
-      "make_directory",
-      PRIORITY_DEFAULT,
-      null,
+      readyCallback => file.make_directory_async(
+        PRIORITY_DEFAULT,
+        null,
+        readyCallback,
+      ),
+
+      result => file.make_directory_finish(result),
+
       callback,
     );
   }
@@ -281,12 +310,18 @@ class GioService {
    * @param {(error: Error) => void} callback
    */
   touch(uri, callback) {
+    const file = this.Gio.File.new_for_uri(uri);
+
     GioAsync(
-      this.Gio.File.new_for_uri(uri),
-      "create",
-      FileCreateFlags.NONE,
-      PRIORITY_DEFAULT,
-      null,
+      readyCallback => file.create_async(
+        FileCreateFlags.NONE,
+        PRIORITY_DEFAULT,
+        null,
+        readyCallback,
+      ),
+
+      result => file.create_finish(result),
+
       callback,
     );
   }
@@ -312,7 +347,7 @@ class GioService {
    * Runs a subprocess and returns its output.
    *
    * @param {string[]} argv
-   * @param {(error: Error, stdout: string) => void} callback
+   * @param {(error?: Error, stdout?: string) => void} callback
    */
   communicate(argv, callback = noop) {
     const subprocess = new this.Gio.Subprocess({
@@ -322,15 +357,25 @@ class GioService {
 
     subprocess.init(null);
 
-    GioAsync(subprocess, "communicate_utf8", null, null, (
-      /** @type {any} */
-      _,
-      /** @type {string[]} */
-      result,
-    ) => {
-      const stdout = result[1];
-      callback(null, stdout);
-    });
+    GioAsync(
+      readyCallback => subprocess.communicate_utf8_async(
+        null,
+        null,
+        readyCallback,
+      ),
+
+      result => subprocess.communicate_utf8_finish(result),
+
+      (error, result) => {
+        if (!result) {
+          callback(error);
+          return;
+        }
+
+        const stdout = /** @type {string} */ (result[1]);
+        callback(undefined, stdout);
+      },
+    );
   }
 }
 

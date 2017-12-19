@@ -202,13 +202,13 @@ class TabService {
   /**
    * @param {number} id
    * @param {string} uri
-   * @param {((error?: Error) => void)=} callback
+   * @param {(error?: Error) => void} callback
    */
   ls(id, uri, callback = noop) {
     const { gioService } = this.props;
 
     gioService.ls(uri, (error, files) => {
-      if (error) {
+      if (!files) {
         callback(error);
         return;
       }
