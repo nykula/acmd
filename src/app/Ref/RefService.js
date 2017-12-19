@@ -1,8 +1,5 @@
 const { autoBind } = require("../Gjs/autoBind");
 
-/**
- * @deprecated
- */
 class RefService {
   constructor() {
     autoBind(this, RefService.prototype, __filename);
@@ -21,6 +18,7 @@ class RefService {
   }
 
   /**
+   * @deprecated TODO: Private when app-wide types are stronger.
    * @param {string} key
    */
   get(key) {
@@ -28,6 +26,17 @@ class RefService {
   }
 
   /**
+   * @param {string} key
+   */
+  property(key) {
+    return {
+      get: () => this.get(key),
+      set: this.set(key),
+    };
+  }
+
+  /**
+   * @deprecated TODO: Private when app-wide types are stronger.
    * @param {string} key
    */
   set(key) {

@@ -12,6 +12,7 @@ const {
 } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const { PRIORITY_DEFAULT } = GLib;
+const { Button, Popover } = imports.gi.Gtk;
 const { map, parallel } = require("async");
 const uniqBy = require("lodash/uniqBy");
 const { computed, extendObservable, runInAction } = require("mobx");
@@ -21,6 +22,7 @@ const { GioAsync } = require("../Gio/GioAsync");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
 const { RefService } = require("../Ref/RefService");
+const formatSize = require("../Size/formatSize").default;
 
 /**
  * Mounts drives and remote locations.
@@ -69,6 +71,12 @@ class PlaceService {
 
     this.props = props;
 
+    /** @type {{ [panelId: number]: Popover | null }} */
+    this.popovers = Object.defineProperties({}, {
+      0: props.refService.property("placeService.popovers.0"),
+      1: props.refService.property("placeService.popovers.1"),
+    });
+
     /** @type {Place} */
     this.root = {
       canUnmount: false,
@@ -86,6 +94,12 @@ class PlaceService {
 
     /** @type {Place[]} */
     this.specials = [];
+
+    /** @type {{ [panelId: number]: Button | null }} */
+    this.toggles = Object.defineProperties({}, {
+      0: props.refService.property("placeService.toggles.0"),
+      1: props.refService.property("placeService.toggles.1"),
+    });
 
     /** @type {Place | undefined} */
     this.trash = undefined;
@@ -137,8 +151,10 @@ class PlaceService {
    * @param {number} panelId
    */
   list(panelId) {
-    const { refService } = this.props;
-    refService.get("mounts" + panelId).popup();
+    const popover =
+      /** @type {Popover} */ (this.popovers[panelId]);
+
+    popover.popup();
   }
 
   /**
@@ -231,6 +247,24 @@ class PlaceService {
   }
 
   /**
+   * Formats information about a file system for display.
+   *
+   * @param {Place} place
+   */
+  status(place) {
+    const name = `[${place.name}]`;
+
+    if (!place.filesystemSize) {
+      return name;
+    }
+
+    const free = formatSize(place.filesystemFree);
+    const size = formatSize(place.filesystemSize);
+
+    return `${name} ${free} of ${size} free`;
+  }
+
+  /**
    * Unmounts a place.
    *
    * @param {string} uri
@@ -305,15 +339,11 @@ class PlaceService {
 
     places.sort((a, b) => a.name.localeCompare(b.name));
 
+    places.unshift(this.root);
+
     if (this.home) {
-      places.unshift(this.home);
+      places.push(this.home);
     }
-
-    if (this.trash) {
-      places.push(this.trash);
-    }
-
-    places.push(this.root);
 
     return places;
   }
@@ -455,12 +485,14 @@ class PlaceService {
         const [mount, info, fsInfo] =
           /** @type {[Mount, FileInfo, FileInfo]} */ (results);
 
+        const icon = GioIcon.stringify(info.get_icon());
+
         callback(undefined, {
           canUnmount: false,
           filesystemFree: this.getFilesystemFree(fsInfo),
           filesystemSize: this.getFilesystemSize(fsInfo),
-          icon: GioIcon.stringify(info.get_icon()) || "folder",
-          iconType: "GICON",
+          icon: icon || "folder",
+          iconType: icon ? "GICON" : "ICON_NAME",
           name: info.get_display_name(),
           rootUri: mount ? mount.get_root().get_uri() : file.get_uri(),
           uuid: mount ? mount.get_uuid() : null,
@@ -517,13 +549,15 @@ class PlaceService {
             return;
           }
 
+          const icon = GioIcon.stringify(info.get_icon());
+
           /** @type {Place} */
           const place = {
             canUnmount: info.get_attribute_boolean("mountable::can-unmount"),
             filesystemFree: this.getFilesystemFree(info),
             filesystemSize: this.getFilesystemSize(info),
-            icon: GioIcon.stringify(info.get_icon()) || "folder",
-            iconType: "GICON",
+            icon: icon || "folder",
+            iconType: icon ? "GICON" : "ICON_NAME",
             name: mount.get_name(),
             rootUri: root.get_uri(),
             uuid: mount.get_uuid(),

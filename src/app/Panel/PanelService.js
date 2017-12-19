@@ -126,6 +126,21 @@ class PanelService {
   }
 
   /**
+   * Returns place where active tab location belongs.
+   *
+   * @param {number} panelId
+   */
+  getActivePlace(panelId) {
+    const { getActive } =
+      /** @type {PlaceService} */ (this.props.placeService);
+
+    const { location } = this.getActiveTab(panelId);
+    const place = getActive(location);
+
+    return place;
+  }
+
+  /**
    * Returns active tab in panel.
    *
    * @param {number=} panelId

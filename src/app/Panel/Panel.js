@@ -2,7 +2,7 @@ const { Box, HSeparator, Orientation, PolicyType, ScrolledWindow } = imports.gi.
 const Directory = require("../Directory/Directory").default;
 const { h } = require("../Gjs/GtkInferno");
 const Location = require("../Location/Location").default;
-const Mount = require("../Mount/Mount").default;
+const Place = require("../Place/Place").default;
 const Stats = require("../Stats/Stats").default;
 const TabList = require("../Tab/TabList").default;
 
@@ -15,8 +15,8 @@ function Panel(props) {
 
   return (
     h(Box, { orientation: Orientation.VERTICAL }, [
-      h(Mount, {
-        key: "MOUNT",
+      h(Place, {
+        key: "PLACE",
         panelId,
       }),
       h(TabList, {

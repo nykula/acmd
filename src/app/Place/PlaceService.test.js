@@ -1,6 +1,7 @@
 const expect = require("expect");
 const { toJS } = require("mobx");
-const { Class, EmptyArray, EmptyProps, NoString } = require("../Test/Test");
+const { RefService } = require("../Ref/RefService");
+const { Class, EmptyArray, NoString } = require("../Test/Test");
 const { PlaceService } = require("./PlaceService");
 
 describe("PlaceService", () => {
@@ -28,7 +29,8 @@ describe("PlaceService", () => {
       }),
     };
 
-    const placeService = new PlaceService(EmptyProps);
+    const refService = new RefService();
+    const placeService = new PlaceService({ refService });
     placeService.MountOperation = MountOperation;
     placeService.VolumeMonitor = VolumeMonitor;
 
@@ -65,7 +67,8 @@ describe("PlaceService", () => {
       }),
     };
 
-    const placeService = new PlaceService(EmptyProps);
+    const refService = new RefService();
+    const placeService = new PlaceService({ refService });
     placeService.File = File;
     placeService.GLib = GLib;
     placeService.VolumeMonitor = VolumeMonitor;
@@ -118,7 +121,8 @@ describe("PlaceService", () => {
       }),
     };
 
-    const placeService = new PlaceService(EmptyProps);
+    const refService = new RefService();
+    const placeService = new PlaceService({ refService });
     placeService.File = File;
     placeService.GLib = GLib;
     placeService.VolumeMonitor = VolumeMonitor;
@@ -216,7 +220,8 @@ describe("PlaceService", () => {
       }),
     };
 
-    const placeService = new PlaceService(EmptyProps);
+    const refService = new RefService();
+    const placeService = new PlaceService({ refService });
     placeService.File = File;
     placeService.GLib = GLib;
     placeService.VolumeMonitor = VolumeMonitor;
@@ -290,7 +295,8 @@ describe("PlaceService", () => {
       }),
     };
 
-    const placeService = new PlaceService(EmptyProps);
+    const refService = new RefService();
+    const placeService = new PlaceService({ refService });
     placeService.File = File;
     placeService.GLib = GLib;
     placeService.VolumeMonitor = VolumeMonitor;
@@ -331,7 +337,8 @@ describe("PlaceService", () => {
       }),
     };
 
-    const placeService = new PlaceService(EmptyProps);
+    const refService = new RefService();
+    const placeService = new PlaceService({ refService });
     placeService.File = File;
 
     const callback = expect.createSpy();

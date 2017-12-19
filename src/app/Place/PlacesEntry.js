@@ -29,20 +29,16 @@ class PlacesEntry extends Component {
   }
 
   isActive() {
-    const { getActiveTab } =
+    const { getActivePlace } =
       /** @type {PanelService} */ (this.props.panelService);
 
-    const { getActive } =
-    /** @type {PlaceService} */ (this.props.placeService);
-
-    const { location } = getActiveTab(this.props.panelId);
-    const place = getActive(location);
+    const place = getActivePlace(this.props.panelId);
 
     return place === this.props.place;
   }
 
   handleClicked() {
-    const { ls, refresh } =
+    const { ls, refresh, setActive } =
       /** @type {PanelService} */ (this.props.panelService);
 
     const { mountUuid, unmount } =
@@ -57,6 +53,7 @@ class PlacesEntry extends Component {
       item = new Gtk.MenuItem();
       item.label = "Open";
       item.connect("activate", () => {
+        setActive(this.props.panelId);
         ls(rootUri, this.props.panelId);
       });
       menu.add(item);
@@ -89,7 +86,7 @@ class PlacesEntry extends Component {
   }
 
   render() {
-    const { shortNames } =
+    const { shortNames, status } =
       /** @type {PlaceService} */ (this.props.placeService);
 
     const { icon, iconType, name } = this.props.place;
@@ -99,7 +96,7 @@ class PlacesEntry extends Component {
       can_focus: false,
       pressedCallback: this.handleClicked,
       relief: Gtk.ReliefStyle.NONE,
-      tooltip_text: name,
+      tooltip_text: status(this.props.place),
     }, [
         h(Box, { spacing: 4 }, [
           h(Image, {

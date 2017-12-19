@@ -3,11 +3,6 @@ const { PlacesEntry } = require("./PlacesEntry");
 
 describe("PlacesEntry", () => {
   it("renders entry without crashing", () => {
-    /** @type {any} */
-    const panelService = {
-      getActiveTab: () => 0,
-    };
-
     const place = {
       canUnmount: false,
       filesystemFree: 0,
@@ -20,13 +15,18 @@ describe("PlacesEntry", () => {
     };
 
     /** @type {any} */
-    const placeService = {
-      getActive: () => place,
+    const panelService = {
+      getActivePlace: () => place,
+    };
 
+    /** @type {any} */
+    const placeService = {
       shortNames: {
         "/": "/",
         "Music": "M",
       },
+
+      status: () => "",
     };
 
     new PlacesEntry({
