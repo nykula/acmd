@@ -16,6 +16,8 @@ class ActionService {
      */
     this.actions = new Map();
 
+    this.print = print;
+
     /**
      * @private
      */
@@ -37,7 +39,7 @@ class ActionService {
           : noop;
 
       if (callback === noop) {
-        print(`Action: Callback ${service}.${key} not found`);
+        this.print(`Action: Callback ${service}.${key} not found`);
       }
 
       this.actions.set(id, {

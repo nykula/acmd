@@ -37,7 +37,7 @@ class ActionBarItem extends Component {
   render() {
     const { id, label, shortcut } = this.props.action;
 
-    if (id === "rm") {
+    if (id === "selectService.rm") {
       return h(ActionBarRm, { label: shortcut + " " + label });
     }
 

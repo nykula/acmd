@@ -66,4 +66,8 @@ describe("ActionBarRm", () => {
 
     expect(selectService.rm).toHaveBeenCalled();
   });
+
+  it("refs null", () => {
+    new ActionBarRm({ label: "" }).ref(null);
+  });
 });
