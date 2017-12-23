@@ -3,17 +3,7 @@ const { CtxMenuAction } = require("./CtxMenuAction");
 
 describe("CtxMenuAction", () => {
   it("renders", () => {
-    /** @type {any} */
-    const actionService = {
-      getActiveFiles: () => [
-        undefined,
-        { uri: undefined },
-        { uri: "file:///foo.bar" },
-      ],
-    };
-
     new CtxMenuAction({
-      actionService,
       icon: "edit-copy",
       iconSize: 16,
       id: "copy",

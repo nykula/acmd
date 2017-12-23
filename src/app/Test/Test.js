@@ -44,15 +44,6 @@ function it(title, callback) {
   print(title + " SUCCESS");
 }
 
-exports.find = find;
-/**
- * @param {{ children: any[] }} tree
- * @param {(node: any) => boolean} callback
- */
-function find(tree, callback) {
-  return tree.children.filter(callback)[0];
-}
-
 exports.shallow = shallow;
 /**
  * @param {{ flags: number, props: any, type: any }} tree

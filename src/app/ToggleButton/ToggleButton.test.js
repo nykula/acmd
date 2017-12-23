@@ -29,7 +29,16 @@ describe("ToggleButton", () => {
 
   it("does not crash on reset attempt with null ref", () => {
     const instance = new ToggleButton({ active: false });
+    instance.ref(null);
     instance.resetActive();
+  });
+
+  it("connects pressed", () => {
+    const pressedCallback = expect.createSpy();
+    const instance = new ToggleButton({ active: false, pressedCallback });
+    const { node } = setup();
+    instance.ref(node);
+    expect(node.connect).toHaveBeenCalledWith("pressed", pressedCallback);
   });
 });
 
@@ -37,6 +46,7 @@ function setup() {
   class Node {
     constructor() {
       this.active = null;
+      this.connect = expect.createSpy();
       this.set_state_flags = () => { this.active = true; };
       this.unset_state_flags = () => { this.active = false; };
     }

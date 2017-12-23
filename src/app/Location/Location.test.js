@@ -47,6 +47,8 @@ describe("Location", () => {
     instance.refList(list);
 
     expect(list.select_row).toHaveBeenCalledWith(row);
+
+    instance.componentWillUnmount();
   });
 
   it("unselects row when isActive becomes false", () => {
@@ -76,5 +78,7 @@ describe("Location", () => {
     instance.refList(list);
 
     expect(list.unselect_row).toHaveBeenCalledWith(row);
+
+    instance.componentWillUnmount();
   });
 });

@@ -13,7 +13,12 @@ function Stub(node) {
   this.children = [];
 
   Object.defineProperties(this, {
-    firstChild: { configurable: true, get: () => this.children[0] },
+    firstChild: {
+      get: () =>
+        this.children[0] ||
+        // Inferno tests for null, not undefined.
+        null,
+    },
   });
 }
 

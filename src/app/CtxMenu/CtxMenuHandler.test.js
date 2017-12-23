@@ -32,13 +32,38 @@ describe("CtxMenuHandler", () => {
 
     const uris = ["file:///foo.bar"];
 
+    /** @type {any} */
+    const menuItem = {
+      /**
+       * @param {"activate"} _
+       * @param {() => void} callback
+       */
+      connect: (_, callback) => callback(),
+    };
+
     new CtxMenuHandler({
       gioService,
       handler,
       iconSize: 16,
       uris,
-    }).handleActivate();
+    }).ref(menuItem);
 
     expect(gioService.launch).toHaveBeenCalledWith(handler, uris);
+  });
+
+  it("refs null", () => {
+    const handler = {
+      commandline: "/usr/share/code/code --unity-launch %U",
+      displayName: "Visual Studio Code",
+      icon: "code",
+    };
+
+    const uris = ["file:///foo.bar"];
+
+    new CtxMenuHandler({
+      handler,
+      iconSize: 16,
+      uris,
+    }).ref(null);
   });
 });

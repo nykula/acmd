@@ -30,11 +30,20 @@ describe("Prompt", () => {
     /** @type {any} */
     const panelService = {};
 
+    /** @type {any} */
+    const entry = {
+      /**
+       * @param {"activate"} _
+       * @param {(self: any) => void} callback
+       */
+      connect: (_, callback) => callback(entry),
+      text: "x-terminal-emulator -e ranger",
+    };
+
     new Prompt({
       directoryService,
       panelService,
-    })
-      .handleActivate({ text: "x-terminal-emulator -e ranger" });
+    }).ref(entry);
 
     expect(directoryService.exec).toHaveBeenCalledWith("x-terminal-emulator -e ranger");
   });
