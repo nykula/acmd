@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
     crossorigin="anonymous">
   <link href="https://fonts.googleapis.com/css?family=Ubuntu:400,700" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Ubuntu+Mono" rel="stylesheet">
   <link href="https://unpkg.com/loaders.css@0.1.2/loaders.min.css" rel="stylesheet">
 
   <style id="App-style">
@@ -34,12 +35,6 @@
 
     .container {
       max-width: 840px;
-    }
-
-    @media (min-width: 768px) {
-      .container {
-        min-height: 100vh;
-      }
     }
 
     section {
@@ -71,7 +66,7 @@
         align-items: center;
         background-color: #fff;
         border: solid currentColor;
-        border-radius: 0.25em 1.25em 0.125em 0.125em;
+        border-radius: 0.25em 1.25em 0.25em 0.25em;
         border-width: 5.75em 1.25em 0.25em;
         display: inline-flex;
         justify-content: center;
@@ -81,7 +76,6 @@
       }
 
       .Floppy:after {
-        background-color: currentColor;
         border: solid #fff;
         border-radius: 0 0 0.25em 0.25em;
         border-width: 0.75em 1em 0.25em 4em;
@@ -101,31 +95,32 @@
 
     <style id="Header-style">
       .Header {
-        padding-bottom: 4em;
+        padding-bottom: 2.5em;
         padding-top: 4em;
         text-align: center;
       }
 
       @media (min-width: 992px) {
         .Header {
-          align-items: center;
           display: flex;
-          flex-wrap: wrap;
           text-align: left;
         }
       }
 
       .Header-floppy {
         font-size: 0.25em;
-        margin-bottom: 1.5em;
+      }
+
+      @media (min-width: 768px) {
+        .Header-floppy {
+          font-size: 0.5em;
+        }
       }
 
       @media (min-width: 992px) {
         .Header-floppy {
-          font-size: 18px;
-          margin-bottom: 0;
-          padding-top: 6px;
-          width: 234px;
+          font-size: inherit;
+          padding-top: 16px;
         }
       }
 
@@ -146,25 +141,31 @@
       }
 
       .Header h1 {
+        font-size: 1.5rem;
         font-weight: 700;
-        max-width: 8em;
+        max-width: 13em;
       }
 
-      @media (min-width: 992px) {
+      @media (min-width: 576px) {
         .Header h1 {
-          font-size: 72px;
-          margin-bottom: 24px;
+          font-size: 2.5rem;
         }
       }
 
-      .Header .lead {
-        max-width: 11em;
+      .Header pre {
+        font-family: Ubuntu Mono, sans-serif;
+      }
+
+      @media (min-width: 576px) {
+        .Header pre {
+          font-size: inherit;
+        }
       }
     </style>
 
     <header class="Header container">
       <div class="Header-floppy">
-        <div class="Floppy">
+        <div class="Floppy mb-4">
           <strong>
             <a href="https://github.com/makepost/acme-commander/blob/master/LICENSE">MIT license</a>
           </strong>
@@ -172,15 +173,14 @@
       </div>
 
       <div class="Header-content">
-        <h1>Acme Commander</h1>
-        <p class="lead">Orthodox file manager for modern Linux desktop</p>
-      </div>
+        <h1 class="mb-4">Orthodox file manager for modern Linux desktop</h1>
 
-      <pre class="bg-primary text-white p-4 w-100"># Ubuntu 17.10 or newer
-sudo apt update &amp;&amp; sudo apt install gjs nodejs python-gtk2
+        <pre><span class="text-muted"># Ubuntu 17.10 or newer</span>
+sudo apt update &amp;&amp; sudo apt install <a href="https://gitlab.gnome.org/GNOME/gjs" title="JavaScript bindings for GNOME, based on Spidermonkey engine and GObject introspection.">gjs</a> nodejs python-gtk2
 echo prefix=~/.local >> ~/.npmrc
 npm i -g acme-commander
 acme-commander</pre>
+      </div>
     </header>
 
     <div class="container">
@@ -194,14 +194,6 @@ acme-commander</pre>
             <div></div>
           </a>
         </section>
-
-        <style id="Pulse-style">
-          @media (min-width: 992px) {
-            .Pulse {
-              left: 70px;
-            }
-          }
-        </style>
 
         <section class="Pulse col-12 col-md">
           <h2>Pulse</h2>
