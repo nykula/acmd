@@ -146,6 +146,24 @@ describe("PanelService", () => {
     expect(panelService.entities[0].activeTabId).toBe(0);
   });
 
+  it("swaps", () => {
+    /** @type {any} */
+    const tabService = {
+      entities: {
+        0: { location: "file:///" },
+        1: { location: "file:///tmp" },
+      },
+
+      ls: expect.createSpy(),
+    };
+
+    const panelService = new PanelService({ tabService });
+    panelService.swap();
+
+    expect(tabService.ls).toHaveBeenCalledWith(0, "file:///tmp");
+    expect(tabService.ls).toHaveBeenCalledWith(1, "file:///");
+  });
+
   it("toggles active panel", () => {
     const panelService = new PanelService({});
     panelService.activeId = 0;

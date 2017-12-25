@@ -114,6 +114,7 @@ class Directory extends Component {
       [Gdk.KEY_j]: { ctrl: get("jobService.list").handler },
       [Gdk.KEY_l]: { ctrl: get("panelService.ls").handler },
       [Gdk.KEY_t]: { ctrl: get("panelService.createTab").handler },
+      [Gdk.KEY_u]: { ctrl: get("panelService.swap").handler },
       [Gdk.KEY_v]: { ctrl: get("directoryService.paste").handler },
       [Gdk.KEY_w]: { ctrl: get("panelService.removeTab").handler },
       [Gdk.KEY_x]: { ctrl: get("selectService.cut").handler },

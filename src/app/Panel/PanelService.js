@@ -418,6 +418,23 @@ class PanelService {
   }
 
   /**
+   * Opens source location in destination panel, and vice versa.
+   */
+  swap() {
+    const { entities, ls } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    const panel0TabId = this.entities[0].activeTabId;
+    const panel1TabId = this.entities[1].activeTabId;
+
+    const { location } = entities[panel0TabId];
+    const location1 = entities[panel1TabId].location;
+
+    ls(panel0TabId, location1);
+    ls(panel1TabId, location);
+  }
+
+  /**
    * Sets the inactive panel as active.
    */
   toggleActive() {
