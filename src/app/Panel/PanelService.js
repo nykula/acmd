@@ -119,6 +119,21 @@ class PanelService {
   }
 
   /**
+   * In destination, opens location of source.
+   */
+  equal() {
+    const { ls } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    const { location } = this.getActiveTab();
+
+    const panelId = this.getOppositeId();
+    const tabId = this.getActiveTabId(panelId);
+
+    ls(tabId, location);
+  }
+
+  /**
    * Opens next location in active panel history.
    */
   forward() {
@@ -314,7 +329,7 @@ class PanelService {
       return;
     }
 
-    const other = panelId === 0 ? 1 : 0;
+    const other = this.getOppositeId(panelId);
     const otherTab = this.getActiveTab(other);
     const otherPlace = this.getActivePlace(other);
 
@@ -495,6 +510,20 @@ class PanelService {
   getNextTabId() {
     const ids = this.entities[0].tabIds.concat(this.entities[1].tabIds);
     return Math.max.apply(null, ids) + 1;
+  }
+
+  /**
+   * Returns id of the other panel.
+   *
+   * @private
+   * @param {number=} panelId
+   */
+  getOppositeId(panelId) {
+    if (!panelId) {
+      panelId = this.activeId;
+    }
+
+    return panelId === 0 ? 1 : 0;
   }
 }
 

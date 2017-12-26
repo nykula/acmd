@@ -44,6 +44,24 @@ describe("PanelService", () => {
     });
   });
 
+  it("opens location of source in destination", () => {
+    /** @type {any} */
+    const tabService = {
+      entities: {
+        0: { location: "file:///tmp" },
+        1: {},
+      },
+
+      ls: expect.createSpy(),
+    };
+
+    const panelService = new PanelService({ tabService });
+    panelService.setActiveTab(0);
+    panelService.equal();
+
+    expect(tabService.ls).toHaveBeenCalledWith(1, "file:///tmp");
+  });
+
   it("lists files", () => {
     /** @type {any} */
     const dialogService = {};

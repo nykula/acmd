@@ -48,6 +48,7 @@ const menus = [
       { id: "panelService.back", label: "Back" },
       { id: "panelService.forward", label: "Forward" },
       { id: "panelService.ls", label: "Open location..." },
+      { id: "panelService.equal", label: "Destination = source" },
       { id: "panelService.swap", label: "Swap" },
     ],
 

@@ -110,6 +110,7 @@ class Directory extends Component {
       [Gdk.KEY_b]: { ctrl: get("windowService.showHidSys").handler },
       [Gdk.KEY_c]: { ctrl: get("selectService.copy").handler },
       [Gdk.KEY_d]: { ctrl: get("selectService.deselectAll").handler },
+      [Gdk.KEY_e]: { ctrl: get("panelService.equal").handler },
       [Gdk.KEY_I]: { ctrl: get("selectService.invert").handler },
       [Gdk.KEY_j]: { ctrl: get("jobService.list").handler },
       [Gdk.KEY_l]: { ctrl: get("panelService.ls").handler },
