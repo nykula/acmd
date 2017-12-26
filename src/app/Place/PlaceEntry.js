@@ -43,21 +43,16 @@ class PlaceEntry extends Component {
     }
 
     button.connect("clicked", () => {
-      if (!this.props.place.rootUri) {
-        return;
-      }
-
-      const { ls, setActive } =
+      const { openPlace } =
         /** @type {PanelService} */ (this.props.panelService);
 
       const { popovers } =
         /** @type {PlaceService} */ (this.props.placeService);
 
       const popover =
-      /** @type {Popover} */ (popovers[this.props.panelId]);
+        /** @type {Popover} */ (popovers[this.props.panelId]);
 
-      ls(this.props.place.rootUri, this.props.panelId);
-      setActive(this.props.panelId);
+      openPlace(this.props.panelId, this.props.place);
       popover.hide();
     });
   }

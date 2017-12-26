@@ -8,6 +8,7 @@ const {
 } = require("mobx");
 const { File } = require("../../domain/File/File");
 const { Panel } = require("../../domain/Panel/Panel");
+const { Place } = require("../../domain/Place/Place");
 const { DialogService } = require("../Dialog/DialogService");
 const { autoBind } = require("../Gjs/autoBind");
 const { PlaceService } = require("../Place/PlaceService");
@@ -293,6 +294,36 @@ class PanelService {
     }
 
     this.setActiveTab(tabIds[index]);
+  }
+
+  /**
+   * Sets panel location, taking from other panel if same root.
+   *
+   * @param {number} panelId
+   * @param {Place} place
+   */
+  openPlace(panelId, place) {
+    const { mountUuid } =
+      /** @type {PlaceService} */ (this.props.placeService);
+
+    if (!place.rootUri) {
+      mountUuid(place.uuid, () => {
+        this.openPlace(panelId, place);
+      });
+
+      return;
+    }
+
+    const other = panelId === 0 ? 1 : 0;
+    const otherTab = this.getActiveTab(other);
+    const otherPlace = this.getActivePlace(other);
+
+    this.setActive(panelId);
+
+    this.ls(
+      otherPlace === place ? otherTab.location : place.rootUri,
+      panelId,
+    );
   }
 
   /**

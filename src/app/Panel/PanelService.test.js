@@ -1,6 +1,7 @@
 const { FileType } = imports.gi.Gio;
 const expect = require("expect");
 const { toJS } = require("mobx");
+const { Place } = require("../../domain/Place/Place");
 const { TabService } = require("../Tab/TabService");
 const { EmptyProps } = require("../Test/Test");
 const { PanelService } = require("./PanelService");
@@ -108,6 +109,175 @@ describe("PanelService", () => {
 
     panelService.prevTab();
     expect(panelService.entities[0].activeTabId).toBe(0);
+  });
+
+  it("opens place, mounting if no root", () => {
+    /** @type {any} */
+    const dialogService = {};
+
+    /** @type {Place} */
+    const place = {
+      canUnmount: false,
+      filesystemFree: 0,
+      filesystemSize: 0,
+      icon: ". GThemedIcon drive-harddisk-usb drive-harddisk drive",
+      iconType: "GICON",
+      name: "System",
+      rootUri: null,
+      uuid: "random-uuid",
+    };
+
+    const handleUuid = expect.createSpy();
+
+    /** @type {any} */
+    const placeService = {
+      getActive: () => false,
+
+      /**
+       * @param {string} uuid
+       * @param {() => void} callback
+       */
+      mountUuid(uuid, callback) {
+        handleUuid(uuid);
+        place.rootUri = "file:///media/System";
+        callback();
+      },
+    };
+
+    const handleLocation = expect.createSpy();
+
+    /** @type {any} */
+    const tabService = {
+      entities: {
+        0: {},
+        1: {},
+      },
+
+      /**
+       * @param {number} _
+       * @param {string} uri
+       * @param {() => void} callback
+       */
+      ls(_, uri, callback) {
+        handleLocation(uri);
+        callback();
+      },
+    };
+
+    const panelService = new PanelService({
+      dialogService,
+      placeService,
+      tabService,
+    });
+
+    panelService.openPlace(0, place);
+
+    expect(handleUuid).toHaveBeenCalledWith("random-uuid");
+    expect(handleLocation).toHaveBeenCalledWith("file:///media/System");
+  });
+
+  it("opens place, taking location from other panel if same root", () => {
+    /** @type {any} */
+    const dialogService = {};
+
+    /** @type {Place} */
+    const otherPlace = {
+      canUnmount: false,
+      filesystemFree: 0,
+      filesystemSize: 0,
+      icon: "computer",
+      iconType: "ICON_NAME",
+      name: "/",
+      rootUri: "file:///",
+      uuid: null,
+    };
+
+    /** @type {any} */
+    const placeService = {
+      getActive: () => otherPlace,
+    };
+
+    const handleLocation = expect.createSpy();
+
+    /** @type {any} */
+    const tabService = {
+      entities: {
+        0: {},
+        1: { location: "file:///usr/share" },
+      },
+
+      /**
+       * @param {number} _
+       * @param {string} uri
+       * @param {() => void} callback
+       */
+      ls(_, uri, callback) {
+        handleLocation(uri);
+        callback();
+      },
+    };
+
+    const panelService = new PanelService({
+      dialogService,
+      placeService,
+      tabService,
+    });
+
+    panelService.openPlace(0, otherPlace);
+    expect(handleLocation).toHaveBeenCalledWith("file:///usr/share");
+  });
+
+  it("opens place", () => {
+    /** @type {any} */
+    const dialogService = {};
+
+    /** @type {any} */
+    const placeService = {
+      getActive: () => false,
+    };
+
+    const handleLocation = expect.createSpy();
+
+    /** @type {any} */
+    const tabService = {
+      entities: {
+        0: {},
+        1: {},
+      },
+
+      /**
+       * @param {number} _
+       * @param {string} uri
+       * @param {() => void} callback
+       */
+      ls(_, uri, callback) {
+        handleLocation(uri);
+        callback();
+      },
+    };
+
+    const panelService = new PanelService({
+      dialogService,
+      placeService,
+      tabService,
+    });
+
+    /** @type {Place} */
+    const place = {
+      canUnmount: false,
+      filesystemFree: 0,
+      filesystemSize: 0,
+      icon: "computer",
+      iconType: "ICON_NAME",
+      name: "/",
+      rootUri: "file:///tmp",
+      uuid: null,
+    };
+
+    panelService.openPlace(1, place);
+
+    expect(panelService.activeId).toBe(1);
+    expect(handleLocation).toHaveBeenCalledWith("file:///tmp");
   });
 
   it("removes tab, active if no id", () => {

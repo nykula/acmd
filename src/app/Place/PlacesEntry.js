@@ -38,11 +38,11 @@ class PlacesEntry extends Component {
   }
 
   handleClicked() {
-    const { ls, refresh, setActive } =
+    const { openPlace, refresh } =
       /** @type {PanelService} */ (this.props.panelService);
 
     const { mountUuid, unmount } =
-    /** @type {PlaceService} */ (this.props.placeService);
+      /** @type {PlaceService} */ (this.props.placeService);
 
     const { canUnmount, rootUri, uuid } = this.props.place;
 
@@ -53,8 +53,7 @@ class PlacesEntry extends Component {
       item = new Gtk.MenuItem();
       item.label = "Open";
       item.connect("activate", () => {
-        setActive(this.props.panelId);
-        ls(rootUri, this.props.panelId);
+        openPlace(this.props.panelId, this.props.place);
       });
       menu.add(item);
     }
@@ -78,6 +77,7 @@ class PlacesEntry extends Component {
     }
 
     if (!item) {
+      openPlace(this.props.panelId, this.props.place);
       return;
     }
 
