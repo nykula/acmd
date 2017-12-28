@@ -1,3 +1,4 @@
+const { Gravity } = imports.gi.Gdk;
 const {
   File,
   FileInfo,
@@ -12,10 +13,11 @@ const {
 } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const { PRIORITY_DEFAULT } = GLib;
-const { Button, Popover } = imports.gi.Gtk;
+const { Button, Menu, Popover } = imports.gi.Gtk;
 const { map, parallel } = require("async");
 const uniqBy = require("lodash/uniqBy");
-const { computed, extendObservable, runInAction } = require("mobx");
+const { action, computed, extendObservable, runInAction } = require("mobx");
+const Nullthrows = require("nullthrows").default;
 const Uri = require("url-parse");
 const { Place } = require("../../domain/Place/Place");
 const { GioAsync } = require("../Gio/GioAsync");
@@ -61,6 +63,12 @@ class PlaceService {
     /** @type {Place | undefined} */
     this.home = undefined;
 
+    /** @type {{ [panelId: number]: Menu | null }} */
+    this.menus = Object.defineProperties({}, {
+      0: props.refService.property("placeService.menus.0"),
+      1: props.refService.property("placeService.menus.1"),
+    });
+
     this.MountOperation = MountOperation;
 
     /** @type {Place[]} */
@@ -89,6 +97,9 @@ class PlaceService {
       uuid: null,
     };
 
+    /** @type {Place | undefined} */
+    this.selected = undefined;
+
     /** @type {{ [name: string]: string }} */
     this.shortNames = {};
 
@@ -114,6 +125,8 @@ class PlaceService {
       mounts: this.mounts,
       places: computed(this.getPlaces),
       root: this.root,
+      select: action(this.select),
+      selected: this.selected,
       shortNames: computed(this.getShortNames),
       specials: this.specials,
       trash: this.trash,
@@ -244,6 +257,15 @@ class PlaceService {
         }
       },
     );
+  }
+
+  /**
+   * Selects a given place. For example, context menu will use it.
+   *
+   * @param {Place} place
+   */
+  select(place) {
+    this.selected = place;
   }
 
   /**

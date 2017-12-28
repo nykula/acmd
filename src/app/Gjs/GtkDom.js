@@ -1,3 +1,5 @@
+const Gtk = imports.gi.Gtk;
+
 const noop = require("lodash/noop");
 const { MenuItemWithSubmenu } = require("../Menu/MenuItemWithSubmenu");
 const { TreeView } = require("../TreeView/TreeView");
@@ -21,7 +23,7 @@ function removeAllChildren() {
   });
 }
 
-function GtkDom(Gtk = imports.gi.Gtk, win = window) {
+function GtkDom() {
   this.createElement = this.createElement.bind(this);
   this.domify = this.domify.bind(this);
   this.require = this.require.bind(this);
@@ -29,7 +31,7 @@ function GtkDom(Gtk = imports.gi.Gtk, win = window) {
   /** @type {{ [key: string]: any }} */
   this.Gtk = Gtk;
 
-  this.window = win;
+  this.window = window;
 }
 
 /**
@@ -185,7 +187,7 @@ GtkDom.prototype.domify = function(node) {
  */
 GtkDom.prototype.createElement = function(tagName) {
   if (tagName === "menu-item-with-submenu") {
-    return new MenuItemWithSubmenu(this.domify(new this.Gtk.MenuItem()));
+    return new MenuItemWithSubmenu(this.domify(new Gtk.MenuItem()));
   }
 
   if (tagName === "stub") {
@@ -193,30 +195,32 @@ GtkDom.prototype.createElement = function(tagName) {
   }
 
   if (tagName === "stub-box") {
-    return new Stub(this.domify(new this.Gtk.Box()));
+    return new Stub(this.domify(new Gtk.Box()));
   }
 
   if (tagName === "combo-box") {
-    return new Stub(this.domify(new this.Gtk.ComboBox()));
+    return new Stub(this.domify(new Gtk.ComboBox()));
   }
 
   if (tagName === "list-store") {
-    return new Stub(this.domify(new this.Gtk.ListStore()));
+    return new Stub(this.domify(new Gtk.ListStore()));
   }
 
   if (tagName === "tree-view") {
-    return new TreeView(this.domify(new this.Gtk.TreeView()));
+    return new TreeView(this.domify(new Gtk.TreeView()));
   }
 
   tagName = tagName.replace(/(?:^|-)(.)/g, (_, x) => x.toUpperCase());
-  return this.domify(new this.Gtk[tagName]());
+
+  const Class = (/** @type {any} */ (Gtk))[tagName];
+  return this.domify(new Class());
 };
 
 /**
  * Inits GTK. Sets document, global and navigator globals.
  */
 GtkDom.prototype.require = function() {
-  this.Gtk.init(null);
+  Gtk.init(null);
 
   /** @type {any} */
   const window = this.window;

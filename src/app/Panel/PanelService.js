@@ -6,6 +6,7 @@ const {
   observable,
   runInAction,
 } = require("mobx");
+const Nullthrows = require("nullthrows").default;
 const { File } = require("../../domain/File/File");
 const { Panel } = require("../../domain/Panel/Panel");
 const { Place } = require("../../domain/Place/Place");
@@ -322,7 +323,7 @@ class PanelService {
       /** @type {PlaceService} */ (this.props.placeService);
 
     if (!place.rootUri) {
-      mountUuid(place.uuid, () => {
+      mountUuid(Nullthrows(place.uuid), () => {
         this.openPlace(panelId, place);
       });
 

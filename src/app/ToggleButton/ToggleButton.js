@@ -1,12 +1,15 @@
+const { Event } = imports.gi.Gdk;
 const { Button, StateFlags } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const Component = require("inferno-component").default;
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
+const { MouseEvent } = require("../Mouse/MouseEvent");
 
 /**
  * @typedef IProps
  * @property {boolean} active
+ * @property {any?} [menuCallback]
  * @property {any?} [pressedCallback]
  *
  * @extends Component<IProps>
@@ -40,6 +43,10 @@ class ToggleButton extends Component {
 
     this.node = node;
     this.resetActive();
+
+    if (this.props.menuCallback) {
+      MouseEvent.connectMenu(this.node, this.props.menuCallback);
+    }
 
     if (this.props.pressedCallback) {
       this.node.connect("pressed", this.props.pressedCallback);

@@ -1,3 +1,4 @@
+const { Event, Gravity } = imports.gi.Gdk;
 const {
   Box,
   Button,
@@ -9,10 +10,12 @@ const {
 } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
+const Nullthrows = require("nullthrows").default;
 const { Place } = require("../../domain/Place/Place");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
+const { MouseEvent } = require("../Mouse/MouseEvent");
 const { PanelService } = require("../Panel/PanelService");
 const { PlaceService } = require("../Place/PlaceService");
 
@@ -32,6 +35,25 @@ class PlaceEntry extends Component {
   constructor(props) {
     super(props);
     autoBind(this, PlaceEntry.prototype, __filename);
+
+    /**
+     * @type {Button | null}
+     */
+    this.button = null;
+  }
+
+  menu() {
+    const { menus, select } = Nullthrows(this.props.placeService);
+    const menu = Nullthrows(menus[this.props.panelId]);
+
+    select(this.props.place);
+
+    menu.popup_at_widget(
+      Nullthrows(this.button),
+      Gravity.CENTER,
+      Gravity.STATIC,
+      null,
+    );
   }
 
   /**
@@ -42,19 +64,22 @@ class PlaceEntry extends Component {
       return;
     }
 
+    this.button = button;
+
     button.connect("clicked", () => {
-      const { openPlace } =
-        /** @type {PanelService} */ (this.props.panelService);
-
-      const { popovers } =
-        /** @type {PlaceService} */ (this.props.placeService);
-
-      const popover =
-        /** @type {Popover} */ (popovers[this.props.panelId]);
+      const { openPlace } = Nullthrows(this.props.panelService);
+      const { popovers } = Nullthrows(this.props.placeService);
+      const popover = Nullthrows(popovers[this.props.panelId]);
 
       openPlace(this.props.panelId, this.props.place);
       popover.hide();
     });
+
+    if (this.props.menuCallback) {
+      MouseEvent.connectMenu(button, this.props.menuCallback);
+    }
+
+    button.connect("popup-menu", this.menu);
   }
 
   render() {

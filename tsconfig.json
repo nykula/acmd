@@ -8,7 +8,7 @@
     "strict": true,
     "noImplicitAny": true,
     "noImplicitThis": false,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "baseUrl": "src/types",

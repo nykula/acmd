@@ -411,6 +411,10 @@ mobx@*, mobx@^3.3.3:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/mobx/-/mobx-3.4.0.tgz#b97f98d973d1be26d185d3cfc78053dd4829ec95"
 
+"nullthrows@https://github.com/makepost/nullthrows":
+  version "1.0.0"
+  resolved "https://github.com/makepost/nullthrows#f67b2197ab2a7438142ae20ec96060398a311535"
+
 object-inspect@^1.1.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/object-inspect/-/object-inspect-1.4.0.tgz#7bcd84fd8db2e833285282bf8356ed87dcef7cf8"

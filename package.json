@@ -28,6 +28,7 @@
     "inferno-mobx": "^3.10.1",
     "lodash": "^4.17.4",
     "mobx": "^3.3.3",
+    "nullthrows": "https://github.com/makepost/nullthrows",
     "ts-for-gjs": "https://github.com/makepost/ts-for-gjs",
     "url-parse": "^1.2.0",
     "util": "^0.10.3"

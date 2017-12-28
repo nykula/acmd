@@ -3,6 +3,7 @@ const Directory = require("../Directory/Directory").default;
 const { h } = require("../Gjs/GtkInferno");
 const Location = require("../Location/Location").default;
 const Place = require("../Place/Place").default;
+const PlaceMenu = require("../Place/PlaceMenu").default;
 const Stats = require("../Stats/Stats").default;
 const TabList = require("../Tab/TabList").default;
 
@@ -17,6 +18,10 @@ function Panel(props) {
     h(Box, { orientation: Orientation.VERTICAL }, [
       h(Place, {
         key: "PLACE",
+        panelId,
+      }),
+      h(PlaceMenu, {
+        key: "PLACE_MENU",
         panelId,
       }),
       h(TabList, {

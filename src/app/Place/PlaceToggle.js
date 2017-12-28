@@ -1,9 +1,12 @@
+const { Gravity } = imports.gi.Gdk;
 const { Box, Button, IconSize, Image, Label, Popover } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
+const Nullthrows = require("nullthrows").default;
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
+const { MouseEvent } = require("../Mouse/MouseEvent");
 const { PanelService } = require("../Panel/PanelService");
 const { PlaceService } = require("./PlaceService");
 
@@ -32,29 +35,35 @@ class PlaceToggle extends Component {
       return;
     }
 
-    const { toggles } =
-      /** @type {PlaceService} */ (this.props.placeService);
-
+    const { toggles } = Nullthrows(this.props.placeService);
     toggles[this.props.panelId] = button;
 
     button.connect("clicked", () => {
-      const { popovers } =
-        /** @type {PlaceService} */ (this.props.placeService);
-
-      const popover =
-        /** @type {Popover} */ (popovers[this.props.panelId]);
+      const { popovers } = Nullthrows(this.props.placeService);
+      const popover = Nullthrows(popovers[this.props.panelId]);
 
       popover.show_all();
+    });
+
+    MouseEvent.connectMenu(button, () => {
+      const { getActivePlace } = Nullthrows(this.props.panelService);
+      const { menus, select } = Nullthrows(this.props.placeService);
+      const menu = Nullthrows(menus[this.props.panelId]);
+
+      select(getActivePlace(this.props.panelId));
+
+      menu.popup_at_widget(
+        button,
+        Gravity.CENTER,
+        Gravity.STATIC,
+        null,
+      );
     });
   }
 
   render() {
-    const { getActivePlace } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    const { shortNames } =
-      /** @type {PlaceService} */ (this.props.placeService);
-
+    const { getActivePlace } = Nullthrows(this.props.panelService);
+    const { shortNames } = Nullthrows(this.props.placeService);
     const activePlace = getActivePlace(this.props.panelId);
 
     return (

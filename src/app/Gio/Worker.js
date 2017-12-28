@@ -11,6 +11,19 @@ const { autoBind } = require("../Gjs/autoBind");
  */
 class Worker {
   /**
+   * @param {File} gFile
+   */
+  static flatten(gFile) {
+    /** @type {any} */
+    const props = undefined;
+
+    /** @type {any} */
+    const emit = undefined;
+
+    return new Worker(props, emit).flatten(gFile);
+  }
+
+  /**
    * @param {WorkerProps} props
    * @param {(event: WorkerError | WorkerProgress | WorkerSuccess) => void} emit
    */
@@ -210,7 +223,7 @@ class Worker {
    * @param {File} gFile
    */
   flatten(gFile) {
-    /** @type {any[]} */
+    /** @type {{ dest: File, destUri: string, relativePath: string }[]} */
     const files = [];
 
     const data = {

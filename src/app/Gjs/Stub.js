@@ -25,7 +25,7 @@ function Stub(node) {
 /**
  * @type {any[]}
  */
-Stub.prototype.children = undefined;
+Stub.prototype.children = [];
 
 /**
  * @type {TreeIter | undefined}
@@ -37,7 +37,7 @@ Stub.prototype.iter = undefined;
  */
 Stub.prototype.appendChild = function(newChild) {
   newChild.parentNode = this;
-  this.children.push(newChild);
+  (/** @type {any[]} */ (this.children)).push(newChild);
 };
 
 /**

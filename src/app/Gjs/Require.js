@@ -1,10 +1,10 @@
-const { FileQueryInfoFlags, FileType } = imports.gi.Gio;
+const { File, FileQueryInfoFlags, FileType } = imports.gi.Gio;
 
 // tslint:disable:no-var-keyword
 var Require = class {
   // tslint:enable:no-var-keyword
   constructor(Gio = imports.gi.Gio, GLib = imports.gi.GLib, imp = imports, win = window) {
-    this.Gio = Gio;
+    this.File = Gio.File;
     this.GLib = GLib;
     this.imports = imp;
     this.window = win;
@@ -49,7 +49,7 @@ var Require = class {
     /**
      * Regular expression to get current module path from error stack.
      */
-    this.RE = /\n.*?@(.*?):/;
+    this.RE = /^[\s\S]*?\n.*?@(.*?):[\s\S]*/;
 
     /**
      * Creates function from string. Breaks coverage for the module defining it,
@@ -164,6 +164,7 @@ var Require = class {
     const env = {};
 
     for (const pair of pairs) {
+      /** @type {any} */
       const match = pair.match(/^([^=]+)=(.*)$/);
       env[match[1]] = match[2];
     }
@@ -177,8 +178,8 @@ var Require = class {
    * @param {string} path
    */
   getOrCreate(path) {
-    const gFile = this.Gio.File.new_for_path(path);
-    const dirname = gFile.get_parent().get_path();
+    const gFile = this.File.new_for_path(path);
+    const dirname = this.dirname(gFile);
     const filename = gFile.get_path();
 
     const module = this.cache[filename] ||
@@ -213,8 +214,8 @@ var Require = class {
        * Returns the full path to the module that requested it.
        */
       get: () => {
-        const path = this.RE.exec(new Error().stack)[1];
-        return this.Gio.File.new_for_path(path).get_path();
+        const path = String(new Error().stack).replace(this.RE, "$1");
+        return this.File.new_for_path(path).get_path();
       },
     });
 
@@ -223,8 +224,8 @@ var Require = class {
        * Returns the full path to the parent dir of the module that requested it.
        */
       get: () => {
-        const path = this.RE.exec(new Error().stack)[1];
-        return this.Gio.File.new_for_path(path)
+        const path = String(new Error().stack).replace(this.RE, "$1");
+        return this.File.new_for_path(path)
           .get_path()
           .replace(/.[^/]+$/, "");
       },
@@ -237,7 +238,7 @@ var Require = class {
        * like CommonJS would.
        */
       get: () => {
-        const path = this.RE.exec(new Error().stack)[1];
+        const path = String(new Error().stack).replace(this.RE, "$1");
         const module = this.getOrCreate(path);
         return module.exports;
       },
@@ -249,7 +250,7 @@ var Require = class {
        * replace the default exported object if you really need to.
        */
       get: () => {
-        const path = this.RE.exec(new Error().stack)[1];
+        const path = String(new Error().stack).replace(this.RE, "$1");
         const module = this.getOrCreate(path);
         return module;
       },
@@ -261,12 +262,12 @@ var Require = class {
        * requested it.
        */
       get: () => {
-        const parentPath = this.RE.exec(new Error().stack)[1];
-        const gFile = this.Gio.File.new_for_path(parentPath);
+        const dirname = String(new Error().stack).replace(this.RE, "$1");
+        const gFile = this.File.new_for_path(dirname);
         const parentFilename = gFile.get_path();
         const require = this.requireModule.bind(null, parentFilename);
         require.cache = this.cache;
-        require.resolve = this.resolve.bind(null, gFile.get_parent().get_path());
+        require.resolve = this.resolve.bind(null, this.dirname(gFile));
         return require;
       },
     });
@@ -278,7 +279,6 @@ var Require = class {
     this.LOAD_NODE_MODULES = memoize(this.LOAD_NODE_MODULES);
     this.NODE_MODULES_PATHS = memoize(this.NODE_MODULES_PATHS);
     this.IS_FILE = memoize(this.IS_FILE);
-    this.DIRNAME = memoize(this.DIRNAME);
     this.JOIN = memoize(this.JOIN);
 
     this.Fun = require("./Fun").Fun;
@@ -299,7 +299,8 @@ var Require = class {
       Y = "/"; // filesystem root
     }
 
-    let result = "";
+    /** @type {string | undefined} */
+    let result = undefined;
 
     if (X.slice(0, 2) === "./" || X[0] === "/" || X.slice(0, 3) === "../") {
       result =
@@ -417,7 +418,7 @@ var Require = class {
    * @param {string} X
    */
   IS_FILE(X) {
-    const gFile = this.Gio.file_new_for_path(X);
+    const gFile = this.File.new_for_path(X);
 
     if (!gFile.query_exists(null)) {
       return false;
@@ -434,21 +435,20 @@ var Require = class {
 
   /**
    * @param {string} X
+   * @param {string} Y
    */
-  DIRNAME(X) {
-    return this.Gio.file_new_for_path(X)
-      .get_parent()
+  JOIN(X, Y) {
+    return this.File.new_for_path(X)
+      .resolve_relative_path(Y)
       .get_path();
   }
 
   /**
-   * @param {string} X
-   * @param {string} Y
+   * @param {File} gFile
    */
-  JOIN(X, Y) {
-    return this.Gio.file_new_for_path(X)
-      .resolve_relative_path(Y)
-      .get_path();
+  dirname(gFile) {
+    const parent = /** @type {File} */ (gFile.get_parent());
+    return parent.get_path();
   }
 
   /**
@@ -471,9 +471,7 @@ var Require = class {
    * @param {string} path
    */
   requireClosure(parentFilename, path) {
-    const dirname = this.Gio.file_new_for_path(parentFilename)
-      .get_parent()
-      .get_path();
+    const dirname = this.dirname(this.File.new_for_path(parentFilename));
     const filename = this.resolve(dirname, path);
 
     if (this.cache[filename]) {
@@ -511,9 +509,7 @@ var Require = class {
    * @param {string} path
    */
   requireModule(parentFilename, path) {
-    const dirname = this.Gio.File.new_for_path(parentFilename)
-      .get_parent()
-      .get_path();
+    const dirname = this.dirname(this.File.new_for_path(parentFilename));
     const filename = this.resolve(dirname, path);
 
     if (this.cache[filename]) {

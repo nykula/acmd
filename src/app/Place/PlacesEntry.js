@@ -1,7 +1,8 @@
-const Gtk = imports.gi.Gtk;
-const { Box, Image, Label } = Gtk;
+const { Gravity } = imports.gi.Gdk;
+const { Box, Button, IconSize, Image, Label, ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
+const Nullthrows = require("nullthrows").default;
 const { Place } = require("../../domain/Place/Place");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
@@ -37,52 +38,26 @@ class PlacesEntry extends Component {
     return place === this.props.place;
   }
 
-  handleClicked() {
-    const { openPlace, refresh } =
-      /** @type {PanelService} */ (this.props.panelService);
+  /**
+   * @param {Button} button
+   */
+  menu(button) {
+    const { menus, select } = Nullthrows(this.props.placeService);
+    const menu = Nullthrows(menus[this.props.panelId]);
 
-    const { mountUuid, unmount } =
-      /** @type {PlaceService} */ (this.props.placeService);
+    select(this.props.place);
 
-    const { canUnmount, rootUri, uuid } = this.props.place;
+    menu.popup_at_widget(
+      button,
+      Gravity.CENTER,
+      Gravity.STATIC,
+      null,
+    );
+  }
 
-    const menu = new Gtk.Menu();
-    let item;
-
-    if (rootUri && !this.isActive()) {
-      item = new Gtk.MenuItem();
-      item.label = "Open";
-      item.connect("activate", () => {
-        openPlace(this.props.panelId, this.props.place);
-      });
-      menu.add(item);
-    }
-
-    if (rootUri && canUnmount && !this.isActive()) {
-      item = new Gtk.MenuItem();
-      item.label = "Unmount";
-      item.connect("activate", () => {
-        unmount(rootUri, refresh);
-      });
-      menu.add(item);
-    }
-
-    if (!rootUri && uuid) {
-      item = new Gtk.MenuItem();
-      item.label = "Mount";
-      item.connect("activate", () => {
-        mountUuid(uuid, refresh);
-      });
-      menu.add(item);
-    }
-
-    if (!item) {
-      openPlace(this.props.panelId, this.props.place);
-      return;
-    }
-
-    menu.show_all();
-    menu.popup(null, null, null, 0, 0);
+  open() {
+    const { openPlace } = Nullthrows(this.props.panelService);
+    openPlace(this.props.panelId, this.props.place);
   }
 
   render() {
@@ -94,14 +69,15 @@ class PlacesEntry extends Component {
     return h(ToggleButton, {
       active: this.isActive(),
       can_focus: false,
-      pressedCallback: this.handleClicked,
-      relief: Gtk.ReliefStyle.NONE,
+      menuCallback: this.menu,
+      pressedCallback: this.open,
+      relief: ReliefStyle.NONE,
       tooltip_text: status(this.props.place),
     }, [
         h(Box, { spacing: 4 }, [
           h(Image, {
             gicon: GioIcon.get({ icon: icon, iconType: iconType }),
-            icon_size: Gtk.IconSize.SMALL_TOOLBAR,
+            icon_size: IconSize.SMALL_TOOLBAR,
           }),
           h(Label, { label: shortNames[name] }),
         ]),
