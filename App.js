@@ -167,17 +167,19 @@ App.prototype.listReleases = function() {
     .then((/** @type {{ data: Release[] }} */ res) => {
       const section = this.$(".Releases");
 
-      let prevMajor = -1;
-      let prevMinor = -1;
+      /** @type {string[]} */
+      const minors = [];
 
       for (let i = 0; i < res.data.length; i++) {
         const release = res.data[i];
 
-        const version = release.tag_name
+        const minor = release.tag_name
           .split(/[^\d]/)
-          .map(Number);
+          .map(Number)
+          .slice(1, 3)
+          .join(".");
 
-        if (i && (version[1] !== prevMajor || version[2] !== prevMinor)) {
+        if (i && (minors.length > 1 && minor !== minors[minors.length - 1])) {
           const action = Action({
             className: "btn-outline-secondary",
             href: this.baseUrl + "/releases",
@@ -210,8 +212,9 @@ App.prototype.listReleases = function() {
 
         section.appendChild(article);
 
-        prevMajor = version[1];
-        prevMinor = version[2];
+        if (minors.indexOf(minor) === -1) {
+          minors.push(minor);
+        }
       }
     })
     .catch(this.debug);
