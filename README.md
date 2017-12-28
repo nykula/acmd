@@ -6,11 +6,11 @@ Twin-panel file manager.
 
 ## Usage
 
-Make sure you have a GNOME JavaScript runtime, v1.50 or newer, and PyGTK:
+[Quick start](https://acme.js.org/) assumes you run a common desktop. Customizing your system? Make sure you have all dependencies, including GNOME JavaScript v1.52 or newer, and PyGTK:
 
 ```bash
 # Ubuntu 17.10
-sudo apt update && sudo apt install gjs python-gtk2
+sudo apt update && sudo apt install bash coreutils gir1.2-gtk-3.0 git gjs npm python-gtk2
 ```
 
 Then install with [npm](https://nodejs.org/en/download/):
@@ -26,6 +26,11 @@ npm i -g acme-commander
 Run:
 
 ```bash
+acme-commander
+
+# Command not found? Add a search path:
+echo 'export PATH="~/.local/bin:\$PATH"' >> ~/.profile
+source ~/.profile
 acme-commander
 ```
 
