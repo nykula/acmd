@@ -1,4 +1,4 @@
-const { Event, Gravity } = imports.gi.Gdk;
+const { DragAction, Event, Gravity } = imports.gi.Gdk;
 const {
   Box,
   Button,
@@ -12,15 +12,18 @@ const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const Nullthrows = require("nullthrows").default;
 const { Place } = require("../../domain/Place/Place");
+const { Drag } = require("../Drag/Drag");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
+const { JobService } = require("../Job/JobService");
 const { MouseEvent } = require("../Mouse/MouseEvent");
 const { PanelService } = require("../Panel/PanelService");
 const { PlaceService } = require("../Place/PlaceService");
 
 /**
  * @typedef IProps
+ * @property {JobService?} [jobService]
  * @property {number} panelId
  * @property {Place} place
  * @property {PanelService?} [panelService]
@@ -42,7 +45,21 @@ class PlaceEntry extends Component {
     this.button = null;
   }
 
-  menu() {
+  /**
+   * @param {{ action: number, uris: string[] }} ev
+   */
+  handleDrop(ev) {
+    const { run } = Nullthrows(this.props.jobService);
+    const { refresh } = Nullthrows(this.props.panelService);
+
+    run({
+      destUri: Nullthrows(this.props.place.rootUri),
+      type: ev.action === DragAction.MOVE ? "mv" : "cp",
+      uris: ev.uris,
+    }, refresh);
+  }
+
+  handleMenu() {
     const { menus, select } = Nullthrows(this.props.placeService);
     const menu = Nullthrows(menus[this.props.panelId]);
 
@@ -75,11 +92,11 @@ class PlaceEntry extends Component {
       popover.hide();
     });
 
-    if (this.props.menuCallback) {
-      MouseEvent.connectMenu(button, this.props.menuCallback);
-    }
+    new Drag(button).onDrop(this.handleDrop);
 
-    button.connect("popup-menu", this.menu);
+    MouseEvent.connectMenu(button, this.handleMenu);
+
+    button.connect("popup-menu", this.handleMenu);
   }
 
   render() {
@@ -107,4 +124,4 @@ class PlaceEntry extends Component {
 }
 
 exports.PlaceEntry = PlaceEntry;
-exports.default = connect(["panelService", "placeService"])(PlaceEntry);
+exports.default = connect(["jobService", "panelService", "placeService"])(PlaceEntry);

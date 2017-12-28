@@ -1,4 +1,4 @@
-const { Gravity } = imports.gi.Gdk;
+const { DragAction, Gravity } = imports.gi.Gdk;
 const { Box, Button, IconSize, Image, Label, ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
@@ -7,12 +7,14 @@ const { Place } = require("../../domain/Place/Place");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
+const { JobService } = require("../Job/JobService");
 const { PanelService } = require("../Panel/PanelService");
 const ToggleButton = require("../ToggleButton/ToggleButton").default;
 const { PlaceService } = require("./PlaceService");
 
 /**
  * @typedef IProps
+ * @property {JobService?} [jobService]
  * @property {number} panelId
  * @property {PanelService?} [panelService]
  * @property {Place} place
@@ -29,19 +31,24 @@ class PlacesEntry extends Component {
     autoBind(this, PlacesEntry.prototype, __filename);
   }
 
-  isActive() {
-    const { getActivePlace } =
-      /** @type {PanelService} */ (this.props.panelService);
+  /**
+   * @param {{ action: number, uris: string[] }} ev
+   */
+  handleDrop(ev) {
+    const { run } = Nullthrows(this.props.jobService);
+    const { refresh } = Nullthrows(this.props.panelService);
 
-    const place = getActivePlace(this.props.panelId);
-
-    return place === this.props.place;
+    run({
+      destUri: Nullthrows(this.props.place.rootUri),
+      type: ev.action === DragAction.MOVE ? "mv" : "cp",
+      uris: ev.uris,
+    }, refresh);
   }
 
   /**
    * @param {Button} button
    */
-  menu(button) {
+  handleMenu(button) {
     const { menus, select } = Nullthrows(this.props.placeService);
     const menu = Nullthrows(menus[this.props.panelId]);
 
@@ -55,22 +62,28 @@ class PlacesEntry extends Component {
     );
   }
 
-  open() {
+  handlePressed() {
     const { openPlace } = Nullthrows(this.props.panelService);
     openPlace(this.props.panelId, this.props.place);
   }
 
-  render() {
-    const { shortNames, status } =
-      /** @type {PlaceService} */ (this.props.placeService);
+  isActive() {
+    const { getActivePlace } = Nullthrows(this.props.panelService);
+    const place = getActivePlace(this.props.panelId);
 
+    return place === this.props.place;
+  }
+
+  render() {
+    const { shortNames, status } = Nullthrows(this.props.placeService);
     const { icon, iconType, name } = this.props.place;
 
     return h(ToggleButton, {
       active: this.isActive(),
       can_focus: false,
-      menuCallback: this.menu,
-      pressedCallback: this.open,
+      dropCallback: this.handleDrop,
+      menuCallback: this.handleMenu,
+      pressedCallback: this.handlePressed,
       relief: ReliefStyle.NONE,
       tooltip_text: status(this.props.place),
     }, [
@@ -86,4 +99,4 @@ class PlacesEntry extends Component {
 }
 
 exports.PlacesEntry = PlacesEntry;
-exports.default = connect(["panelService", "placeService"])(PlacesEntry);
+exports.default = connect(["jobService", "panelService", "placeService"])(PlacesEntry);

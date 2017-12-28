@@ -1,8 +1,9 @@
-const { Gravity } = imports.gi.Gdk;
+const { DragAction, Gravity } = imports.gi.Gdk;
 const { Box, Button, IconSize, Image, Label, Popover } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const Nullthrows = require("nullthrows").default;
+const { Drag } = require("../Drag/Drag");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
@@ -27,6 +28,13 @@ class PlaceToggle extends Component {
     autoBind(this, PlaceToggle.prototype, __filename);
   }
 
+  show() {
+    const { popovers } = Nullthrows(this.props.placeService);
+    const popover = Nullthrows(popovers[this.props.panelId]);
+
+    popover.show_all();
+  }
+
   /**
    * @param {Button | null} button
    */
@@ -38,12 +46,9 @@ class PlaceToggle extends Component {
     const { toggles } = Nullthrows(this.props.placeService);
     toggles[this.props.panelId] = button;
 
-    button.connect("clicked", () => {
-      const { popovers } = Nullthrows(this.props.placeService);
-      const popover = Nullthrows(popovers[this.props.panelId]);
+    button.connect("clicked", this.show);
 
-      popover.show_all();
-    });
+    new Drag(button).onMotion(this.show);
 
     MouseEvent.connectMenu(button, () => {
       const { getActivePlace } = Nullthrows(this.props.panelService);

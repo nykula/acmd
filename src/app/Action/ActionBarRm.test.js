@@ -31,11 +31,6 @@ describe("ActionBarRm", () => {
     };
 
     /** @type {any} */
-    const selectionData = {
-      get_uris: () => ["file:///foo.bar"],
-    };
-
-    /** @type {any} */
     const panelService = {
       refresh: expect.createSpy(),
     };
@@ -44,7 +39,9 @@ describe("ActionBarRm", () => {
       jobService,
       label: "",
       panelService,
-    }).handleDrop(undefined, undefined, 0, 0, selectionData);
+    }).handleDrop({
+      uris: ["file:///foo.bar"],
+    });
 
     expect(jobService.run).toHaveBeenCalledWith({
       destUri: "",

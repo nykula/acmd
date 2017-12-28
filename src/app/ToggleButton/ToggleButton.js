@@ -1,7 +1,8 @@
-const { Event } = imports.gi.Gdk;
+const { DragAction, Event } = imports.gi.Gdk;
 const { Button, StateFlags } = imports.gi.Gtk;
 const assign = require("lodash/assign");
 const Component = require("inferno-component").default;
+const { Drag } = require("../Drag/Drag");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { MouseEvent } = require("../Mouse/MouseEvent");
@@ -9,6 +10,7 @@ const { MouseEvent } = require("../Mouse/MouseEvent");
 /**
  * @typedef IProps
  * @property {boolean} active
+ * @property {any?} [dropCallback]
  * @property {any?} [menuCallback]
  * @property {any?} [pressedCallback]
  *
@@ -24,7 +26,7 @@ class ToggleButton extends Component {
     /**
      * @type {Button | undefined}
      */
-    this.node = undefined;
+    this.button = undefined;
 
     autoBind(this, ToggleButton.prototype, __filename);
   }
@@ -34,30 +36,34 @@ class ToggleButton extends Component {
   }
 
   /**
-   * @param {Button | null} node
+   * @param {Button | null} button
    */
-  ref(node) {
-    if (!node) {
+  ref(button) {
+    if (!button) {
       return;
     }
 
-    this.node = node;
+    this.button = button;
     this.resetActive();
 
+    if (this.props.dropCallback) {
+      new Drag(button).onDrop(this.props.dropCallback);
+    }
+
     if (this.props.menuCallback) {
-      MouseEvent.connectMenu(this.node, this.props.menuCallback);
+      MouseEvent.connectMenu(this.button, this.props.menuCallback);
     }
 
     if (this.props.pressedCallback) {
-      this.node.connect("pressed", this.props.pressedCallback);
+      this.button.connect("pressed", this.props.pressedCallback);
     }
   }
 
   resetActive() {
-    if (this.node && this.props.active) {
-      this.node.set_state_flags(StateFlags.CHECKED, false);
-    } else if (this.node) {
-      this.node.unset_state_flags(StateFlags.CHECKED);
+    if (this.button && this.props.active) {
+      this.button.set_state_flags(StateFlags.CHECKED, false);
+    } else if (this.button) {
+      this.button.unset_state_flags(StateFlags.CHECKED);
     }
   }
 

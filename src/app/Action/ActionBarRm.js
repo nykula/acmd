@@ -1,9 +1,11 @@
 const { DragAction } = imports.gi.Gdk;
 const { Button, DestDefaults, ReliefStyle } = imports.gi.Gtk;
 const Component = require("inferno-component").default;
-const { h } = require("../Gjs/GtkInferno");
 const { connect } = require("inferno-mobx");
+const Nullthrows = require("nullthrows").default;
+const { Drag } = require("../Drag/Drag");
 const { autoBind } = require("../Gjs/autoBind");
+const { h } = require("../Gjs/GtkInferno");
 const { JobService } = require("../Job/JobService");
 const { PanelService } = require("../Panel/PanelService");
 const { SelectService } = require("../Select/SelectService");
@@ -26,29 +28,22 @@ class ActionBarRm extends Component {
     autoBind(this, ActionBarRm.prototype, __filename);
   }
 
-  // tslint:disable:variable-name
   /**
-   * @param {any} _node
-   * @param {any} _dragContext
-   * @param {number} _x
-   * @param {number} _y
-   * @param {{ get_uris(): string[] }} selectionData
+   * @param {{ uris: string[] }} ev
    */
-  handleDrop(_node, _dragContext, _x, _y, selectionData) {
-    const { run } = /** @type {JobService} */ (this.props.jobService);
-    const { refresh } = /** @type {PanelService} */ (this.props.panelService);
-    const uris = selectionData.get_uris();
+  handleDrop(ev) {
+    const { run } = Nullthrows(this.props.jobService);
+    const { refresh } = Nullthrows(this.props.panelService);
 
     run({
       destUri: "",
       type: "rm",
-      uris,
+      uris: ev.uris,
     }, refresh);
   }
-  // tslint-enable: variable-name
 
   handlePressed() {
-    const { rm } = /** @type {SelectService} */ (this.props.selectService);
+    const { rm } = Nullthrows(this.props.selectService);
     rm();
   }
 
@@ -60,10 +55,8 @@ class ActionBarRm extends Component {
       return;
     }
 
-    node.connect("drag-data-received", this.handleDrop);
+    new Drag(node, { action: DragAction.MOVE }).onDrop(this.handleDrop);
     node.connect("pressed", this.handlePressed);
-    node.drag_dest_set(DestDefaults.ALL, [], DragAction.MOVE);
-    node.drag_dest_add_uri_targets();
   }
 
   render() {
