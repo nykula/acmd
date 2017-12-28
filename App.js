@@ -197,7 +197,12 @@ App.prototype.listReleases = function() {
         });
 
         const body = e("blockquote");
-        body.innerHTML = new Remarkable().render(release.body);
+        body.innerHTML = new Remarkable().render(
+          release.body.replace(
+            /#([0-9]+)/g,
+            "[#$1](" + this.baseUrl + "/issues/$1)",
+          ),
+        );
         article.appendChild(body);
 
         if (!i) {
