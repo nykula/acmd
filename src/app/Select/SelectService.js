@@ -2,8 +2,8 @@ const { Event, Gravity, Rectangle } = imports.gi.Gdk;
 const { action, extendObservable } = require("mobx");
 const { FileHandler } = require("../../domain/File/FileHandler");
 const { ClipboardService } = require("../Clipboard/ClipboardService");
+const { CursorService } = require("../Cursor/CursorService");
 const { DialogService } = require("../Dialog/DialogService");
-const { GioService } = require("../Gio/GioService");
 const { autoBind } = require("../Gjs/autoBind");
 const { JobService } = require("../Job/JobService");
 const { PanelService } = require("../Panel/PanelService");
@@ -17,8 +17,8 @@ class SelectService {
   /**
    * @typedef IProps
    * @property {ClipboardService?} [clipboardService]
+   * @property {CursorService?} [cursorService]
    * @property {DialogService?} [dialogService]
-   * @property {GioService?} [gioService]
    * @property {JobService?} [jobService]
    * @property {PanelService?} [panelService]
    * @property {RefService?} [refService]
@@ -152,11 +152,11 @@ class SelectService {
    * @param {{ keyEvent?: Event, mouseEvent?: Event, rect?: Rectangle, win?: Window }} props
    */
   menu(props) {
+    const { getHandlers } =
+      /** @type {CursorService} */ (this.props.cursorService);
+
     const { alert } =
       /** @type {DialogService} */ (this.props.dialogService);
-
-    const { getHandlers } =
-      /** @type {GioService} */ (this.props.gioService);
 
     const { get } =
     /** @type {RefService} */ (this.props.refService);

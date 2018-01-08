@@ -101,6 +101,94 @@ describe("CursorService", () => {
     ]);
   });
 
+  it("gets handlers", () => {
+    /** @type {any} */
+    const AppInfo = {
+      get_all_for_type: () => [
+        {
+          get_commandline: () => "/usr/share/code/code --unity-launch %U",
+          get_display_name: () => "Visual Studio Code",
+          get_icon: () => ({
+            to_string: () => "code",
+          }),
+        },
+        {
+          get_commandline: () => "/usr/bin/gedit %U",
+          get_display_name: () => "Text Editor",
+          get_icon: () => ({
+            to_string: () => "gedit",
+          }),
+        },
+        {
+          get_commandline: () => "/usr/bin/foobar %U",
+          get_display_name: () => "Foobar",
+          get_icon: () => false,
+        },
+        {
+          get_commandline: () => "/usr/bin/gedit %U",
+          get_display_name: () => "Text Editor",
+          get_icon: () => ({
+            to_string: () => "gedit",
+          }),
+        },
+      ],
+      get_default_for_type: () => ({
+        get_commandline: () => "/usr/bin/gedit %U",
+        get_display_name: () => "Text Editor",
+        get_icon: () => ({
+          to_string: () => "gedit",
+        }),
+      }),
+    };
+
+    /** @type {any} */
+    const File = {
+      new_for_uri: () => ({}),
+    };
+
+    /** @type {any} */
+    const gioService = {
+      communicate: function() {
+        arguments[arguments.length - 1](undefined, "something random");
+      },
+
+      queryInfo: function() {
+        arguments[arguments.length - 1](undefined, {
+          get_content_type: () => "text/plain",
+        });
+      },
+    };
+
+    const cursorService = new CursorService({ gioService });
+
+    cursorService.AppInfo = AppInfo;
+    cursorService.File = File;
+
+    const callback = expect.createSpy();
+    cursorService.getHandlers("file:///foo.bar", callback);
+
+    expect(callback).toHaveBeenCalledWith(undefined, {
+      contentType: "text/plain",
+      handlers: [
+        {
+          commandline: "/usr/bin/gedit %U",
+          displayName: "Text Editor",
+          icon: "gedit",
+        },
+        {
+          commandline: "/usr/share/code/code --unity-launch %U",
+          displayName: "Visual Studio Code",
+          icon: "code",
+        },
+        {
+          commandline: "/usr/bin/foobar %U",
+          displayName: "Foobar",
+          icon: null,
+        },
+      ],
+    });
+  });
+
   it("opens dotdot", () => {
     /** @type {any} */
     const dialogService = {};
@@ -170,7 +258,7 @@ describe("CursorService", () => {
 
     /** @type {any} */
     const gioService = {
-      getHandlers: function() {
+      communicate: function() {
         arguments[arguments.length - 1]({
           toString: () => "error message",
         });
@@ -200,16 +288,30 @@ describe("CursorService", () => {
 
   it("opens file, alerting if no handlers", () => {
     /** @type {any} */
+    const AppInfo = {
+      get_all_for_type: () => [],
+      get_default_for_type: () => false,
+    };
+
+    /** @type {any} */
     const dialogService = {
       alert: expect.createSpy(),
     };
 
     /** @type {any} */
+    const File = {
+      new_for_uri: () => ({}),
+    };
+
+    /** @type {any} */
     const gioService = {
-      getHandlers: function() {
+      communicate: function() {
+        arguments[arguments.length - 1](undefined, "something random");
+      },
+
+      queryInfo: function() {
         arguments[arguments.length - 1](undefined, {
-          contentType: "text/plain",
-          handlers: [],
+          get_content_type: () => "text/plain",
         });
       },
     };
@@ -231,30 +333,43 @@ describe("CursorService", () => {
       tabService,
     });
 
+    cursorService.AppInfo = AppInfo;
+    cursorService.File = File;
+
     cursorService.open();
     expect(dialogService.alert.calls[0].arguments[0]).toMatch(/text.plain/);
   });
 
   it("opens file", () => {
     /** @type {any} */
-    const dialogService = {};
+    const AppInfo = {
+      get_all_for_type: () => [],
 
-    /** @type {FileHandler} */
-    const handler = {
-      commandline: "/usr/bin/gedit %U",
-      displayName: "Text Editor",
-      icon: "gedit",
+      get_default_for_type: () => ({
+        get_commandline: () => "/usr/bin/gedit %U",
+        get_display_name: () => "Text Editor",
+        get_icon: () => ({
+          to_string: () => "gedit",
+        }),
+      }),
     };
 
     /** @type {any} */
+    const dialogService = {};
+
+    /** @type {any} */
     const gioService = {
-      getHandlers: function() {
-        arguments[arguments.length - 1](undefined, {
-          handlers: [handler],
-        });
+      communicate: function() {
+        arguments[arguments.length - 1](undefined, "something random");
       },
 
       launch: expect.createSpy(),
+
+      queryInfo: function() {
+        arguments[arguments.length - 1](undefined, {
+          get_content_type: () => "text/plain",
+        });
+      },
     };
 
     /** @type {any} */
@@ -274,8 +389,19 @@ describe("CursorService", () => {
       tabService,
     });
 
+    cursorService.AppInfo = AppInfo;
+
     cursorService.open();
-    expect(gioService.launch).toHaveBeenCalledWith(handler, ["file:///foo.bar"]);
+
+    expect(gioService.launch).toHaveBeenCalledWith(
+      {
+        commandline: "/usr/bin/gedit %U",
+        displayName: "Text Editor",
+        icon: "gedit",
+      },
+
+      ["file:///foo.bar"],
+    );
   });
 
   it("views, rejecting if no env var", () => {

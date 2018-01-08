@@ -411,6 +411,10 @@ mobx@*, mobx@^3.3.3:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/mobx/-/mobx-3.4.0.tgz#b97f98d973d1be26d185d3cfc78053dd4829ec95"
 
+nextstep-plist@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/nextstep-plist/-/nextstep-plist-0.3.0.tgz#990cd58822b1da4f8c2d46449d2dd87f4a79215c"
+
 "nullthrows@https://github.com/makepost/nullthrows":
   version "1.0.0"
   resolved "https://github.com/makepost/nullthrows#f67b2197ab2a7438142ae20ec96060398a311535"

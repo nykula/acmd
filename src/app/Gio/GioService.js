@@ -2,21 +2,18 @@
 
 const Gio = imports.gi.Gio;
 const {
-  AppInfo,
   AppInfoCreateFlags,
   FileCreateFlags,
   FileEnumerator,
   FileInfo,
   FileQueryInfoFlags,
-  Mount,
   SubprocessFlags,
 } = Gio;
 const GioFile = Gio.File;
 const { MAXINT32, PRIORITY_DEFAULT } = imports.gi.GLib;
-const { map, waterfall } = require("async");
-const find = require("lodash/find");
+const { waterfall } = require("async");
 const noop = require("lodash/noop");
-const uniqBy = require("lodash/uniqBy");
+const { parse } = require("nextstep-plist");
 const { File } = require("../../domain/File/File");
 const { FileHandler } = require("../../domain/File/FileHandler");
 const { Place } = require("../../domain/Place/Place");
@@ -70,19 +67,7 @@ class GioService {
      * @param {any} _callback
      */
     const handleRequest = _callback => {
-      GioAsync(
-        (readyCallback) => dir.query_info_async(
-          this.fileAttributes,
-          FileQueryInfoFlags.NONE,
-          PRIORITY_DEFAULT,
-          null,
-          readyCallback,
-        ),
-
-        (result) => dir.query_info_finish(result),
-
-        _callback,
-      );
+      this.queryInfo(dir, _callback);
     };
 
     /**
@@ -102,19 +87,7 @@ class GioService {
         return;
       }
 
-      GioAsync(
-        readyCallback => parent.query_info_async(
-          this.fileAttributes,
-          FileQueryInfoFlags.NONE,
-          PRIORITY_DEFAULT,
-          null,
-          readyCallback,
-        ),
-
-        result => parent.query_info_finish(result),
-
-        _callback,
-      );
+      this.queryInfo(parent, _callback);
     };
 
     /**
@@ -210,61 +183,6 @@ class GioService {
   }
 
   /**
-   * Gets content type of a given file, and apps that can open it.
-   *
-   * @param {string} uri
-   * @param {(error?: Error, result?: { contentType: string, handlers: FileHandler[] }) => void} callback
-   */
-  getHandlers(uri, callback) {
-    const file = this.Gio.File.new_for_uri(uri);
-
-    GioAsync(
-      readyCallback => file.query_info_async(
-        this.fileAttributes,
-        FileQueryInfoFlags.NONE,
-        PRIORITY_DEFAULT,
-        null,
-        readyCallback,
-      ),
-
-      result => file.query_info_finish(result),
-
-      (error, /** @type {FileInfo} */ gFileInfo) => {
-        if (error) {
-          callback(error);
-          return;
-        }
-
-        const contentType = gFileInfo.get_content_type();
-
-        /** @type {AppInfo[]} */
-        const gAppInfos = this.Gio.AppInfo.get_all_for_type(contentType);
-
-        const def = this.Gio.AppInfo.get_default_for_type(contentType, false);
-        if (def) {
-          gAppInfos.unshift(def);
-        }
-
-        let handlers = gAppInfos.map(gAppInfo => {
-          const icon = gAppInfo.get_icon();
-          return {
-            commandline: gAppInfo.get_commandline(),
-            displayName: gAppInfo.get_display_name(),
-            icon: icon ? icon.to_string() : null,
-          };
-        });
-
-        handlers = uniqBy(handlers, x => x.commandline);
-
-        callback(undefined, {
-          contentType,
-          handlers,
-        });
-      },
-    );
-  }
-
-  /**
    * Returns root uri of the mount enclosing a given file.
    *
    * @param {GioFile} gFile
@@ -298,6 +216,28 @@ class GioService {
       ),
 
       result => file.make_directory_finish(result),
+
+      callback,
+    );
+  }
+
+  /**
+   * Returns information about file.
+   *
+   * @param {GioFile} file
+   * @param {(error?: Error, info?: FileInfo) => void} callback
+   */
+  queryInfo(file, callback) {
+    GioAsync(
+      readyCallback => file.query_info_async(
+        this.fileAttributes,
+        FileQueryInfoFlags.NONE,
+        PRIORITY_DEFAULT,
+        null,
+        readyCallback,
+      ),
+
+      result => file.query_info_finish(result),
 
       callback,
     );

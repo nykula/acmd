@@ -79,10 +79,12 @@ class Services {
       tabService,
     });
 
+    // ---
+
     const selectService = new SelectService({
       clipboardService,
+      cursorService,
       dialogService,
-      gioService,
       jobService,
       panelService,
       refService,
