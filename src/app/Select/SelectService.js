@@ -1,5 +1,6 @@
 const { Event, Gravity, Rectangle } = imports.gi.Gdk;
 const { action, extendObservable } = require("mobx");
+const Nullthrows = require("nullthrows").default;
 const { FileHandler } = require("../../domain/File/FileHandler");
 const { ClipboardService } = require("../Clipboard/ClipboardService");
 const { CursorService } = require("../Cursor/CursorService");
@@ -9,6 +10,7 @@ const { JobService } = require("../Job/JobService");
 const { PanelService } = require("../Panel/PanelService");
 const { RefService } = require("../Ref/RefService");
 const { TabService } = require("../Tab/TabService");
+const { UriService } = require("../Uri/UriService");
 
 /**
  * Selected files in active tab, or the cursor file as fallback.
@@ -23,6 +25,7 @@ class SelectService {
    * @property {PanelService?} [panelService]
    * @property {RefService?} [refService]
    * @property {TabService?} [tabService]
+   * @property {UriService?} [uriService]
    *
    * @param {IProps} props
    */
@@ -46,8 +49,7 @@ class SelectService {
    * Stores URIs in clipboard, for another app to copy.
    */
   copy() {
-    const { copy } =
-      /** @type {ClipboardService} */ (this.props.clipboardService);
+    const { copy } = Nullthrows(this.props.clipboardService);
 
     copy(this.getUris());
   }
@@ -56,8 +58,7 @@ class SelectService {
    * Stores URIs in clipboard, for another app to move.
    */
   cut() {
-    const { cut } =
-      /** @type {ClipboardService} */ (this.props.clipboardService);
+    const { cut } = Nullthrows(this.props.clipboardService);
 
     cut(this.getUris());
   }
@@ -66,11 +67,8 @@ class SelectService {
    * Deselects all files.
    */
   deselectAll() {
-    const { getActiveTabId } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    const { deselectAll } =
-      /** @type {TabService} */ (this.props.tabService);
+    const { getActiveTabId } = Nullthrows(this.props.panelService);
+    const { deselectAll } = Nullthrows(this.props.tabService);
 
     deselectAll(getActiveTabId());
   }
@@ -79,14 +77,9 @@ class SelectService {
    * Deselects files, prompting for name pattern.
    */
   deselectGlob() {
-    const { prompt } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { getActiveTabId } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    const { deselectGlob } =
-      /** @type {TabService} */ (this.props.tabService);
+    const { prompt } = Nullthrows(this.props.dialogService);
+    const { getActiveTabId } = Nullthrows(this.props.panelService);
+    const { deselectGlob } = Nullthrows(this.props.tabService);
 
     prompt("Pattern:", "", pattern => {
       if (!pattern) {
@@ -104,7 +97,8 @@ class SelectService {
    * Joins URIs in a single string, for display in a dialog.
    */
   formatUris() {
-    const uris = this.getUris().map(decodeURI);
+    const { unescape } = Nullthrows(this.props.uriService);
+    const uris = this.getUris().map(unescape);
 
     return uris.length > 1 ? "\n" + uris.join("\n") + "\n" : uris[0] + " ";
   }
@@ -113,11 +107,8 @@ class SelectService {
    * Returns file objects.
    */
   getFiles() {
-    const { getActiveTabId } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    const { entities, visibleFiles } =
-      /** @type {TabService} */ (this.props.tabService);
+    const { getActiveTabId } = Nullthrows(this.props.panelService);
+    const { entities, visibleFiles } = Nullthrows(this.props.tabService);
 
     const activeTabId = getActiveTabId();
     const { cursor, selected } = entities[activeTabId];
@@ -139,11 +130,8 @@ class SelectService {
    * Deselects selected files, and selects non-selected files.
    */
   invert() {
-    const { getActiveTabId } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    const { invert } =
-      /** @type {TabService} */ (this.props.tabService);
+    const { getActiveTabId } = Nullthrows(this.props.panelService);
+    const { invert } = Nullthrows(this.props.tabService);
 
     invert(getActiveTabId());
   }
@@ -152,14 +140,9 @@ class SelectService {
    * @param {{ keyEvent?: Event, mouseEvent?: Event, rect?: Rectangle, win?: Window }} props
    */
   menu(props) {
-    const { getHandlers } =
-      /** @type {CursorService} */ (this.props.cursorService);
-
-    const { alert } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { get } =
-    /** @type {RefService} */ (this.props.refService);
+    const { getHandlers } = Nullthrows(this.props.cursorService);
+    const { alert } = Nullthrows(this.props.dialogService);
+    const { get } = Nullthrows(this.props.refService);
 
     const { keyEvent, mouseEvent, rect, win } = props;
     const uri = this.getUris()[0];
@@ -194,14 +177,9 @@ class SelectService {
    * Removes files, prompting for confirmation.
    */
   rm() {
-    const { confirm } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { run } =
-      /** @type {JobService} */ (this.props.jobService);
-
-    const { refresh } =
-      /** @type {PanelService} */ (this.props.panelService);
+    const { confirm } = Nullthrows(this.props.dialogService);
+    const { run } = Nullthrows(this.props.jobService);
+    const { refresh } = Nullthrows(this.props.panelService);
 
     const uris = this.getUris();
     const urisStr = this.formatUris();
@@ -226,11 +204,8 @@ class SelectService {
    * Selects all files.
    */
   selectAll() {
-    const { getActiveTabId } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    const { selectAll } =
-    /** @type {TabService} */ (this.props.tabService);
+    const { getActiveTabId } = Nullthrows(this.props.panelService);
+    const { selectAll } = Nullthrows(this.props.tabService);
 
     selectAll(getActiveTabId());
   }
@@ -240,11 +215,8 @@ class SelectService {
    * opposite panel.
    */
   selectDiff() {
-    const { entities } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    const { selectDiff } =
-      /** @type {TabService} */ (this.props.tabService);
+    const { entities } = Nullthrows(this.props.panelService);
+    const { selectDiff } = Nullthrows(this.props.tabService);
 
     selectDiff(entities[0].activeTabId, entities[1].activeTabId);
   }
@@ -253,14 +225,9 @@ class SelectService {
    * Selects files, prompting for name pattern.
    */
   selectGlob() {
-    const { prompt } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { getActiveTabId } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    const { selectGlob } =
-      /** @type {TabService} */ (this.props.tabService);
+    const { prompt } = Nullthrows(this.props.dialogService);
+    const { getActiveTabId } = Nullthrows(this.props.panelService);
+    const { selectGlob } = Nullthrows(this.props.tabService);
 
     prompt("Pattern:", "", pattern => {
       if (pattern) {

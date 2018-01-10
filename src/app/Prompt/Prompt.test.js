@@ -1,6 +1,7 @@
 const expect = require("expect");
 const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
+const { UriService } = require("../Uri/UriService");
 const { Prompt } = require("./Prompt");
 
 describe("Prompt", () => {
@@ -17,6 +18,7 @@ describe("Prompt", () => {
       h(Prompt, {
         directoryService,
         panelService,
+        uriService: new UriService(),
       }),
     );
   });

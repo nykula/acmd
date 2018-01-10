@@ -13,6 +13,7 @@ const { PlaceService } = require("./Place/PlaceService");
 const { RefService } = require("./Ref/RefService");
 const { SelectService } = require("./Select/SelectService");
 const { TabService } = require("./Tab/TabService");
+const { UriService } = require("./Uri/UriService");
 const { WindowService } = require("./Window/WindowService");
 
 class Services {
@@ -25,6 +26,8 @@ class Services {
     const gioService = new GioService();
 
     const refService = new RefService();
+
+    const uriService = new UriService();
 
     // ---
 
@@ -77,6 +80,7 @@ class Services {
       gioService,
       panelService,
       tabService,
+      uriService,
     });
 
     // ---
@@ -89,6 +93,7 @@ class Services {
       panelService,
       refService,
       tabService,
+      uriService,
     });
 
     // ---
@@ -99,6 +104,7 @@ class Services {
       panelService,
       selectService,
       tabService,
+      uriService,
     });
 
     // ---
@@ -115,6 +121,7 @@ class Services {
     this.refService = refService;
     this.selectService = selectService;
     this.tabService = tabService;
+    this.uriService = uriService;
     this.windowService = windowService;
 
     // ---

@@ -21,6 +21,7 @@ const { GioService } = require("../Gio/GioService");
 const { autoBind } = require("../Gjs/autoBind");
 const { PanelService } = require("../Panel/PanelService");
 const { TabService } = require("../Tab/TabService");
+const { UriService } = require("../Uri/UriService");
 
 /**
  * File under cursor in active tab.
@@ -33,6 +34,7 @@ class CursorService {
    * @property {GioService?} [gioService]
    * @property {PanelService?} [panelService]
    * @property {TabService?} [tabService]
+   * @property {UriService?} [uriService]
    *
    * @param {IProps} props
    */
@@ -50,11 +52,9 @@ class CursorService {
    * Opens file in terminal, with EDITOR environment variable.
    */
   edit() {
-    const { alert } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { terminal } =
-      /** @type {DirectoryService} */ (this.props.directoryService);
+    const { alert } = Nullthrows(this.props.dialogService);
+    const { terminal } = Nullthrows(this.props.directoryService);
+    const { unescape } = Nullthrows(this.props.uriService);
 
     const editor = this.env.EDITOR;
 
@@ -71,7 +71,7 @@ class CursorService {
       return;
     }
 
-    terminal(["-e", editor, decodeURIComponent(match[1])]);
+    terminal(["-e", editor, unescape(match[1])]);
   }
 
   /**
@@ -98,14 +98,14 @@ class CursorService {
   }
 
   open() {
-    const { alert } =
-      /** @type {DialogService} */ (this.props.dialogService);
+    const { alert } = /** @type {DialogService} */ (this.props.dialogService);
 
-    const { launch } =
-    /** @type {GioService} */ (this.props.gioService);
+    const { launch } = /** @type {GioService} */ (this.props.gioService);
 
-    const { levelUp, ls } =
-      /** @type {PanelService} */ (this.props.panelService);
+    const {
+      levelUp,
+      ls,
+    } = /** @type {PanelService} */ (this.props.panelService);
 
     const { fileType, name, uri } = this.getCursor();
 
@@ -140,11 +140,9 @@ class CursorService {
    * Opens file in terminal, with PAGER environment variable.
    */
   view() {
-    const { alert } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { terminal } =
-      /** @type {DirectoryService} */ (this.props.directoryService);
+    const { alert } = Nullthrows(this.props.dialogService);
+    const { terminal } = Nullthrows(this.props.directoryService);
+    const { unescape } = Nullthrows(this.props.uriService);
 
     const pager = this.env.PAGER;
 
@@ -161,7 +159,7 @@ class CursorService {
       return;
     }
 
-    terminal(["-e", pager, decodeURIComponent(match[1])]);
+    terminal(["-e", pager, unescape(match[1])]);
   }
 
   /**
@@ -207,11 +205,11 @@ class CursorService {
    * @private
    */
   getCursor() {
-    const { getActiveTabId } =
-      /** @type {PanelService} */ (this.props.panelService);
+    const {
+      getActiveTabId,
+    } = /** @type {PanelService} */ (this.props.panelService);
 
-    const { getCursor } =
-      /** @type {TabService} */ (this.props.tabService);
+    const { getCursor } = /** @type {TabService} */ (this.props.tabService);
 
     return getCursor(getActiveTabId());
   }
@@ -267,7 +265,8 @@ class CursorService {
         }
 
         callback(undefined, defaults);
-      });
+      },
+    );
   }
 
   /**
@@ -322,7 +321,9 @@ class CursorService {
 
           files = files.filter(
             x =>
-              x.fileType === FileType.DIRECTORY && x.name !== "." && x.name !== "..",
+              x.fileType === FileType.DIRECTORY &&
+              x.name !== "." &&
+              x.name !== "..",
           );
 
           const plists = files.map(x =>
@@ -446,14 +447,10 @@ class CursorService {
     }
 
     const { communicate } = Nullthrows(this.props.gioService);
+    const { unescape } = Nullthrows(this.props.uriService);
 
     communicate(
-      [
-        "mdls",
-        "-name",
-        "kMDItemContentTypeTree",
-        decodeURI(uri.replace(/^file:\/\//, "")),
-      ],
+      ["mdls", "-name", "kMDItemContentTypeTree", unescape(uri)],
 
       (error, stdout) => {
         if (!stdout) {
@@ -487,14 +484,7 @@ class CursorService {
     const { communicate } = Nullthrows(this.props.gioService);
 
     communicate(
-      [
-        "plutil",
-        "-convert",
-        "json",
-        "-o",
-        "-",
-        file.get_path(),
-      ],
+      ["plutil", "-convert", "json", "-o", "-", file.get_path()],
 
       (error, json) => {
         if (!json) {
@@ -518,7 +508,8 @@ class CursorService {
         }
 
         callback(undefined, data);
-      });
+      },
+    );
   }
 }
 

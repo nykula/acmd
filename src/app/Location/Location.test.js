@@ -2,6 +2,7 @@ const expect = require("expect");
 const { observable } = require("mobx");
 const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
+const { UriService } = require("../Uri/UriService");
 const { Location } = require("./Location");
 
 describe("Location", () => {
@@ -17,6 +18,7 @@ describe("Location", () => {
       h(Location, {
         panelId: 0,
         panelService,
+        uriService: new UriService(),
       }),
     );
   });

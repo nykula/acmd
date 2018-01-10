@@ -2,6 +2,7 @@ const { FileType } = imports.gi.Gio;
 const expect = require("expect");
 const { FileHandler } = require("../../domain/File/FileHandler");
 const { TabService } = require("../Tab/TabService");
+const { UriService } = require("../Uri/UriService");
 const { CursorService } = require("./CursorService");
 
 describe("CursorService", () => {
@@ -19,6 +20,7 @@ describe("CursorService", () => {
     const cursorService = new CursorService({
       dialogService,
       directoryService,
+      uriService: new UriService(),
     });
 
     cursorService.env = { EDITOR: undefined };
@@ -54,6 +56,7 @@ describe("CursorService", () => {
       directoryService,
       panelService,
       tabService,
+      uriService: new UriService(),
     });
 
     cursorService.env = { EDITOR: "vim" };
@@ -89,6 +92,7 @@ describe("CursorService", () => {
       directoryService,
       panelService,
       tabService,
+      uriService: new UriService(),
     });
 
     cursorService.env = { EDITOR: "vim" };
@@ -418,6 +422,7 @@ describe("CursorService", () => {
     const cursorService = new CursorService({
       dialogService,
       directoryService,
+      uriService: new UriService(),
     });
 
     cursorService.env = { PAGER: undefined };
@@ -453,6 +458,7 @@ describe("CursorService", () => {
       directoryService,
       panelService,
       tabService,
+      uriService: new UriService(),
     });
 
     cursorService.env = { PAGER: "less" };
@@ -488,6 +494,7 @@ describe("CursorService", () => {
       directoryService,
       panelService,
       tabService,
+      uriService: new UriService(),
     });
 
     cursorService.env = { PAGER: "less" };

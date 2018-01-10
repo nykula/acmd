@@ -1,10 +1,12 @@
 const { File } = imports.gi.Gio;
+const Nullthrows = require("nullthrows").default;
 const { DialogService } = require("../Dialog/DialogService");
 const { autoBind } = require("../Gjs/autoBind");
 const { JobService } = require("../Job/JobService");
 const { PanelService } = require("../Panel/PanelService");
 const { SelectService } = require("../Select/SelectService");
 const { TabService } = require("../Tab/TabService");
+const { UriService } = require("../Uri/UriService");
 
 /**
  * Copies and moves files between panels.
@@ -17,6 +19,7 @@ class OppositeService {
    * @property {PanelService?} [panelService]
    * @property {SelectService?} [selectService]
    * @property {TabService?} [tabService]
+   * @property {UriService?} [uriService]
    *
    * @param {IProps} props
    */
@@ -26,14 +29,10 @@ class OppositeService {
   }
 
   cp() {
-    const { prompt } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { run } =
-    /** @type {JobService} */ (this.props.jobService);
-
-    const { refresh } =
-    /** @type {PanelService} */ (this.props.panelService);
+    const { prompt } = Nullthrows(this.props.dialogService);
+    const { run } = Nullthrows(this.props.jobService);
+    const { refresh } = Nullthrows(this.props.panelService);
+    const { normalize } = Nullthrows(this.props.uriService);
 
     const { destUri, uris, urisStr } = this.getUris();
 
@@ -44,7 +43,7 @@ class OppositeService {
 
       run(
         {
-          destUri: encodeURI(finalDestUri),
+          destUri: normalize(finalDestUri),
           type: "cp",
           uris,
         },
@@ -54,14 +53,10 @@ class OppositeService {
   }
 
   mv() {
-    const { prompt } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { run } =
-    /** @type {JobService} */ (this.props.jobService);
-
-    const { refresh } =
-    /** @type {PanelService} */ (this.props.panelService);
+    const { prompt } = Nullthrows(this.props.dialogService);
+    const { normalize } = Nullthrows(this.props.uriService);
+    const { run } = Nullthrows(this.props.jobService);
+    const { refresh } = Nullthrows(this.props.panelService);
 
     const { destUri, uris, urisStr } = this.getUris();
 
@@ -72,7 +67,7 @@ class OppositeService {
 
       run(
         {
-          destUri: encodeURI(finalDestUri),
+          destUri: normalize(finalDestUri),
           type: "mv",
           uris,
         },
@@ -87,11 +82,8 @@ class OppositeService {
    * @private
    */
   getDest() {
-    const { activeId, getActiveTab } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    const { getFiles } =
-    /** @type {SelectService} */ (this.props.selectService);
+    const { activeId, getActiveTab } = Nullthrows(this.props.panelService);
+    const { getFiles } = Nullthrows(this.props.selectService);
 
     const destPanelId = activeId === 0 ? 1 : 0;
     const { location } = getActiveTab(destPanelId);
@@ -110,10 +102,10 @@ class OppositeService {
    * @private
    */
   getUris() {
-    const { formatUris, getUris } =
-      /** @type {SelectService} */ (this.props.selectService);
+    const { unescape } = Nullthrows(this.props.uriService);
+    const { formatUris, getUris } = Nullthrows(this.props.selectService);
 
-    const destUri = decodeURI(this.getDest());
+    const destUri = unescape(this.getDest());
     const uris = getUris();
     const urisStr = formatUris();
 

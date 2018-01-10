@@ -3,14 +3,17 @@ const { EllipsizeMode } = imports.gi.Pango;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const { action, autorun, extendObservable, observable } = require("mobx");
+const Nullthrows = require("nullthrows").default;
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
+const { UriService } = require("../Uri/UriService");
 
 /**
  * @typedef IProps
  * @property {number} panelId
  * @property {PanelService?} [panelService]
+ * @property {UriService?} [uriService]
  *
  * @extends Component<IProps>
  */
@@ -21,11 +24,11 @@ class Location extends Component {
   constructor(props) {
     super(props);
 
-    /** @type {ListBox} */
-    this.list = (/** @type {any} */ (undefined));
+    /** @type {ListBox | null} */
+    this.list = null;
 
-    /** @type {ListBoxRow} */
-    this.row = (/** @type {any} */ (undefined));
+    /** @type {ListBoxRow | null} */
+    this.row = null;
 
     autoBind(this, Location.prototype, __filename);
     extendObservable(this, {
@@ -42,21 +45,20 @@ class Location extends Component {
   }
 
   isActive() {
-    const { activeId } =
-      /** @type {PanelService} */ (this.props.panelService);
+    const { activeId } = Nullthrows(this.props.panelService);
 
     return activeId === this.props.panelId;
   }
 
   /**
-   * @param {ListBox} node
+   * @param {ListBox | null} node
    */
   refList(node) {
     this.list = node;
   }
 
   /**
-   * @param {ListBoxRow} node
+   * @param {ListBoxRow | null} node
    */
   refRow(node) {
     this.row = node;
@@ -75,30 +77,25 @@ class Location extends Component {
   }
 
   render() {
-    const { getActiveTab } =
-      /** @type {PanelService} */ (this.props.panelService);
+    const { getActiveTab } = Nullthrows(this.props.panelService);
+    const { unescape } = Nullthrows(this.props.uriService);
 
     const { location } = getActiveTab(this.props.panelId);
+    const label = unescape(location).replace(/\/?$/, "/*");
 
-    const label = decodeURI(location)
-      .replace(/\/?$/, "/*")
-      .replace(/^file:\/\//, "");
-
-    return (
-      h(ListBox, { ref: this.refList }, [
-        h(ListBoxRow, { ref: this.refRow }, [
-          h(Box, { border_width: 2 }, [
-            h(Box, { border_width: 2 }),
-            h(Label, {
-              ellipsize: EllipsizeMode.MIDDLE,
-              label: label,
-            }),
-          ]),
+    return h(ListBox, { ref: this.refList }, [
+      h(ListBoxRow, { ref: this.refRow }, [
+        h(Box, { border_width: 2 }, [
+          h(Box, { border_width: 2 }),
+          h(Label, {
+            ellipsize: EllipsizeMode.MIDDLE,
+            label: label,
+          }),
         ]),
-      ])
-    );
+      ]),
+    ]);
   }
 }
 
 exports.Location = Location;
-exports.default = connect(["panelService"])(Location);
+exports.default = connect(["panelService", "uriService"])(Location);
