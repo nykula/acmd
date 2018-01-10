@@ -270,11 +270,11 @@ class TabService {
     const tab = this.entities[props.id];
     tab.selected = this.visibleFiles[props.id]
       .map(
-        (file, i) =>
-          GLib.pattern_match_simple(props.pattern, file.name)
-            ? i
-            : tab.selected.indexOf(i),
-      )
+      (file, i) =>
+        GLib.pattern_match_simple(props.pattern, file.name)
+          ? i
+          : tab.selected.indexOf(i),
+    )
       .filter(i => i !== -1 && !this.isDotdot(props.id, i));
   }
 
@@ -292,22 +292,36 @@ class TabService {
   set(props) {
     const tab = this.entities[props.id];
     let visibleFiles = this.visibleFiles[props.id];
-    const cursorUri = visibleFiles[tab.cursor].uri;
+
+    const cursorUri = visibleFiles.length > tab.cursor
+      ? visibleFiles[tab.cursor].uri
+      : undefined;
+
     const selectedUris = tab.selected.map(i => visibleFiles[i].uri);
+
     tab.files = observable.shallowArray(
       TabService.sortFiles(tab.sortedBy, props.files),
     );
+
     tab.location = props.location;
+
     visibleFiles = this.visibleFiles[props.id];
+
     const cursor = visibleFiles.findIndex(file => file.uri === cursorUri);
+
     tab.cursor =
-      cursor === -1 ? Math.min(tab.cursor, visibleFiles.length - 1) : cursor;
+      cursor === -1
+        ? Math.max(0, Math.min(tab.cursor, visibleFiles.length - 1))
+        : cursor;
+
     const selected = [];
+
     for (let i = 0; i < visibleFiles.length; i++) {
       if (selectedUris.indexOf(visibleFiles[i].uri) !== -1) {
         selected.push(i);
       }
     }
+
     tab.selected = selected;
   }
 

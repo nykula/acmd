@@ -41,6 +41,46 @@ describe("DirectoryService", () => {
     expect(panelService.refresh).toHaveBeenCalled();
   });
 
+  it("makes child directory, alerting on error", () => {
+    /** @type {any} */
+    const dialogService = {
+      alert: expect.createSpy(),
+
+      prompt: function() {
+        arguments[arguments.length - 1]("someDir");
+      },
+    };
+
+    /** @type {any} */
+    const Gio = {
+      File: {
+        new_for_uri: () => ({
+          make_directory_async: function() {
+            arguments[arguments.length - 1]();
+          },
+          make_directory_finish: () => {
+            throw new Error("Not supported.");
+          },
+        }),
+      },
+    };
+
+    /** @type {any} */
+    const panelService = {
+      getActiveTab: () => ({ location: "trash:///" }),
+      refresh: noop,
+    };
+
+    const directoryService = new DirectoryService({
+      dialogService,
+      gioService: new GioService(Gio),
+      panelService,
+    });
+
+    directoryService.mkdir();
+    expect(dialogService.alert).toHaveBeenCalledWith("Not supported.");
+  });
+
   it("opens terminal", () => {
     /** @type {any} */
     const Gio = {

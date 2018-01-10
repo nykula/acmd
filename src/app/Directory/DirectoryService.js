@@ -1,5 +1,6 @@
 const { File } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Nullthrows = require("nullthrows").default;
 const { ClipboardService } = require("../Clipboard/ClipboardService");
 const { DialogService } = require("../Dialog/DialogService");
 const { GioService } = require("../Gio/GioService");
@@ -36,11 +37,8 @@ class DirectoryService {
       return;
     }
 
-    const { alert } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { spawn } =
-      /** @type {GioService} */ (this.props.gioService);
+    const { alert } = Nullthrows(this.props.dialogService);
+    const { spawn } = Nullthrows(this.props.gioService);
 
     const location = this.getLocation();
 
@@ -66,14 +64,9 @@ class DirectoryService {
    * Creates a child directory, prompting for name.
    */
   mkdir() {
-    const { prompt } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { mkdir } =
-      /** @type {GioService} */ (this.props.gioService);
-
-    const { refresh } =
-      /** @type {PanelService} */ (this.props.panelService);
+    const { alert, prompt } = Nullthrows(this.props.dialogService);
+    const { mkdir } = Nullthrows(this.props.gioService);
+    const { refresh } = Nullthrows(this.props.panelService);
 
     const location = this.getLocation();
 
@@ -100,17 +93,10 @@ class DirectoryService {
    * app marked the list written to clipboard.
    */
   paste() {
-    const { paste } =
-      /** @type {ClipboardService} */ (this.props.clipboardService);
-
-    const { alert } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { run } =
-      /** @type {JobService} */ (this.props.jobService);
-
-    const { refresh } =
-      /** @type {PanelService} */ (this.props.panelService);
+    const { paste } = Nullthrows(this.props.clipboardService);
+    const { alert } = Nullthrows(this.props.dialogService);
+    const { run } = Nullthrows(this.props.jobService);
+    const { refresh } = Nullthrows(this.props.panelService);
 
     paste((_, text) => {
       if (!text) {
@@ -145,14 +131,12 @@ class DirectoryService {
    * @param {(string[])=} argv
    */
   terminal(argv) {
-    const { spawn } =
-      /** @type {GioService} */ (this.props.gioService);
+    const { spawn } = Nullthrows(this.props.gioService);
 
     const location = this.getLocation();
 
     if (location.indexOf("file:///") !== 0) {
-      const { alert } =
-        /** @type {DialogService} */ (this.props.dialogService);
+      const { alert } = Nullthrows(this.props.dialogService);
 
       alert("Operation not supported.");
       return;
@@ -169,14 +153,9 @@ class DirectoryService {
    * modification time.
    */
   touch() {
-    const { alert, prompt } =
-      /** @type {DialogService} */ (this.props.dialogService);
-
-    const { touch } =
-      /** @type {GioService} */ (this.props.gioService);
-
-    const { refresh } =
-      /** @type {PanelService} */ (this.props.panelService);
+    const { alert, prompt } = Nullthrows(this.props.dialogService);
+    const { touch } = Nullthrows(this.props.gioService);
+    const { refresh } = Nullthrows(this.props.panelService);
 
     const location = this.getLocation();
 
@@ -220,8 +199,7 @@ class DirectoryService {
    * @private
    */
   getLocation() {
-    const { getActiveTab } =
-      /** @type {PanelService} */ (this.props.panelService);
+    const { getActiveTab } = Nullthrows(this.props.panelService);
 
     const { location } = getActiveTab();
 

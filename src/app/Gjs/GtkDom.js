@@ -25,6 +25,7 @@ function removeAllChildren() {
 
 function GtkDom() {
   this.createElement = this.createElement.bind(this);
+  this.createTextNode = this.createTextNode.bind(this);
   this.domify = this.domify.bind(this);
   this.require = this.require.bind(this);
 
@@ -217,6 +218,16 @@ GtkDom.prototype.createElement = function(tagName) {
 };
 
 /**
+ * Creates a GTK+ label with given text, so Inferno can log error and insert
+ * empty placeholder without crashing.
+ *
+ * @param {string} label
+ */
+GtkDom.prototype.createTextNode = function(label) {
+  return this.domify(new Gtk.Label({ label }));
+};
+
+/**
  * Inits GTK. Sets document, global and navigator globals.
  */
 GtkDom.prototype.require = function() {
@@ -226,6 +237,7 @@ GtkDom.prototype.require = function() {
   const window = this.window;
   window.document = window.global = window;
   window.createElement = this.createElement;
+  window.createTextNode = this.createTextNode;
   window.navigator = {};
   window.setTimeout = setTimeout;
 

@@ -75,6 +75,38 @@ describe("TabService", () => {
     expect(tabService.entities[0].selected.slice()).toEqual([0, 1]);
   });
 
+  it("sets files, not crashing if handling zero", () => {
+    const tabService = new TabService(EmptyProps);
+
+    tabService.entities[0] = {
+      cursor: 2,
+      files: [0, 1, 2].map(i => ({
+        displayName: `${i}`,
+        fileType: FileType.REGULAR,
+        icon: "computer",
+        iconType: "ICON_NAME",
+        mode: "0755",
+        modificationTime: Date.now(),
+        mountUri: `file:///`,
+        name: `${i}`,
+        size: 0,
+        uri: `file:///${i}`,
+      })),
+      location: "file:///",
+      selected: [0, 1, 2],
+      sortedBy: "ext",
+    };
+
+    tabService.set({
+      files: [],
+      id: 0,
+      location: "trash:///",
+    });
+
+    expect(tabService.entities[0].cursor).toBe(0);
+    expect(tabService.entities[0].selected.length).toBe(0);
+  });
+
   it("sorts files in tab", () => {
     const tabService = new TabService(EmptyProps);
 

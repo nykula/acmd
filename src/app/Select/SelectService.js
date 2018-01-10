@@ -114,9 +114,11 @@ class SelectService {
     const { cursor, selected } = entities[activeTabId];
     let files = visibleFiles[activeTabId];
 
-    files = selected.length
-      ? selected.map(index => files[index])
-      : [files[cursor]];
+    if (selected.length) {
+      files = selected.map(index => files[index]);
+    } else if (files.length > cursor) {
+      files = [files[cursor]];
+    }
 
     files = files.filter(x => x.name !== "..");
 
