@@ -48,7 +48,7 @@ class PlaceToggle extends Component {
 
     button.connect("clicked", this.show);
 
-    new Drag(button).onMotion(this.show);
+    new Drag(button).onEnter(this.show);
 
     MouseEvent.connectMenu(button, () => {
       const { getActivePlace } = Nullthrows(this.props.panelService);

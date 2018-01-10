@@ -8,6 +8,7 @@ class Drag {
    * @param {{ action: number }} props
    */
   constructor(widget, props = { action: DragAction.COPY + DragAction.MOVE }) {
+    this.didEnter = false;
     this.props = props;
     this.widget = widget;
   }
@@ -34,8 +35,17 @@ class Drag {
   /**
    * @param {(props: { action: number }) => void} callback
    */
-  onMotion(callback) {
+  onEnter(callback) {
+    this.widget.connect("drag-leave", () => {
+      this.didEnter = false;
+    });
+
     this.widget.connect("drag-motion", (_, ctx) => {
+      if (this.didEnter) {
+        return;
+      }
+
+      this.didEnter = true;
       callback({ action: ctx.get_selected_action() });
     });
 
