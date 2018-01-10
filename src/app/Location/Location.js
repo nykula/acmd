@@ -1,4 +1,4 @@
-const { Box, Label, ListBox, ListBoxRow } = imports.gi.Gtk;
+const { Box, EventBox, Label, StateFlags } = imports.gi.Gtk;
 const { EllipsizeMode } = imports.gi.Pango;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
@@ -24,18 +24,13 @@ class Location extends Component {
   constructor(props) {
     super(props);
 
-    /** @type {ListBox | null} */
-    this.list = null;
-
-    /** @type {ListBoxRow | null} */
-    this.row = null;
+    /** @type {EventBox | null} */
+    this.box = null;
 
     autoBind(this, Location.prototype, __filename);
     extendObservable(this, {
-      list: observable.ref(undefined),
-      refList: action(this.refList),
-      refRow: action(this.refRow),
-      row: observable.ref(undefined),
+      box: observable.ref(this.box),
+      ref: action(this.ref),
     });
     this.unsubscribeSelection = autorun(this.updateSelection);
   }
@@ -51,28 +46,28 @@ class Location extends Component {
   }
 
   /**
-   * @param {ListBox | null} node
+   * @param {EventBox | null} box
    */
-  refList(node) {
-    this.list = node;
-  }
+  ref(box) {
+    this.box = box;
 
-  /**
-   * @param {ListBoxRow | null} node
-   */
-  refRow(node) {
-    this.row = node;
+    if (box) {
+      box.connect("button-press-event", () => {
+        const { setActive } = Nullthrows(this.props.panelService);
+        setActive(this.props.panelId);
+      });
+    }
   }
 
   updateSelection() {
-    if (!this.list || !this.row) {
+    if (!this.box) {
       return;
     }
 
     if (this.isActive()) {
-      this.list.select_row(this.row);
+      this.box.set_state_flags(StateFlags.SELECTED, false);
     } else {
-      this.list.unselect_row(this.row);
+      this.box.unset_state_flags(StateFlags.SELECTED);
     }
   }
 
@@ -83,15 +78,13 @@ class Location extends Component {
     const { location } = getActiveTab(this.props.panelId);
     const label = unescape(location).replace(/\/?$/, "/*");
 
-    return h(ListBox, { ref: this.refList }, [
-      h(ListBoxRow, { ref: this.refRow }, [
-        h(Box, { border_width: 2 }, [
-          h(Box, { border_width: 2 }),
-          h(Label, {
-            ellipsize: EllipsizeMode.MIDDLE,
-            label: label,
-          }),
-        ]),
+    return h(EventBox, { ref: this.ref }, [
+      h(Box, { border_width: 3 }, [
+        h(Box, { border_width: 2 }),
+        h(Label, {
+          ellipsize: EllipsizeMode.MIDDLE,
+          label: label,
+        }),
       ]),
     ]);
   }

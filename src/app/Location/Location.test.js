@@ -1,7 +1,8 @@
+const { StateFlags } = imports.gi.Gtk;
 const expect = require("expect");
+const { noop } = require("lodash");
 const { observable } = require("mobx");
 const { h } = require("../Gjs/GtkInferno");
-const { shallow } = require("../Test/Test");
 const { UriService } = require("../Uri/UriService");
 const { Location } = require("./Location");
 
@@ -14,16 +15,14 @@ describe("Location", () => {
       }),
     };
 
-    shallow(
-      h(Location, {
-        panelId: 0,
-        panelService,
-        uriService: new UriService(),
-      }),
-    );
+    new Location({
+      panelId: 0,
+      panelService,
+      uriService: new UriService(),
+    }).render();
   });
 
-  it("selects row when isActive becomes true", () => {
+  it("selects when isActive becomes true", () => {
     /** @type {any} */
     const panelService = observable({
       activeId: 1,
@@ -37,23 +36,22 @@ describe("Location", () => {
     panelService.activeId = 0;
 
     /** @type {any} */
-    const row = {};
-
-    instance.refRow(row);
-
-    /** @type {any} */
-    const list = {
-      select_row: expect.createSpy().andReturn(undefined),
+    const box = {
+      connect: noop,
+      set_state_flags: expect.createSpy(),
     };
 
-    instance.refList(list);
+    instance.ref(box);
 
-    expect(list.select_row).toHaveBeenCalledWith(row);
+    expect(box.set_state_flags).toHaveBeenCalledWith(
+      StateFlags.SELECTED,
+      false,
+    );
 
     instance.componentWillUnmount();
   });
 
-  it("unselects row when isActive becomes false", () => {
+  it("unselects when isActive becomes false", () => {
     /** @type {any} */
     const panelService = observable({
       activeId: 0,
@@ -68,19 +66,41 @@ describe("Location", () => {
     panelService.activeId = 1;
 
     /** @type {any} */
-    const row = {};
-
-    instance.refRow(row);
-
-    /** @type {any} */
-    const list = {
-      unselect_row: expect.createSpy().andReturn(undefined),
+    const box = {
+      connect: noop,
+      unset_state_flags: expect.createSpy(),
     };
 
-    instance.refList(list);
+    instance.ref(box);
 
-    expect(list.unselect_row).toHaveBeenCalledWith(row);
+    expect(box.unset_state_flags).toHaveBeenCalledWith(StateFlags.SELECTED);
 
     instance.componentWillUnmount();
+  });
+
+  it("activates panel on click", () => {
+    /** @type {any} */
+    const panelService = {
+      getActiveTab: () => ({
+        location: "file:///",
+      }),
+
+      setActive: expect.createSpy(),
+    };
+
+    /** @type {any} */
+    const box = {
+      connect: function() {
+        arguments[arguments.length - 1]();
+      },
+    };
+
+    new Location({
+      panelId: 1,
+      panelService,
+      uriService: new UriService(),
+    }).ref(box);
+
+    expect(panelService.setActive).toHaveBeenCalledWith(1);
   });
 });
