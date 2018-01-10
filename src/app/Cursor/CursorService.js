@@ -237,10 +237,6 @@ class CursorService {
           return;
         }
 
-        stdout = stdout
-          .replace(/= ([a-z]+)/gi, '= "$1"')
-          .replace(/([a-z]+) =/gi, '"$1" =');
-
         /**
          * @type {any[]}
          */
