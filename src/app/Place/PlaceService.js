@@ -421,7 +421,7 @@ class PlaceService {
   queryFilesystemInfo(file, callback) {
     GioAsync(
       readyCallback => file.query_filesystem_info_async(
-        "filesystem::*,mountable::*",
+        "filesystem::*,mountable::*,standard::icon",
         PRIORITY_DEFAULT,
         null,
         readyCallback,
