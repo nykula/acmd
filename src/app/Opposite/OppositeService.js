@@ -29,12 +29,17 @@ class OppositeService {
   }
 
   cp() {
-    const { prompt } = Nullthrows(this.props.dialogService);
+    const { alert, prompt } = Nullthrows(this.props.dialogService);
     const { run } = Nullthrows(this.props.jobService);
     const { refresh } = Nullthrows(this.props.panelService);
     const { normalize } = Nullthrows(this.props.uriService);
 
     const { destUri, uris, urisStr } = this.getUris();
+
+    if (!uris.length) {
+      alert("Select a file.");
+      return;
+    }
 
     prompt(`Copy ${urisStr} to:`, destUri, finalDestUri => {
       if (!finalDestUri) {
@@ -53,12 +58,17 @@ class OppositeService {
   }
 
   mv() {
-    const { prompt } = Nullthrows(this.props.dialogService);
+    const { alert, prompt } = Nullthrows(this.props.dialogService);
     const { normalize } = Nullthrows(this.props.uriService);
     const { run } = Nullthrows(this.props.jobService);
     const { refresh } = Nullthrows(this.props.panelService);
 
     const { destUri, uris, urisStr } = this.getUris();
+
+    if (!uris.length) {
+      alert("Select a file.");
+      return;
+    }
 
     prompt(`Move ${urisStr} to:`, destUri, finalDestUri => {
       if (!finalDestUri) {

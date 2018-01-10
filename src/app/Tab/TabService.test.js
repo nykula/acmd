@@ -251,6 +251,31 @@ describe("TabService", () => {
     expect(tab.selected.slice()).toEqual([1, 3]);
   });
 
+  it("selects glob, excluding dotdot", () => {
+    const tabService = new TabService(EmptyProps);
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "..",
+      ".config",
+      "pci.ids",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tab.selected = [];
+
+    tabService.showHidSys = true;
+    tabService.selectGlob({
+      id: 0,
+      pattern: "*",
+    });
+
+    expect(tab.selected.slice()).toEqual([1, 2]);
+  });
+
   it("inverts", () => {
     const tabService = new TabService(EmptyProps);
     const tab = tabService.entities[0];
@@ -273,6 +298,29 @@ describe("TabService", () => {
     tabService.invert(0);
 
     expect(tab.selected.slice()).toEqual([0, 2, 4, 5]);
+  });
+
+  it("inverts, excluding dotdot", () => {
+    const tabService = new TabService(EmptyProps);
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "..",
+      ".cache",
+      "config.sub",
+      "usb.ids",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tab.selected = [2, 3];
+
+    tabService.showHidSys = true;
+    tabService.invert(0);
+
+    expect(tab.selected.slice()).toEqual([1]);
   });
 
   it("deselects glob", () => {
@@ -373,6 +421,27 @@ describe("TabService", () => {
     tabService.selectAll(0);
 
     expect(tab.selected.slice()).toEqual([0, 1, 2, 3, 4, 5]);
+  });
+
+  it("selects all, excluding dotdot", () => {
+    const tabService = new TabService(EmptyProps);
+    const tab = tabService.entities[0];
+
+    tab.files = [
+      "..",
+      ".config",
+      "config.sub",
+      "usb.ids",
+    ].map(name => {
+      const file = new File();
+      file.name = name;
+      return file;
+    });
+
+    tabService.showHidSys = true;
+    tabService.selectAll(0);
+
+    expect(tab.selected.slice()).toEqual([1, 2, 3]);
   });
 
   it("selects diff, empty selected if all equal", () => {

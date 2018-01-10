@@ -112,11 +112,15 @@ class SelectService {
 
     const activeTabId = getActiveTabId();
     const { cursor, selected } = entities[activeTabId];
-    const files = visibleFiles[activeTabId];
+    let files = visibleFiles[activeTabId];
 
-    return selected.length
+    files = selected.length
       ? selected.map(index => files[index])
       : [files[cursor]];
+
+    files = files.filter(x => x.name !== "..");
+
+    return files;
   }
 
   /**
@@ -182,6 +186,12 @@ class SelectService {
     const { refresh } = Nullthrows(this.props.panelService);
 
     const uris = this.getUris();
+
+    if (!uris.length) {
+      alert("Select a file.");
+      return;
+    }
+
     const urisStr = this.formatUris();
 
     confirm("Are you sure you want to remove " + urisStr + "?", response => {

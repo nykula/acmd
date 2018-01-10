@@ -196,6 +196,7 @@ class TabService {
     const tab = this.entities[tabId];
     tab.selected = this.visibleFiles[tabId]
       .map((_, i) => i)
+      .filter(i => !this.isDotdot(tabId, i))
       .filter(i => tab.selected.indexOf(i) === -1);
   }
 
@@ -229,7 +230,9 @@ class TabService {
    * @param {number} tabId
    */
   selectAll(tabId) {
-    this.entities[tabId].selected = this.visibleFiles[tabId].map((_, i) => i);
+    this.entities[tabId].selected = this.visibleFiles[tabId]
+      .map((_, i) => i)
+      .filter(i => !this.isDotdot(tabId, i));
   }
 
   /**
@@ -272,7 +275,7 @@ class TabService {
             ? i
             : tab.selected.indexOf(i),
       )
-      .filter(i => i !== -1);
+      .filter(i => i !== -1 && !this.isDotdot(props.id, i));
   }
 
   /**
@@ -358,6 +361,15 @@ class TabService {
       return false;
     }
     return true;
+  }
+
+  /**
+   * @private
+   * @param {number} id
+   * @param {number} index
+   */
+  isDotdot(id, index) {
+    return this.visibleFiles[id][index].name === "..";
   }
 }
 
