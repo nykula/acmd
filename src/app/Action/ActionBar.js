@@ -23,13 +23,13 @@ class ActionBar extends Component {
 
   render() {
     return (
-      h(Box, { expand: false }, actions.reduce((prev, action) => prev.concat([
+      h(Box, { expand: false }, actions.reduce((prev, action, i) => prev.concat([
         h(ActionBarItem, {
           action,
           key: action.id,
         }),
 
-        h(VSeparator, { key: action.id + "+" }),
+        i !== actions.length - 1 && h(VSeparator, { key: action.id + "+" }),
       ]), /** @type {any[]} */ ([])))
     );
   }
