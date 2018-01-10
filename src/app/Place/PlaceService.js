@@ -15,7 +15,6 @@ const GLib = imports.gi.GLib;
 const { PRIORITY_DEFAULT } = GLib;
 const { Button, Menu, Popover } = imports.gi.Gtk;
 const { map, parallel } = require("async");
-const uniqBy = require("lodash/uniqBy");
 const { action, computed, extendObservable, runInAction } = require("mobx");
 const Nullthrows = require("nullthrows").default;
 const Uri = require("url-parse");
@@ -92,6 +91,7 @@ class PlaceService {
       filesystemSize: 0,
       icon: "computer",
       iconType: "ICON_NAME",
+      isShadowed: false,
       name: "/",
       rootUri: "file:///",
       uuid: null,
@@ -356,7 +356,9 @@ class PlaceService {
     }
 
     for (const mount of this.mounts) {
-      places.push(mount);
+      if (!mount.isShadowed) {
+        places.push(mount);
+      }
     }
 
     places.sort((a, b) => a.name.localeCompare(b.name));
@@ -462,6 +464,7 @@ class PlaceService {
           filesystemSize: 0,
           icon: "drive-harddisk",
           iconType: "ICON_NAME",
+          isShadowed: !!gMount,
           name: label || uuid,
           rootUri: gMount ? gMount.get_root().get_uri() : null,
           uuid,
@@ -515,6 +518,7 @@ class PlaceService {
           filesystemSize: this.getFilesystemSize(fsInfo),
           icon: icon || "folder",
           iconType: icon ? "GICON" : "ICON_NAME",
+          isShadowed: false,
           name: info.get_display_name(),
           rootUri: mount ? mount.get_root().get_uri() : file.get_uri(),
           uuid: mount ? mount.get_uuid() : null,
@@ -580,6 +584,7 @@ class PlaceService {
             filesystemSize: this.getFilesystemSize(info),
             icon: icon || "folder",
             iconType: icon ? "GICON" : "ICON_NAME",
+            isShadowed: mount.is_shadowed(),
             name: mount.get_name(),
             rootUri: root.get_uri(),
             uuid: mount.get_uuid(),
@@ -624,6 +629,7 @@ class PlaceService {
         filesystemSize: this.getFilesystemSize(info),
         icon: "computer",
         iconType: "ICON_NAME",
+        isShadowed: false,
         name: "/",
         rootUri: "file:///",
         uuid: null,

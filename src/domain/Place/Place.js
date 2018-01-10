@@ -5,6 +5,7 @@ class Place {
     this.filesystemSize = 0;
     this.icon = "";
     this.iconType = "";
+    this.isShadowed = false;
     this.name = "";
     this.rootUri = /** @type {string | null} */ (null);
     this.uuid = /** @type {string | null} */ (null);
