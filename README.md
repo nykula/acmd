@@ -29,7 +29,7 @@ Run:
 acme-commander
 
 # Command not found? Add a search path:
-echo 'export PATH="~/.local/bin:\$PATH"' >> ~/.profile
+echo 'export PATH="~/.local/bin:$PATH"' >> ~/.profile
 source ~/.profile
 acme-commander
 ```
