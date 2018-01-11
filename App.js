@@ -179,7 +179,10 @@ App.prototype.listReleases = function() {
           .slice(1, 3)
           .join(".");
 
-        if (i && (minors.length > 1 && minor !== minors[minors.length - 1])) {
+        if (
+          i &&
+          (minors.length > 1 && (i > 3 || minor !== minors[minors.length - 1]))
+        ) {
           const action = Action({
             className: "btn-outline-secondary",
             href: this.baseUrl + "/releases",
