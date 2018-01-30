@@ -277,7 +277,7 @@ class PanelService {
       return;
     }
 
-    if (!tabId) {
+    if (tabId === undefined) {
       tabId = this.getActiveTabId();
     }
 
@@ -520,7 +520,7 @@ class PanelService {
    * @param {number=} panelId
    */
   getOppositeId(panelId) {
-    if (!panelId) {
+    if (panelId === undefined) {
       panelId = this.activeId;
     }
 
