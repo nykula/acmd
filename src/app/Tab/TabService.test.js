@@ -112,21 +112,26 @@ describe("TabService", () => {
 
     tabService.entities[0].cursor = 0;
     tabService.entities[0].files = [
-      ["config.sub", 2],
-      ["usb.ids", 1],
-      ["magic.mgc", 0],
-      ["pci.ids", 4],
-      ["node_modules", 5, true],
-      ["config.guess", 3],
+      ["..", 9, 1029],
+      ["config.sub", 2, 4324],
+      ["usb.ids", 1, 12],
+      ["magic.mgc", 0, 98740],
+      ["pci.ids", 4, 99],
+      ["node_modules", 5, 709],
+      ["config.guess", 3, 555],
     ].map((props) => {
-      const [name, modificationTime, isDir] = props;
+      const [name, modificationTime, size] = props;
 
       /** @type {any} */
       const file = new File();
 
-      file.fileType = isDir ? FileType.DIRECTORY : FileType.REGULAR;
+      file.fileType = name === "node_modules"
+        ? FileType.DIRECTORY
+        : FileType.REGULAR;
+
       file.modificationTime = modificationTime;
       file.name = name;
+      file.size = size;
 
       return file;
     });
@@ -135,6 +140,7 @@ describe("TabService", () => {
 
     tabService.sorted({ tabId: 0, by: "filename" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([
+      "..",
       "node_modules",
       "config.guess",
       "config.sub",
@@ -145,6 +151,7 @@ describe("TabService", () => {
 
     tabService.sorted({ tabId: 0, by: "filename" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([
+      "..",
       "node_modules",
       "usb.ids",
       "pci.ids",
@@ -155,6 +162,7 @@ describe("TabService", () => {
 
     tabService.sorted({ tabId: 0, by: "ext" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([
+      "..",
       "node_modules",
       "config.guess",
       "pci.ids",
@@ -165,6 +173,7 @@ describe("TabService", () => {
 
     tabService.sorted({ tabId: 0, by: "ext" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([
+      "..",
       "node_modules",
       "config.sub",
       "magic.mgc",
@@ -173,8 +182,31 @@ describe("TabService", () => {
       "config.guess",
     ]);
 
+    tabService.sorted({ tabId: 0, by: "size" });
+    expect(tabService.entities[0].files.map(x => x.name)).toEqual([
+      "..",
+      "node_modules",
+      "usb.ids",
+      "pci.ids",
+      "config.guess",
+      "config.sub",
+      "magic.mgc",
+    ]);
+
+    tabService.sorted({ tabId: 0, by: "size" });
+    expect(tabService.entities[0].files.map(x => x.name)).toEqual([
+      "..",
+      "node_modules",
+      "magic.mgc",
+      "config.sub",
+      "config.guess",
+      "pci.ids",
+      "usb.ids",
+    ]);
+
     tabService.sorted({ tabId: 0, by: "mtime" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([
+      "..",
       "node_modules",
       "magic.mgc",
       "usb.ids",
@@ -185,6 +217,7 @@ describe("TabService", () => {
 
     tabService.sorted({ tabId: 0, by: "mtime" });
     expect(tabService.entities[0].files.map(x => x.name)).toEqual([
+      "..",
       "node_modules",
       "pci.ids",
       "config.guess",

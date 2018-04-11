@@ -28,21 +28,30 @@ class TabService {
       case "filename":
         return orderBy(
           files,
-          [x => x.fileType === FileType.DIRECTORY, x => x.name.toLowerCase()],
-          ["desc", "asc"],
+          [
+            x => x.name === "..",
+            x => x.fileType === FileType.DIRECTORY,
+            x => x.name.toLowerCase(),
+          ],
+          ["desc", "desc", "asc"],
         );
 
       case "-filename":
         return orderBy(
           files,
-          [x => x.fileType === FileType.DIRECTORY, x => x.name.toLowerCase()],
-          ["desc", "desc"],
+          [
+            x => x.name === "..",
+            x => x.fileType === FileType.DIRECTORY,
+            x => x.name.toLowerCase(),
+          ],
+          ["desc", "desc", "desc"],
         );
 
       case "ext":
         return orderBy(
           files,
           [
+            x => x.name === "..",
             x => x.fileType === FileType.DIRECTORY,
             x => {
               const matches = /^(.+)\.(.*?)$/.exec(x.name);
@@ -52,13 +61,14 @@ class TabService {
             },
             x => x.name.toLowerCase(),
           ],
-          ["desc", "asc", "asc"],
+          ["desc", "desc", "asc", "asc"],
         );
 
       case "-ext":
         return orderBy(
           files,
           [
+            x => x.name === "..",
             x => x.fileType === FileType.DIRECTORY,
             x => {
               const matches = /^(.+)\.(.*?)$/.exec(x.name);
@@ -68,29 +78,55 @@ class TabService {
             },
             x => x.name.toLowerCase(),
           ],
-          ["desc", "desc", "desc"],
+          ["desc", "desc", "desc", "desc"],
+        );
+
+      case "size":
+        return orderBy(
+          files,
+          [
+            x => x.name === "..",
+            x => x.fileType === FileType.DIRECTORY,
+            "size",
+            x => x.name.toLowerCase(),
+          ],
+          ["desc", "desc", "asc", "asc"],
+        );
+
+      case "-size":
+        return orderBy(
+          files,
+          [
+            x => x.name === "..",
+            x => x.fileType === FileType.DIRECTORY,
+            "size",
+            x => x.name.toLowerCase(),
+          ],
+          ["desc", "desc", "desc", "desc"],
         );
 
       case "mtime":
         return orderBy(
           files,
           [
+            x => x.name === "..",
             x => x.fileType === FileType.DIRECTORY,
             "modificationTime",
             x => x.name.toLowerCase(),
           ],
-          ["desc", "asc", "asc"],
+          ["desc", "desc", "asc", "asc"],
         );
 
       case "-mtime":
         return orderBy(
           files,
           [
+            x => x.name === "..",
             x => x.fileType === FileType.DIRECTORY,
             "modificationTime",
             x => x.name.toLowerCase(),
           ],
-          ["desc", "desc", "desc"],
+          ["desc", "desc", "desc", "desc"],
         );
 
       default:
