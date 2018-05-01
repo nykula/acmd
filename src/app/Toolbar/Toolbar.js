@@ -15,18 +15,10 @@ const items = [
     label: "Refresh",
   },
 
-  "mode",
-
   {
     icon: "format-justify-left",
-    id: "",
-    label: "List",
-  },
-
-  {
-    icon: "format-justify-fill",
-    id: "",
-    label: "Table",
+    id: "tabService.toggleGrid",
+    label: "Grid",
   },
 
   "history",
@@ -107,16 +99,33 @@ class Toolbar extends Component {
           return h(VSeparator, { key: item });
         }
 
+        if (item.id === "tabService.toggleGrid") {
+          return (
+            h(ToggleButton, {
+              can_focus: false,
+              key: item.id,
+              pressedCallback: actionService.get(item.id).handler,
+              relief: ReliefStyle.NONE,
+              tooltip_text: tabService.isGrid ? "Table" : "Grid",
+            }, [
+                h(Image, {
+                  icon_name:
+                  (tabService.isGrid
+                    ? "format-justify-left"
+                    : "format-justify-fill") + "-symbolic",
+                  icon_size: IconSize.SMALL_TOOLBAR,
+                }),
+              ])
+          );
+        }
+
         return (
           h(ToggleButton, {
-            active:
-              item.icon === "format-justify-fill" ||
-              (item.id === "windowService.showHidSys" && tabService.showHidSys),
+            active: item.id === "windowService.showHidSys" && tabService.showHidSys,
             can_focus: false,
             key: item.icon,
             pressedCallback: item.id ? actionService.get(item.id).handler : null,
             relief: ReliefStyle.NONE,
-            sensitive: item.icon !== "format-justify-left",
             tooltip_text: item.label,
           }, [
               h(Image, {

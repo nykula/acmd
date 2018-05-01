@@ -1,8 +1,9 @@
 const Gtk = imports.gi.Gtk;
 
 const noop = require("lodash/noop");
+const { ListGrid } = require("../List/ListGrid");
+const { ListTable } = require("../List/ListTable");
 const { MenuItemWithSubmenu } = require("../Menu/MenuItemWithSubmenu");
-const { TreeView } = require("../TreeView/TreeView");
 const { setTimeout } = require("./setTimeout");
 const { Stub } = require("./Stub");
 
@@ -203,12 +204,16 @@ GtkDom.prototype.createElement = function(tagName) {
     return new Stub(this.domify(new Gtk.ComboBox()));
   }
 
+  if (tagName === "icon-view") {
+    return new ListGrid(this.domify(new Gtk.IconView()));
+  }
+
   if (tagName === "list-store") {
     return new Stub(this.domify(new Gtk.ListStore()));
   }
 
   if (tagName === "tree-view") {
-    return new TreeView(this.domify(new Gtk.TreeView()));
+    return new ListTable(this.domify(new Gtk.TreeView()));
   }
 
   tagName = tagName.replace(/(?:^|-)(.)/g, (_, x) => x.toUpperCase());

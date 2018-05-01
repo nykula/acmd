@@ -77,11 +77,14 @@ class DirectoryFile extends Component {
       isSelected,
       mode: file.mode,
       mtime: this.mtime(),
+      pixbuf: isSelected ? DirectoryFile.selected : file,
       shouldSearchSkip: this.shouldSearchSkip,
       size: this.size(),
     });
   }
 }
+
+DirectoryFile.selected = { icon: "emblem-default", iconType: "GICON" };
 
 exports.DirectoryFile = DirectoryFile;
 exports.default = connect([])(DirectoryFile);

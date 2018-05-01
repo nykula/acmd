@@ -158,6 +158,9 @@ class TabService {
       },
     };
 
+    /** @type {boolean} */
+    this.isGrid = false;
+
     this.props = props;
 
     this.showHidSys = false;
@@ -173,6 +176,7 @@ class TabService {
       deselectGlob: action(this.deselectGlob),
       entities: this.entities,
       invert: action(this.invert),
+      isGrid: this.isGrid,
       selectAll: action(this.selectAll),
       selectDiff: action(this.selectDiff),
       selectGlob: action(this.selectGlob),
@@ -180,6 +184,7 @@ class TabService {
       set: action(this.set),
       showHidSys: this.showHidSys,
       sorted: action(this.sorted),
+      toggleGrid: action(this.toggleGrid),
       visibleFiles: {
         "0": computed(this.getVisibleFiles.bind(this, 0)),
         "1": computed(this.getVisibleFiles.bind(this, 1)),
@@ -375,6 +380,10 @@ class TabService {
       id: props.tabId,
       location: tab.location,
     });
+  }
+
+  toggleGrid() {
+    this.isGrid = !this.isGrid;
   }
 
   /**

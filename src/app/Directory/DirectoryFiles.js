@@ -1,10 +1,11 @@
+const { Pixbuf }  = imports.gi.GdkPixbuf;
 const { Icon } = imports.gi.Gio;
 const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const { File } = require("../../domain/File/File");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
-const { ListStore } = require("../ListStore/ListStore");
+const { ListStore } = require("../List/ListStore");
 const { TabService } = require("../Tab/TabService");
 const { DirectoryFile } = require("./DirectoryFile");
 
@@ -47,6 +48,7 @@ class DirectoryFiles extends Component {
 const DirectoryCols = [
   { name: "isSelected", type: Boolean },
   { name: "icon", type: Icon },
+  { name: "pixbuf", type: Pixbuf },
   { name: "filename" },
   { name: "ext" },
   { name: "size" },

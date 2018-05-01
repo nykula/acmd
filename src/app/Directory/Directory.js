@@ -5,7 +5,6 @@ const Component = require("inferno-component").default;
 const { connect } = require("inferno-mobx");
 const assign = require("lodash/assign");
 const isEqual = require("lodash/isEqual");
-const noop = require("lodash/noop");
 const range = require("lodash/range");
 const {
   action,
@@ -14,13 +13,13 @@ const {
   extendObservable,
   observable,
 } = require("mobx");
-const { File } = require("../../domain/File/File");
 const { Tab } = require("../../domain/Tab/Tab");
 const { ActionService } = require("../Action/ActionService");
 const { CursorService } = require("../Cursor/CursorService");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { JobService } = require("../Job/JobService");
+const { ListStore } = require("../List/ListStore");
 const { PanelService } = require("../Panel/PanelService");
 const { PlaceService } = require("../Place/PlaceService");
 const { RefService } = require("../Ref/RefService");
@@ -419,7 +418,30 @@ class Directory extends Component {
   }
 
   render() {
+    const { isGrid } =
+      /** @type {TabService} */ (this.props.tabService);
+
     const { cursor } = this.tab;
+
+    if (isGrid) {
+      return (
+        h("icon-view", {
+          activatedCallback: this.handleActivated,
+          cols: this.cols,
+          cursor,
+          cursorCallback: this.handleCursor,
+          dragAction: DragAction.COPY + DragAction.MOVE,
+          item_padding: 0,
+          item_width: ListStore.iconSize,
+          keyPressEventCallback: this.handleKeyPressEvent,
+          layoutCallback: this.handleLayout,
+          on_drag_data_get: this.handleDrag,
+          on_drag_data_received: this.handleDrop,
+          ref: this.ref,
+        }, h(DirectoryFiles, { tabId: this.tabId }))
+      );
+    }
+
     return (
       h("tree-view", {
         activatedCallback: this.handleActivated,

@@ -1,12 +1,13 @@
+const { Pixbuf } = imports.gi.GdkPixbuf;
 const { Icon } = imports.gi.Gio;
 const {
   CellRenderer,
   CellRendererPixbuf,
   CellRendererText,
   CellRendererToggle,
+  IconTheme,
   ListStore,
   TreeIter,
-  TreeView,
 } = imports.gi.Gtk;
 const { EllipsizeMode } = imports.gi.Pango;
 const Component = require("inferno-component").default;
@@ -58,6 +59,10 @@ class ListStoreComponent extends Component {
 
         renderer = toggle;
         break;
+
+      case Pixbuf:
+        // IconView only.
+        return;
 
       default:
         attribute = "text";
@@ -205,6 +210,19 @@ class ListStoreComponent extends Component {
 
         if (type === Icon) {
           value = value ? GioIcon.get(value) : null;
+        } else if (type === Pixbuf && value && value.iconType === "GICON") {
+          const theme = IconTheme.get_default();
+
+          const icon = theme.lookup_by_gicon(GioIcon.get(value), ListStoreComponent.iconSize, 0);
+
+          value = icon ? icon.load_icon() : theme.load_icon("text-x-generic", ListStoreComponent.iconSize, 0);
+        } else if (type === Pixbuf && value && value.iconType === "ICON_NAME") {
+          const theme = IconTheme.get_default();
+
+          value =
+            theme.load_icon(value.icon, ListStoreComponent.iconSize, 0) ||
+            theme.load_icon("text-x-generic", 64, 0);
+
         } else if (type === Boolean) {
           value = !!value;
         } else {
@@ -235,5 +253,7 @@ class ListStoreComponent extends Component {
     return h("list-store", { ref: this.ref }, this.props.children);
   }
 }
+
+ListStoreComponent.iconSize = 48;
 
 exports.ListStore = ListStoreComponent;

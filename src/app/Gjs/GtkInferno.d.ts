@@ -21,6 +21,13 @@ export function h<T>(
   children?: VNode|Array<VNode|null>
 ): VNode;
 
+// FIXME: Delete.
+export function h(
+  tag: "icon-view",
+  props: any,
+  children: VNode
+): VNode;
+
 export function h(
   tag: "list-store",
   props: any,

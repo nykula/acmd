@@ -2,8 +2,8 @@ const { FileType } = imports.gi.Gio;
 const expect = require("expect");
 const { File } = require("../../domain/File/File");
 const { h } = require("../Gjs/GtkInferno");
+const { ListTable } = require("../List/ListTable");
 const { shallow } = require("../Test/Test");
-const { TreeView } = require("../TreeView/TreeView");
 const { DirectoryFile } = require("./DirectoryFile");
 
 describe("DirectoryFile", () => {
@@ -96,7 +96,7 @@ describe("DirectoryFile", () => {
     /**
      * @type {(store: any, _: any, input: string, iter: any) => boolean}
      */
-    const shouldSearchSkip = TreeView.prototype.shouldSearchSkip.bind(treeView);
+    const shouldSearchSkip = ListTable.prototype.shouldSearchSkip.bind(treeView);
 
     let skip;
 
