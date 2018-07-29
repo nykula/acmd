@@ -79,10 +79,19 @@ ListTable.prototype.setActivatedCallback = function(callback) {
  * @param {Col[]} cols
  */
 ListTable.prototype.setCols = function(cols) {
+  let pixbufDelta = 0;
+
   this.setCols = (/** @type {Col[]} */ nextCols) => {
     const tvCols = this.node.get_columns();
+    pixbufDelta = 0;
+
     for (let i = 0; i < nextCols.length; i++) {
-      tvCols[i].title = nextCols[i].title || "";
+      if (nextCols[i].type === Pixbuf) {
+        pixbufDelta--;
+        continue;
+      }
+
+      tvCols[i + pixbufDelta].title = nextCols[i].title || "";
     }
   };
 
@@ -90,6 +99,7 @@ ListTable.prototype.setCols = function(cols) {
     const col = cols[i];
 
     if (col.type === Pixbuf) {
+      pixbufDelta--;
       continue;
     }
 
@@ -113,7 +123,7 @@ ListTable.prototype.setCols = function(cols) {
       tvCol.title = col.title;
     }
 
-    this.node.insert_column(tvCol, i);
+    this.node.insert_column(tvCol, i + pixbufDelta);
   }
 };
 
