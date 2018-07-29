@@ -1,8 +1,8 @@
 const { DragAction } = imports.gi.Gdk;
-const { Button, DestDefaults, ReliefStyle } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
-const Nullthrows = require("nullthrows").default;
+const { Button, ReliefStyle } = imports.gi.Gtk;
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
+const nullthrows = require("nullthrows").default;
 const { Drag } = require("../Drag/Drag");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
@@ -32,8 +32,8 @@ class ActionBarRm extends Component {
    * @param {{ uris: string[] }} ev
    */
   handleDrop(ev) {
-    const { run } = Nullthrows(this.props.jobService);
-    const { refresh } = Nullthrows(this.props.panelService);
+    const { run } = nullthrows(this.props.jobService);
+    const { refresh } = nullthrows(this.props.panelService);
 
     run({
       destUri: "",
@@ -43,7 +43,7 @@ class ActionBarRm extends Component {
   }
 
   handlePressed() {
-    const { rm } = Nullthrows(this.props.selectService);
+    const { rm } = nullthrows(this.props.selectService);
     rm();
   }
 
@@ -73,6 +73,6 @@ class ActionBarRm extends Component {
 }
 
 exports.ActionBarRm = ActionBarRm;
-exports.default = connect(["jobService", "panelService", "selectService"])(
+exports.default = inject("jobService", "panelService", "selectService")(observer(
   ActionBarRm,
-);
+));

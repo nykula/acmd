@@ -1,7 +1,6 @@
-const { DragAction, Event } = imports.gi.Gdk;
 const { Button, StateFlags } = imports.gi.Gtk;
 const assign = require("lodash/assign");
-const Component = require("inferno-component").default;
+const { Component } = require("inferno");
 const { Drag } = require("../Drag/Drag");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");

@@ -1,16 +1,15 @@
-const { DragAction, Event, Gravity } = imports.gi.Gdk;
+const { DragAction, Gravity } = imports.gi.Gdk;
 const {
   Box,
   Button,
   IconSize,
   Image,
   Label,
-  Popover,
   ReliefStyle,
 } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
-const Nullthrows = require("nullthrows").default;
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
+const nullthrows = require("nullthrows").default;
 const { Place } = require("../../domain/Place/Place");
 const { Drag } = require("../Drag/Drag");
 const { GioIcon } = require("../Gio/GioIcon");
@@ -49,24 +48,24 @@ class PlaceEntry extends Component {
    * @param {{ action: number, uris: string[] }} ev
    */
   handleDrop(ev) {
-    const { run } = Nullthrows(this.props.jobService);
-    const { refresh } = Nullthrows(this.props.panelService);
+    const { run } = nullthrows(this.props.jobService);
+    const { refresh } = nullthrows(this.props.panelService);
 
     run({
-      destUri: Nullthrows(this.props.place.rootUri),
+      destUri: nullthrows(this.props.place.rootUri),
       type: ev.action === DragAction.MOVE ? "mv" : "cp",
       uris: ev.uris,
     }, refresh);
   }
 
   handleMenu() {
-    const { menus, select } = Nullthrows(this.props.placeService);
-    const menu = Nullthrows(menus[this.props.panelId]);
+    const { menus, select } = nullthrows(this.props.placeService);
+    const menu = nullthrows(menus[this.props.panelId]);
 
     select(this.props.place);
 
     menu.popup_at_widget(
-      Nullthrows(this.button),
+      nullthrows(this.button),
       Gravity.CENTER,
       Gravity.STATIC,
       null,
@@ -84,9 +83,9 @@ class PlaceEntry extends Component {
     this.button = button;
 
     button.connect("clicked", () => {
-      const { openPlace } = Nullthrows(this.props.panelService);
-      const { popovers } = Nullthrows(this.props.placeService);
-      const popover = Nullthrows(popovers[this.props.panelId]);
+      const { openPlace } = nullthrows(this.props.panelService);
+      const { popovers } = nullthrows(this.props.placeService);
+      const popover = nullthrows(popovers[this.props.panelId]);
 
       openPlace(this.props.panelId, this.props.place);
       popover.hide();
@@ -124,4 +123,4 @@ class PlaceEntry extends Component {
 }
 
 exports.PlaceEntry = PlaceEntry;
-exports.default = connect(["jobService", "panelService", "placeService"])(PlaceEntry);
+exports.default = inject("jobService", "panelService", "placeService")(observer(PlaceEntry));

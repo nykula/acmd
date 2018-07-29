@@ -1,5 +1,5 @@
-const { DragAction, DragContext } = imports.gi.Gdk;
-const { DestDefaults, ReliefStyle, Widget } = imports.gi.Gtk;
+const { DragAction } = imports.gi.Gdk;
+const { DestDefaults, Widget } = imports.gi.Gtk;
 const { autoBind } = require("../Gjs/autoBind");
 
 class Drag {
@@ -8,6 +8,8 @@ class Drag {
    * @param {{ action: number }} props
    */
   constructor(widget, props = { action: DragAction.COPY + DragAction.MOVE }) {
+    autoBind(this, Drag.prototype, __filename);
+
     this.didEnter = false;
     this.props = props;
     this.widget = widget;

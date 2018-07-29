@@ -2,12 +2,11 @@ const NativeFile = imports.gi.Gio.File;
 const {
   action,
   computed,
+  decorate,
   extendObservable,
   observable,
-  runInAction,
 } = require("mobx");
-const Nullthrows = require("nullthrows").default;
-const { File } = require("../../domain/File/File");
+const nullthrows = require("nullthrows").default;
 const { Panel } = require("../../domain/Panel/Panel");
 const { Place } = require("../../domain/Place/Place");
 const { DialogService } = require("../Dialog/DialogService");
@@ -54,21 +53,6 @@ class PanelService {
     this.props = props;
 
     autoBind(this, PanelService.prototype, __filename);
-
-    extendObservable(this, {
-      activeId: this.activeId,
-      createTab: action(this.createTab),
-      cursor: action(this.cursor),
-      entities: this.entities,
-      nextTab: action(this.nextTab),
-      prevTab: action(this.prevTab),
-      pushLocation: action(this.pushLocation),
-      removeTab: action(this.removeTab),
-      selected: action(this.selected),
-      setActive: action(this.setActive),
-      setActiveTab: action(this.setActiveTab),
-      toggleActive: action(this.toggleActive),
-    });
   }
 
   /**
@@ -93,7 +77,10 @@ class PanelService {
     const entities = {};
     entities[tabId] = {
       cursor,
-      files: observable.shallowArray(files.slice()),
+      files: observable.array(
+        files.slice(),
+        { deep: false },
+      ),
       location,
       selected: [],
       sortedBy,
@@ -277,14 +264,14 @@ class PanelService {
       return;
     }
 
-    if (tabId === undefined) {
-      tabId = this.getActiveTabId();
-    }
+    const ensuredTabId = tabId === undefined
+      ? this.getActiveTabId()
+      : tabId;
 
-    ls(tabId, uri, error => {
+    ls(ensuredTabId, uri, error => {
       if (error) {
         alert(error.message, () => {
-          if (entities[tabId].location !== "file:///") {
+          if (entities[ensuredTabId].location !== "file:///") {
             this.ls("file:///", tabId);
           }
         });
@@ -292,7 +279,7 @@ class PanelService {
         return;
       }
 
-      this.pushLocation({ tabId, uri });
+      this.pushLocation({ tabId: ensuredTabId, uri });
     });
   }
 
@@ -323,7 +310,7 @@ class PanelService {
       /** @type {PlaceService} */ (this.props.placeService);
 
     if (!place.rootUri) {
-      mountUuid(Nullthrows(place.uuid), () => {
+      mountUuid(nullthrows(place.uuid), () => {
         this.openPlace(panelId, place);
       });
 
@@ -527,5 +514,20 @@ class PanelService {
     return panelId === 0 ? 1 : 0;
   }
 }
+
+decorate(PanelService, {
+  activeId: observable,
+  createTab: action,
+  cursor: action,
+  entities: observable,
+  nextTab: action,
+  prevTab: action,
+  pushLocation: action,
+  removeTab: action,
+  selected: action,
+  setActive: action,
+  setActiveTab: action,
+  toggleActive: action,
+});
 
 exports.PanelService = PanelService;

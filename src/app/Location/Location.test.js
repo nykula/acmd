@@ -2,7 +2,6 @@ const { StateFlags } = imports.gi.Gtk;
 const expect = require("expect");
 const { noop } = require("lodash");
 const { observable } = require("mobx");
-const { h } = require("../Gjs/GtkInferno");
 const { UriService } = require("../Uri/UriService");
 const { Location } = require("./Location");
 

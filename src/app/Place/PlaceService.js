@@ -1,4 +1,3 @@
-const { Gravity } = imports.gi.Gdk;
 const {
   File,
   FileInfo,
@@ -15,8 +14,8 @@ const GLib = imports.gi.GLib;
 const { PRIORITY_DEFAULT } = GLib;
 const { Button, Menu, Popover } = imports.gi.Gtk;
 const { map, parallel } = require("async");
-const { action, computed, extendObservable, runInAction } = require("mobx");
-const Nullthrows = require("nullthrows").default;
+const { noop } = require("lodash");
+const { action, computed, decorate, observable, runInAction } = require("mobx");
 const Uri = require("url-parse");
 const { Place } = require("../../domain/Place/Place");
 const { GioAsync } = require("../Gio/GioAsync");
@@ -49,6 +48,56 @@ class PlaceService {
   }
 
   /**
+   * @private
+   */
+  get places() {
+    /** @type {Place[]} */
+    const places = [];
+
+    for (const drive of this.drives) {
+      if (!drive.rootUri) {
+        places.push(drive);
+      }
+    }
+
+    for (const mount of this.mounts) {
+      if (!mount.isShadowed) {
+        places.push(mount);
+      }
+    }
+
+    places.sort((a, b) => a.name.localeCompare(b.name));
+
+    places.unshift(this.root);
+
+    if (this.home) {
+      places.push(this.home);
+    }
+
+    return places;
+  }
+
+  /**
+   * @private
+   */
+  get shortNames() {
+    const places = this.places;
+
+    /** @type {{ [name: string]: string }} */
+    const shortNames = {};
+
+    for (const { name, icon } of places) {
+      const sameIcon = places
+        .filter(x => x.icon === icon)
+        .map(x => x.name);
+
+      shortNames[name] = PlaceService.minLength(sameIcon, name);
+    }
+
+    return shortNames;
+  }
+
+  /**
    * @param {{ refService: RefService }} props
    */
   constructor(props) {
@@ -62,6 +111,9 @@ class PlaceService {
     /** @type {Place | undefined} */
     this.home = undefined;
 
+    // Work around error TS6133 "declared but its value is never read".
+    noop(Menu);
+
     /** @type {{ [panelId: number]: Menu | null }} */
     this.menus = Object.defineProperties({}, {
       0: props.refService.property("placeService.menus.0"),
@@ -72,9 +124,6 @@ class PlaceService {
 
     /** @type {Place[]} */
     this.mounts = [];
-
-    /** @type {Place[]} */
-    this.places = [];
 
     this.props = props;
 
@@ -100,11 +149,11 @@ class PlaceService {
     /** @type {Place | undefined} */
     this.selected = undefined;
 
-    /** @type {{ [name: string]: string }} */
-    this.shortNames = {};
-
     /** @type {Place[]} */
     this.specials = [];
+
+    // Work around error TS6133 "declared but its value is never read".
+    noop(Button);
 
     /** @type {{ [panelId: number]: Button | null }} */
     this.toggles = Object.defineProperties({}, {
@@ -118,19 +167,6 @@ class PlaceService {
     this.VolumeMonitor = VolumeMonitor;
 
     autoBind(this, PlaceService.prototype, __filename);
-
-    extendObservable(this, {
-      drives: this.drives,
-      home: this.home,
-      mounts: this.mounts,
-      places: computed(this.getPlaces),
-      root: this.root,
-      select: action(this.select),
-      selected: this.selected,
-      shortNames: computed(this.getShortNames),
-      specials: this.specials,
-      trash: this.trash,
-    });
   }
 
   /**
@@ -174,7 +210,7 @@ class PlaceService {
    * Mounts a remote place, such as SFTP.
    *
    * @param {string} uriStr
-   * @param {(error: Error | undefined, uri: string) => void} callback
+   * @param {(error: Error | undefined, uri: string | undefined) => void} callback
    */
   mount(uriStr, callback) {
     const uri = Uri(uriStr);
@@ -205,7 +241,7 @@ class PlaceService {
         try {
           gFile.mount_enclosing_volume_finish(result);
         } catch (error) {
-          callback(error);
+          callback(error, undefined);
           return;
         }
         callback(undefined, uri.toString());
@@ -344,56 +380,6 @@ class PlaceService {
 
   /**
    * @private
-   */
-  getPlaces() {
-    /** @type {Place[]} */
-    const places = [];
-
-    for (const drive of this.drives) {
-      if (!drive.rootUri) {
-        places.push(drive);
-      }
-    }
-
-    for (const mount of this.mounts) {
-      if (!mount.isShadowed) {
-        places.push(mount);
-      }
-    }
-
-    places.sort((a, b) => a.name.localeCompare(b.name));
-
-    places.unshift(this.root);
-
-    if (this.home) {
-      places.push(this.home);
-    }
-
-    return places;
-  }
-
-  /**
-   * @private
-   */
-  getShortNames() {
-    const places = this.places;
-
-    /** @type {{ [name: string]: string }} */
-    const shortNames = {};
-
-    for (const { name, icon } of places) {
-      const sameIcon = places
-        .filter(x => x.icon === icon)
-        .map(x => x.name);
-
-      shortNames[name] = PlaceService.minLength(sameIcon, name);
-    }
-
-    return shortNames;
-  }
-
-  /**
-   * @private
    * @param {File} file
    * @param {(error?: Error, info?: FileInfo) => void} callback
    */
@@ -435,7 +421,7 @@ class PlaceService {
 
   /**
    * @private
-   * @param {(error: Error | undefined, places: Place[]) => void} callback
+   * @param {(error: Error | undefined) => void} callback
    */
   refreshDrives(callback) {
     const gVolMon = this.VolumeMonitor.get();
@@ -483,7 +469,7 @@ class PlaceService {
           this.drives = places;
         });
 
-        callback();
+        callback(undefined);
       },
     );
   }
@@ -700,5 +686,18 @@ class PlaceService {
     });
   }
 }
+
+decorate(PlaceService, {
+  drives: observable,
+  home: observable,
+  mounts: observable,
+  places: computed,
+  root: observable,
+  select: action,
+  selected: observable,
+  shortNames: computed,
+  specials: observable,
+  trash: observable,
+});
 
 exports.PlaceService = PlaceService;

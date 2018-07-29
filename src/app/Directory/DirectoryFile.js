@@ -1,8 +1,8 @@
 const { FileType } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Component = require("inferno-component").default;
+const { Component } = require("inferno");
 const { h } = require("../Gjs/GtkInferno");
-const { connect } = require("inferno-mobx");
+const { inject, observer } = require("inferno-mobx");
 const { File } = require("../../domain/File/File");
 const { autoBind } = require("../Gjs/autoBind");
 const formatSize = require("../Size/formatSize").default;
@@ -87,4 +87,4 @@ class DirectoryFile extends Component {
 DirectoryFile.selected = { icon: "emblem-default", iconType: "GICON" };
 
 exports.DirectoryFile = DirectoryFile;
-exports.default = connect([])(DirectoryFile);
+exports.default = inject()(observer(DirectoryFile));

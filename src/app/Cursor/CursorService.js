@@ -1,22 +1,11 @@
-const { Event, Gravity, Rectangle } = imports.gi.Gdk;
-const {
-  AppInfo,
-  File,
-  FileEnumerator,
-  FileInfo,
-  FileQueryInfoFlags,
-  FileType,
-} = imports.gi.Gio;
-const { MAXINT32, PRIORITY_DEFAULT } = imports.gi.GLib;
-const { Window } = imports.gi.Gtk;
+const { AppInfo, File, FileType } = imports.gi.Gio;
 const { concat, map, parallel, waterfall } = require("async");
-const { castArray, uniqBy } = require("lodash");
+const { uniqBy } = require("lodash");
 const { parse } = require("nextstep-plist");
-const Nullthrows = require("nullthrows").default;
+const nullthrows = require("nullthrows").default;
 const { FileHandler } = require("../../domain/File/FileHandler");
 const { DialogService } = require("../Dialog/DialogService");
 const { DirectoryService } = require("../Directory/DirectoryService");
-const { GioAsync } = require("../Gio/GioAsync");
 const { GioService } = require("../Gio/GioService");
 const { autoBind } = require("../Gjs/autoBind");
 const { PanelService } = require("../Panel/PanelService");
@@ -52,9 +41,9 @@ class CursorService {
    * Opens file in terminal, with EDITOR environment variable.
    */
   edit() {
-    const { alert } = Nullthrows(this.props.dialogService);
-    const { terminal } = Nullthrows(this.props.directoryService);
-    const { unescape } = Nullthrows(this.props.uriService);
+    const { alert } = nullthrows(this.props.dialogService);
+    const { terminal } = nullthrows(this.props.directoryService);
+    const { unescape } = nullthrows(this.props.uriService);
 
     const editor = this.env.EDITOR;
 
@@ -81,7 +70,7 @@ class CursorService {
    * @param {(error?: Error, result?: { contentType: string, handlers: FileHandler[] }) => void} callback
    */
   getHandlers(uri, callback) {
-    const { communicate } = Nullthrows(this.props.gioService);
+    const { communicate } = nullthrows(this.props.gioService);
 
     communicate(["uname"], (error, platform) => {
       if (!platform) {
@@ -140,9 +129,9 @@ class CursorService {
    * Opens file in terminal, with PAGER environment variable.
    */
   view() {
-    const { alert } = Nullthrows(this.props.dialogService);
-    const { terminal } = Nullthrows(this.props.directoryService);
-    const { unescape } = Nullthrows(this.props.uriService);
+    const { alert } = nullthrows(this.props.dialogService);
+    const { terminal } = nullthrows(this.props.directoryService);
+    const { unescape } = nullthrows(this.props.uriService);
 
     const pager = this.env.PAGER;
 
@@ -221,7 +210,7 @@ class CursorService {
    * @param {(error?: Error, defaults?: { [type: string]: string }) => void} callback
    */
   getDefaults(callback) {
-    const { communicate } = Nullthrows(this.props.gioService);
+    const { communicate } = nullthrows(this.props.gioService);
 
     communicate(
       [
@@ -285,7 +274,7 @@ class CursorService {
          * @param {any} next
          */
         next => {
-          const { ls, queryInfo } = Nullthrows(this.props.gioService);
+          const { ls, queryInfo } = nullthrows(this.props.gioService);
 
           const dirs = [
             "file:///Applications",
@@ -392,7 +381,7 @@ class CursorService {
    * @param {(error?: Error, result?: { contentType: string, handlers: FileHandler[] }) => void} callback
    */
   getHandlersNative(uri, callback) {
-    const { queryInfo } = Nullthrows(this.props.gioService);
+    const { queryInfo } = nullthrows(this.props.gioService);
     const file = this.File.new_for_uri(uri);
 
     queryInfo(file, (error, info) => {
@@ -442,8 +431,8 @@ class CursorService {
       return;
     }
 
-    const { communicate } = Nullthrows(this.props.gioService);
-    const { unescape } = Nullthrows(this.props.uriService);
+    const { communicate } = nullthrows(this.props.gioService);
+    const { unescape } = nullthrows(this.props.uriService);
 
     communicate(
       ["mdls", "-name", "kMDItemContentTypeTree", unescape(uri)],
@@ -477,7 +466,7 @@ class CursorService {
    * @param {(error?: Error, data?: any) => void} callback
    */
   readPlist(file, callback) {
-    const { communicate } = Nullthrows(this.props.gioService);
+    const { communicate } = nullthrows(this.props.gioService);
 
     communicate(
       ["plutil", "-convert", "json", "-o", "-", file.get_path()],

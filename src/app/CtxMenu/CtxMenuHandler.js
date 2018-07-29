@@ -1,7 +1,7 @@
-const { Box, IconSize, Image, Label, MenuItem } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
+const { Box, Image, Label, MenuItem } = imports.gi.Gtk;
+const { Component } = require("inferno");
 const { h } = require("../Gjs/GtkInferno");
-const { connect } = require("inferno-mobx");
+const { inject, observer } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { GioService } = require("../Gio/GioService");
 const { FileHandler } = require("../../domain/File/FileHandler");
@@ -56,4 +56,4 @@ class CtxMenuHandler extends Component {
 }
 
 exports.CtxMenuHandler = CtxMenuHandler;
-exports.default = connect(["gioService"])(CtxMenuHandler);
+exports.default = inject("gioService")(observer(CtxMenuHandler));

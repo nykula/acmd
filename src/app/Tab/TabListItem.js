@@ -1,6 +1,6 @@
 const { Box, IconSize, Image, Label, ReliefStyle } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
@@ -61,4 +61,4 @@ class TabListItem extends Component {
 }
 
 exports.TabListItem = TabListItem;
-exports.default = connect(["panelService", "tabService"])(TabListItem);
+exports.default = inject("panelService", "tabService")(observer(TabListItem));

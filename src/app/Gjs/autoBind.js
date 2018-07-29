@@ -23,6 +23,13 @@ function autoBind(self, prototype, filename) {
 
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+
+    if (descriptor && descriptor.get) {
+      // MobX.
+      continue;
+    }
+
     const val = prototype[key];
 
     if (key !== "constructor" && typeof val === "function") {

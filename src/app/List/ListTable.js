@@ -8,6 +8,9 @@ const { autoBind } = require("../Gjs/autoBind");
 const KeyListener = require("../Gjs/KeyListener").default;
 const { ListStore } = require("./ListStore");
 
+/** @type {any} */
+const undef = undefined;
+
 /**
  * @typedef Col
  * @property {boolean=} expand
@@ -21,6 +24,12 @@ const { ListStore } = require("./ListStore");
  * @param {TreeView} node
  */
 function ListTable(node) {
+  /** @type {TreeView} */
+  this.node = undef;
+
+  /** @type {{ children: any[] }} */
+  this.store = undef;
+
   ListTable.prototype.useNodeAsThis.call(node);
   return node;
 }
@@ -48,9 +57,6 @@ ListTable.prototype.node = undefined;
 
 /** @type {boolean} */
 ListTable.prototype.shouldReactToCursorChanges = undefined;
-
-/** @type {{ children: any[] }} */
-ListTable.prototype.store = undefined;
 
 /**
  * @param {{ children: any[] }} newChild

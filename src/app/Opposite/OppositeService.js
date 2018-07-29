@@ -1,11 +1,10 @@
 const { File } = imports.gi.Gio;
-const Nullthrows = require("nullthrows").default;
+const nullthrows = require("nullthrows").default;
 const { DialogService } = require("../Dialog/DialogService");
 const { autoBind } = require("../Gjs/autoBind");
 const { JobService } = require("../Job/JobService");
 const { PanelService } = require("../Panel/PanelService");
 const { SelectService } = require("../Select/SelectService");
-const { TabService } = require("../Tab/TabService");
 const { UriService } = require("../Uri/UriService");
 
 /**
@@ -18,7 +17,6 @@ class OppositeService {
    * @property {JobService?} [jobService]
    * @property {PanelService?} [panelService]
    * @property {SelectService?} [selectService]
-   * @property {TabService?} [tabService]
    * @property {UriService?} [uriService]
    *
    * @param {IProps} props
@@ -29,10 +27,10 @@ class OppositeService {
   }
 
   cp() {
-    const { alert, prompt } = Nullthrows(this.props.dialogService);
-    const { run } = Nullthrows(this.props.jobService);
-    const { refresh } = Nullthrows(this.props.panelService);
-    const { normalize } = Nullthrows(this.props.uriService);
+    const { alert, prompt } = nullthrows(this.props.dialogService);
+    const { run } = nullthrows(this.props.jobService);
+    const { refresh } = nullthrows(this.props.panelService);
+    const { normalize } = nullthrows(this.props.uriService);
 
     const { destUri, uris, urisStr } = this.getUris();
 
@@ -58,10 +56,10 @@ class OppositeService {
   }
 
   mv() {
-    const { alert, prompt } = Nullthrows(this.props.dialogService);
-    const { normalize } = Nullthrows(this.props.uriService);
-    const { run } = Nullthrows(this.props.jobService);
-    const { refresh } = Nullthrows(this.props.panelService);
+    const { alert, prompt } = nullthrows(this.props.dialogService);
+    const { normalize } = nullthrows(this.props.uriService);
+    const { run } = nullthrows(this.props.jobService);
+    const { refresh } = nullthrows(this.props.panelService);
 
     const { destUri, uris, urisStr } = this.getUris();
 
@@ -92,8 +90,8 @@ class OppositeService {
    * @private
    */
   getDest() {
-    const { activeId, getActiveTab } = Nullthrows(this.props.panelService);
-    const { getFiles } = Nullthrows(this.props.selectService);
+    const { activeId, getActiveTab } = nullthrows(this.props.panelService);
+    const { getFiles } = nullthrows(this.props.selectService);
 
     const destPanelId = activeId === 0 ? 1 : 0;
     const { location } = getActiveTab(destPanelId);
@@ -112,8 +110,8 @@ class OppositeService {
    * @private
    */
   getUris() {
-    const { unescape } = Nullthrows(this.props.uriService);
-    const { formatUris, getUris } = Nullthrows(this.props.selectService);
+    const { unescape } = nullthrows(this.props.uriService);
+    const { formatUris, getUris } = nullthrows(this.props.selectService);
 
     const destUri = unescape(this.getDest());
     const uris = getUris();

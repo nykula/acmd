@@ -1,6 +1,5 @@
-const { MenuBar, MenuItem } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { MenuBar } = imports.gi.Gtk;
+const { Component } = require("inferno");
 const { h } = require("../Gjs/GtkInferno");
 const MenuBarAction = require("./MenuBarAction").default;
 

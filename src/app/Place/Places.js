@@ -1,5 +1,5 @@
 const { Box } = imports.gi.Gtk;
-const { connect } = require("inferno-mobx");
+const { inject, observer } = require("inferno-mobx");
 const { h } = require("../Gjs/GtkInferno");
 const PlacesEntry = require("./PlacesEntry").default;
 const { PlaceService } = require("./PlaceService");
@@ -26,4 +26,4 @@ function Places(props) {
 }
 
 exports.Places = Places;
-exports.default = connect(["placeService"])(Places);
+exports.default = inject("placeService")(observer(Places));

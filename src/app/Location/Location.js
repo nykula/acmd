@@ -1,9 +1,15 @@
 const { Box, EventBox, Label, StateFlags } = imports.gi.Gtk;
 const { EllipsizeMode } = imports.gi.Pango;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
-const { action, autorun, extendObservable, observable } = require("mobx");
-const Nullthrows = require("nullthrows").default;
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
+const {
+  action,
+  autorun,
+  decorate,
+  extendObservable,
+  observable,
+} = require("mobx");
+const nullthrows = require("nullthrows").default;
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
@@ -24,14 +30,17 @@ class Location extends Component {
   constructor(props) {
     super(props);
 
+    autoBind(this, Location.prototype, __filename);
+
+    extendObservable(
+      this,
+      { box: null },
+      { box: observable.ref },
+    );
+
     /** @type {EventBox | null} */
     this.box = null;
 
-    autoBind(this, Location.prototype, __filename);
-    extendObservable(this, {
-      box: observable.ref(this.box),
-      ref: action(this.ref),
-    });
     this.unsubscribeSelection = autorun(this.updateSelection);
   }
 
@@ -40,7 +49,7 @@ class Location extends Component {
   }
 
   isActive() {
-    const { activeId } = Nullthrows(this.props.panelService);
+    const { activeId } = nullthrows(this.props.panelService);
 
     return activeId === this.props.panelId;
   }
@@ -53,7 +62,7 @@ class Location extends Component {
 
     if (box) {
       box.connect("button-press-event", () => {
-        const { setActive } = Nullthrows(this.props.panelService);
+        const { setActive } = nullthrows(this.props.panelService);
         setActive(this.props.panelId);
       });
     }
@@ -72,8 +81,8 @@ class Location extends Component {
   }
 
   render() {
-    const { getActiveTab } = Nullthrows(this.props.panelService);
-    const { unescape } = Nullthrows(this.props.uriService);
+    const { getActiveTab } = nullthrows(this.props.panelService);
+    const { unescape } = nullthrows(this.props.uriService);
 
     const { location } = getActiveTab(this.props.panelId);
     const label = unescape(location).replace(/\/?$/, "/*");
@@ -90,5 +99,9 @@ class Location extends Component {
   }
 }
 
+decorate(Location, {
+  ref: action,
+});
+
 exports.Location = Location;
-exports.default = connect(["panelService", "uriService"])(Location);
+exports.default = inject("panelService", "uriService")(observer(Location));

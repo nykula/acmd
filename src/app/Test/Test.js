@@ -1,12 +1,11 @@
-const { Buffer } = require("buffer");
-
 exports.Class = class Class { };
 
 /** @type {any[]} */
 exports.EmptyArray = [];
 
 /** @type {any} */
-exports.EmptyProps = {};
+const EmptyProps = {};
+exports.EmptyProps = EmptyProps;
 
 /** @type {string} */
 exports.NoString = (/** @type {any} */ (null));
@@ -66,6 +65,5 @@ exports.require = () => {
    */
   const win = window;
   win.describe = describe;
-  win.Buffer = Buffer;
   win.it = it;
 };

@@ -1,6 +1,5 @@
-const { Box, Button, ReliefStyle, VSeparator } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Box, VSeparator } = imports.gi.Gtk;
+const { Component } = require("inferno");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const ActionBarItem = require("./ActionBarItem").default;

@@ -1,8 +1,5 @@
-const { DragAction } = imports.gi.Gdk;
 const expect = require("expect");
 const noop = require("lodash/noop");
-const { h } = require("../Gjs/GtkInferno");
-const { shallow } = require("../Test/Test");
 const { ActionBarRm } = require("./ActionBarRm");
 
 describe("ActionBarRm", () => {

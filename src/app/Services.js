@@ -103,7 +103,6 @@ class Services {
       jobService,
       panelService,
       selectService,
-      tabService,
       uriService,
     });
 

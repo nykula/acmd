@@ -1,7 +1,5 @@
-const assign = require("lodash/assign");
 const expect = require("expect");
 const { createSpy } = require("expect");
-const { RefService } = require("../Ref/RefService");
 const { Place } = require("./Place");
 
 describe("Place", () => {

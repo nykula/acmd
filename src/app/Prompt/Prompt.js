@@ -1,8 +1,8 @@
 const { Box, Entry, Label } = imports.gi.Gtk;
 const { EllipsizeMode } = imports.gi.Pango;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
-const Nullthrows = require("nullthrows").default;
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
+const nullthrows = require("nullthrows").default;
 const { DirectoryService } = require("../Directory/DirectoryService");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
@@ -30,7 +30,7 @@ class Prompt extends Component {
    * @param {{ text: string | null }} entry
    */
   handleActivate(entry) {
-    const { exec } = Nullthrows(this.props.directoryService);
+    const { exec } = nullthrows(this.props.directoryService);
 
     if (entry.text) {
       exec(entry.text);
@@ -47,8 +47,8 @@ class Prompt extends Component {
   }
 
   render() {
-    const { getActiveTab } = Nullthrows(this.props.panelService);
-    const { unescape } = Nullthrows(this.props.uriService);
+    const { getActiveTab } = nullthrows(this.props.panelService);
+    const { unescape } = nullthrows(this.props.uriService);
 
     const { location } = getActiveTab();
     const label = unescape(location) + "$";
@@ -66,6 +66,6 @@ class Prompt extends Component {
 }
 
 exports.Prompt = Prompt;
-exports.default = connect(["directoryService", "panelService", "uriService"])(
+exports.default = inject("directoryService", "panelService", "uriService")(observer(
   Prompt,
-);
+));

@@ -4,8 +4,6 @@ type Component<T> = (new (props: T) => { render(): VNode }) | ((props: T) => VNo
 
 type Widget<T> = new (...args: any[]) => ({ parent_instance: any } & T);
 
-export function connect(services: string): <T>(component: T) => T;
-
 export function h<T>(
   component: Component<T> | Widget<T>,
   children?: Array<VNode|null>

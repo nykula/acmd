@@ -1,6 +1,6 @@
-const { Box, IconSize, Image, Label, MenuItem } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Box, Image, Label, MenuItem } = imports.gi.Gtk;
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
 const { ActionService } = require("../Action/ActionService");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
@@ -48,4 +48,4 @@ class CtxMenuAction extends Component {
 }
 
 exports.CtxMenuAction = CtxMenuAction;
-exports.default = connect(["actionService"])(CtxMenuAction);
+exports.default = inject("actionService")(observer(CtxMenuAction));

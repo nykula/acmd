@@ -207,7 +207,12 @@ var Require = class {
     const window = this.window;
 
     window.process = { env: this.getEnv() };
-    window.console = { error: print, log: print, warn: print };
+    window.console = {
+      error: print,
+      info: print,
+      log: print,
+      warn: print,
+    };
 
     Object.defineProperty(window, "__filename", {
       /**
@@ -560,12 +565,10 @@ var Require = class {
  * Caches results of unary or binary function.
  *
  * @param {(arg1: any, arg2?: any) => any} fun
- * @param {({ [key: string]: any })=} cache
+ * @param {({ [key: string]: any })=} _
  */
-function memoize(fun, cache) {
-  if (!cache) {
-    cache = {};
-  }
+function memoize(fun, _) {
+  const cache = _ || {};
 
   if (fun.length === 1) {
     return (/** @type {any} */ arg) => {

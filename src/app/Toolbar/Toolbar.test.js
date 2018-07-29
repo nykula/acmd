@@ -7,10 +7,12 @@ describe("Toolbar", () => {
   it("dispatches action without payload", () => {
     const handler = expect.createSpy();
 
+    /** @type {any} */
     const actionService = {
       get: () => ({ handler }),
     };
 
+    /** @type {any} */
     const tabService = {
       showHidSys: false,
     };

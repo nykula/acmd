@@ -1,6 +1,4 @@
 const expect = require("expect");
-const assign = require("lodash/assign");
-const noop = require("lodash/noop");
 const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 const { TabListItem } = require("./TabListItem");

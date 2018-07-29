@@ -1,6 +1,5 @@
 const { FileType } = imports.gi.Gio;
 const expect = require("expect");
-const assign = require("lodash/assign");
 const { observable } = require("mobx");
 const { createSpy } = expect;
 const { h } = require("../Gjs/GtkInferno");

@@ -1,9 +1,8 @@
 const Gtk = imports.gi.Gtk;
 
 const noop = require("lodash/noop");
-const { ListGrid } = require("../List/ListGrid");
-const { ListTable } = require("../List/ListTable");
 const { MenuItemWithSubmenu } = require("../Menu/MenuItemWithSubmenu");
+const { autoBind } = require("./autoBind");
 const { setTimeout } = require("./setTimeout");
 const { Stub } = require("./Stub");
 
@@ -25,10 +24,7 @@ function removeAllChildren() {
 }
 
 function GtkDom() {
-  this.createElement = this.createElement.bind(this);
-  this.createTextNode = this.createTextNode.bind(this);
-  this.domify = this.domify.bind(this);
-  this.require = this.require.bind(this);
+  autoBind(this, GtkDom.prototype, __filename);
 
   /** @type {{ [key: string]: any }} */
   this.Gtk = Gtk;
@@ -205,6 +201,9 @@ GtkDom.prototype.createElement = function(tagName) {
   }
 
   if (tagName === "icon-view") {
+    // TODO: Resolve setTimeout circular dependency.
+    const { ListGrid } = require("../List/ListGrid");
+
     return new ListGrid(this.domify(new Gtk.IconView()));
   }
 
@@ -213,6 +212,9 @@ GtkDom.prototype.createElement = function(tagName) {
   }
 
   if (tagName === "tree-view") {
+    // TODO: Resolve setTimeout circular dependency.
+    const { ListTable } = require("../List/ListTable");
+
     return new ListTable(this.domify(new Gtk.TreeView()));
   }
 

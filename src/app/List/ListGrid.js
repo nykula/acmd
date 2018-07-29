@@ -11,6 +11,13 @@ const KeyListener = require("../Gjs/KeyListener").default;
  * @param {IconView} node
  */
 function ListGrid(node) {
+  /**
+   * Rows per screen.
+   */
+  this.limit = 0;
+
+  this.node = node;
+
   ListGrid.prototype.useNodeAsThis.call(node);
   return node;
 }
@@ -22,19 +29,10 @@ function ListGrid(node) {
 ListGrid.prototype._cursor = undefined;
 
 /**
- * Rows per screen.
- * @type {number}
- */
-ListGrid.prototype.limit = undefined;
-
-/**
  * Defined when user clicks a row, as opposed to key press.
  * @type {any}
  */
 ListGrid.prototype.mouseEvent = undefined;
-
-/** @type {IconView} */
-ListGrid.prototype.node = undefined;
 
 /** @type {boolean} */
 ListGrid.prototype.shouldReactToCursorChanges = undefined;

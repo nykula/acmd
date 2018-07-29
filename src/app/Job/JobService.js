@@ -2,7 +2,7 @@ const { DataInputStream, Subprocess, SubprocessFlags } = imports.gi.Gio;
 const { PRIORITY_LOW } = imports.gi.GLib;
 const { Button, Popover } = imports.gi.Gtk;
 const noop = require("lodash/noop");
-const { action, computed, extendObservable } = require("mobx");
+const { action, computed, decorate, observable } = require("mobx");
 const { WorkerError } = require("../../domain/Gio/WorkerError");
 const { WorkerProps } = require("../../domain/Gio/WorkerProps");
 const { WorkerProgress } = require("../../domain/Gio/WorkerProgress");
@@ -14,6 +14,13 @@ const { RefService } = require("../Ref/RefService");
  * Spawns, stops, continues and interrupts subprocesses.
  */
 class JobService {
+  /**
+   * @private
+   */
+  get statefulPids() {
+    return this.pids.filter(pid => !!this.jobs[pid]);
+  }
+
   /**
    * @param {{ refService: RefService }} props
    */
@@ -28,23 +35,10 @@ class JobService {
     /** @type {number[]} */
     this.pids = [];
 
-    /** @type {number[]} */
-    this.statefulPids = [];
-
     /** @type {{ [pid: number]: string }} */
     this.types = {};
 
     autoBind(this, JobService.prototype, __filename);
-
-    extendObservable(this, {
-      jobs: this.jobs,
-      pids: this.pids,
-      remove: action(this.remove),
-      save: action(this.save),
-      statefulPids: computed(this.getStatefulPids),
-      types: this.types,
-      watch: action(this.watch),
-    });
   }
 
   /**
@@ -96,7 +90,7 @@ class JobService {
    * Spawns a worker. Returns its pid. Calls back on error or success.
    *
    * @param {WorkerProps} props
-   * @param {(error: { message: string }) => void} callback
+   * @param {(error: { message: string } | undefined) => void} callback
    */
   run(props, callback = noop) {
     const subprocess = new this.Subprocess({
@@ -122,18 +116,11 @@ class JobService {
       if (ev.type === "error") {
         callback(ev);
       } else if (ev.type === "success") {
-        callback();
+        callback(undefined);
       }
     });
 
     return pid;
-  }
-
-  /**
-   * @private
-   */
-  getStatefulPids() {
-    return this.pids.filter(pid => !!this.jobs[pid]);
   }
 
   /**
@@ -223,5 +210,15 @@ class JobService {
     });
   }
 }
+
+decorate(JobService, {
+  jobs: observable,
+  pids: observable,
+  remove: action,
+  save: action,
+  statefulPids: computed,
+  types: observable,
+  watch: action,
+});
 
 exports.JobService = JobService;

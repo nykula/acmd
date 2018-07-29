@@ -12,7 +12,7 @@ describe("ClipboardService", () => {
     clipboardService.copy(["file:///foo/bar", "file:///foo/baz"]);
 
     const argv = gioService.communicate.calls[0].arguments[0];
-    expect(argv[0]).toMatch(/\.py$/);
+    expect(/\.py$/.test(argv[0])).toBeTruthy();
     expect(argv[1]).toBe("copy");
   });
 
@@ -26,7 +26,7 @@ describe("ClipboardService", () => {
     clipboardService.cut(["file:///foo/bar", "file:///foo/baz"]);
 
     const argv = gioService.communicate.calls[0].arguments[0];
-    expect(argv[0]).toMatch(/\.py$/);
+    expect(/\.py$/.test(argv[0])).toBeTruthy();
     expect(argv[1]).toBe("cut");
   });
 
@@ -45,7 +45,7 @@ describe("ClipboardService", () => {
     expect(args[args.length - 1]).toBe(callback);
 
     const argv = args[0];
-    expect(argv[0]).toMatch(/\.py$/);
+    expect(/\.py$/.test(argv[0])).toBeTruthy();
     expect(argv[1]).toBe("paste");
   });
 });

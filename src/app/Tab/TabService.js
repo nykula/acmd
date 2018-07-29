@@ -4,7 +4,7 @@ const noop = require("lodash/noop");
 const orderBy = require("lodash/orderBy");
 const {
   action,
-  computed,
+  decorate,
   extendObservable,
   observable,
   runInAction,
@@ -144,14 +144,20 @@ class TabService {
     this.entities = {
       0: {
         cursor: 0,
-        files: observable.shallowArray(TabService.sampleFiles),
+        files: observable.array(
+          TabService.sampleFiles,
+          { deep: false },
+        ),
         location: "file:///",
         selected: [],
         sortedBy: "ext",
       },
       1: {
         cursor: 0,
-        files: observable.shallowArray(TabService.sampleFiles),
+        files: observable.array(
+          TabService.sampleFiles,
+          { deep: false },
+        ),
         location: "file:///",
         selected: [],
         sortedBy: "ext",
@@ -165,31 +171,18 @@ class TabService {
 
     this.showHidSys = false;
 
+    const self = this;
+
     /** @type {{ [id: string]: File[] }} */
-    this.visibleFiles = {};
+    this.visibleFiles = extendObservable(
+      {},
+      {
+        get 0() { return self.getVisibleFiles(0); },
+        get 1() { return self.getVisibleFiles(1); },
+      },
+    );
 
     autoBind(this, TabService.prototype, __filename);
-
-    extendObservable(this, {
-      cursor: action(this.cursor),
-      deselectAll: action(this.deselectAll),
-      deselectGlob: action(this.deselectGlob),
-      entities: this.entities,
-      invert: action(this.invert),
-      isGrid: this.isGrid,
-      selectAll: action(this.selectAll),
-      selectDiff: action(this.selectDiff),
-      selectGlob: action(this.selectGlob),
-      selected: action(this.selected),
-      set: action(this.set),
-      showHidSys: this.showHidSys,
-      sorted: action(this.sorted),
-      toggleGrid: action(this.toggleGrid),
-      visibleFiles: {
-        "0": computed(this.getVisibleFiles.bind(this, 0)),
-        "1": computed(this.getVisibleFiles.bind(this, 1)),
-      },
-    });
   }
 
   /**
@@ -311,10 +304,10 @@ class TabService {
     const tab = this.entities[props.id];
     tab.selected = this.visibleFiles[props.id]
       .map(
-      (file, i) =>
-        GLib.pattern_match_simple(props.pattern, file.name)
-          ? i
-          : tab.selected.indexOf(i),
+        (file, i) =>
+          GLib.pattern_match_simple(props.pattern, file.name)
+            ? i
+            : tab.selected.indexOf(i),
     )
       .filter(i => i !== -1 && !this.isDotdot(props.id, i));
   }
@@ -340,8 +333,9 @@ class TabService {
 
     const selectedUris = tab.selected.map(i => visibleFiles[i].uri);
 
-    tab.files = observable.shallowArray(
+    tab.files = observable.array(
       TabService.sortFiles(tab.sortedBy, props.files),
+      { deep: false },
     );
 
     tab.location = props.location;
@@ -431,6 +425,23 @@ class TabService {
     return this.visibleFiles[id][index].name === "..";
   }
 }
+
+decorate(TabService, {
+  cursor: action,
+  deselectAll: action,
+  deselectGlob: action,
+  entities: observable,
+  invert: action,
+  isGrid: observable,
+  selectAll: action,
+  selectDiff: action,
+  selectGlob: action,
+  selected: action,
+  set: action,
+  showHidSys: observable,
+  sorted: action,
+  toggleGrid: action,
+});
 
 /**
  * @static

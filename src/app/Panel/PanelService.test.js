@@ -1,4 +1,3 @@
-const { FileType } = imports.gi.Gio;
 const expect = require("expect");
 const { toJS } = require("mobx");
 const { Place } = require("../../domain/Place/Place");
@@ -30,18 +29,17 @@ describe("PanelService", () => {
     };
     panelService.createTab();
 
-    expect(panelService.entities[0]).toMatch({
-      activeTabId: 2,
-      tabIds: [0, 2],
-    });
+    const panel = panelService.entities[0];
+    expect(panel.activeTabId).toBe(2);
+    expect(panel.tabIds).toEqual([0, 2]);
 
-    expect(toJS(tabService.entities[2])).toMatch({
-      cursor: 1,
-      files,
-      location: "file:///",
-      selected: [],
-      sortedBy: "-date",
-    });
+    const tab = tabService.entities[2];
+    expect(tab.cursor).toBe(1);
+    expect(tab.files.length).toEqual(files.length);
+    expect(tab.files[0]).toEqual(files[0]);
+    expect(tab.location).toBe("file:///");
+    expect(tab.selected.length).toBe(0);
+    expect(tab.sortedBy).toBe("-date");
   });
 
   it("opens location of source in destination", () => {

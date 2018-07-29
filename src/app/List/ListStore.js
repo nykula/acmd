@@ -10,7 +10,7 @@ const {
   TreeIter,
 } = imports.gi.Gtk;
 const { EllipsizeMode } = imports.gi.Pango;
-const Component = require("inferno-component").default;
+const { Component } = require("inferno");
 const noop = require("lodash/noop");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
@@ -164,7 +164,10 @@ class ListStoreComponent extends Component {
       /** @type {TreeIter} */ (newChild.iter),
       existingChild ? existingChild.iter : null,
     );
-    const index = this.store.children.indexOf(existingChild);
+
+    const index = existingChild
+      ? this.store.children.indexOf(existingChild)
+      : -1;
 
     if (index === -1) {
       this.store.children.push(newChild);

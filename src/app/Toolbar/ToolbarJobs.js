@@ -1,6 +1,6 @@
 const { Button, ReliefStyle } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { JobService } = require("../Job/JobService");
@@ -84,4 +84,4 @@ class ToolbarJobs extends Component {
 }
 
 exports.ToolbarJobs = ToolbarJobs;
-exports.default = connect(["jobService", "refService"])(ToolbarJobs);
+exports.default = inject("jobService", "refService")(observer(ToolbarJobs));

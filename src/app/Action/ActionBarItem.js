@@ -1,6 +1,6 @@
 const { Button, ReliefStyle } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const ActionBarRm = require("./ActionBarRm").default;
@@ -54,4 +54,4 @@ class ActionBarItem extends Component {
 }
 
 exports.ActionBarItem = ActionBarItem;
-exports.default = connect(["actionService"])(ActionBarItem);
+exports.default = inject("actionService")(observer(ActionBarItem));

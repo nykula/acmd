@@ -1,7 +1,5 @@
 const { FileType } = imports.gi.Gio;
 const expect = require("expect");
-const { FileHandler } = require("../../domain/File/FileHandler");
-const { TabService } = require("../Tab/TabService");
 const { UriService } = require("../Uri/UriService");
 const { CursorService } = require("./CursorService");
 
@@ -341,7 +339,8 @@ describe("CursorService", () => {
     cursorService.File = File;
 
     cursorService.open();
-    expect(dialogService.alert.calls[0].arguments[0]).toMatch(/text.plain/);
+    expect(/text.plain/.test(dialogService.alert.calls[0].arguments[0]))
+      .toBeTruthy();
   });
 
   it("opens file", () => {

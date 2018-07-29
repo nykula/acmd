@@ -1,7 +1,4 @@
-const hyperscript = require("inferno-hyperscript").default;
-const { connect } = require("inferno-mobx");
-
-exports.connect = connect;
+const hyperscript = require("inferno-hyperscript").h;
 
 /**
  * @see ./GtkInferno.d.ts

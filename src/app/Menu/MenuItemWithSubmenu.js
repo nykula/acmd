@@ -1,5 +1,3 @@
-const assign = require("lodash/assign");
-const noop = require("lodash/noop");
 const { autoBind } = require("../Gjs/autoBind");
 
 class MenuItemWithSubmenu {

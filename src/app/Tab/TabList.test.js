@@ -1,4 +1,3 @@
-const assign = require("lodash/assign");
 const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 const { TabList } = require("./TabList");

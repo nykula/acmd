@@ -1,10 +1,9 @@
 const { Box, HSeparator, Label, Orientation, Popover } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { RefService } = require("../Ref/RefService");
-const formatSize = require("../Size/formatSize").default;
 const Job = require("./Job").default;
 const { JobService } = require("./JobService");
 
@@ -77,4 +76,4 @@ class Jobs extends Component {
 }
 
 exports.Jobs = Jobs;
-exports.default = connect(["jobService", "refService"])(Jobs);
+exports.default = inject("jobService", "refService")(observer(Jobs));

@@ -1,8 +1,8 @@
 const Gdk = imports.gi.Gdk;
 const { DragAction } = Gdk;
 const { TreeView } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
 const assign = require("lodash/assign");
 const isEqual = require("lodash/isEqual");
 const range = require("lodash/range");
@@ -10,10 +10,10 @@ const {
   action,
   autorun,
   computed,
+  decorate,
   extendObservable,
   observable,
 } = require("mobx");
-const { Tab } = require("../../domain/Tab/Tab");
 const { ActionService } = require("../Action/ActionService");
 const { CursorService } = require("../Cursor/CursorService");
 const { autoBind } = require("../Gjs/autoBind");
@@ -43,6 +43,7 @@ const select = require("./select").default;
  * @property {any} which
  *
  * @typedef IProps
+ * @property {ActionService?} [actionService]
  * @property {CursorService?} [cursorService]
  * @property {JobService?} [jobService]
  * @property {number} panelId
@@ -56,38 +57,77 @@ const select = require("./select").default;
  * @extends Component<IProps>
  */
 class Directory extends Component {
+  get cols() {
+    const titles = {
+      ext: "Ext",
+      filename: "Name",
+      mode: "Attr",
+      mtime: "Date",
+      size: "Size",
+    };
+
+    const widths = {
+      ext: 50,
+      mode: 45,
+      mtime: 125,
+      size: 55,
+    };
+
+    return DirectoryCols.map(col => {
+      const title = titles[col.name];
+
+      return this.prefixSort(assign({}, col, {
+        expand: col.name === "filename",
+        min_width: widths[col.name],
+        on_clicked: title ? () => this.handleClicked(col.name) : undefined,
+        on_toggled: col.name === "isSelected" ? this.handleSelected : undefined,
+        title,
+      }));
+    });
+  }
+
+  get files() {
+    const { visibleFiles } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    return visibleFiles[this.tabId];
+  }
+
+  get tab() {
+    const { entities } =
+      /** @type {TabService} */ (this.props.tabService);
+
+    return entities[this.tabId];
+  }
+
+  get tabId() {
+    const { getActiveTabId } =
+      /** @type {PanelService} */ (this.props.panelService);
+
+    return getActiveTabId(this.props.panelId);
+  }
+
   /**
    * @param {IProps} props
    */
   constructor(props) {
     super(props);
 
-    /** @type {any[]} */
-    this.cols = [];
-
     /**
      * @type {{ [key: number]: { ctrl?: () => void, none?: () => void } }}
      */
     this.handlers = {};
 
-    /** @type {TreeView}} */
-    this.node = (/** @type {any} */ (undefined));
-
-    /** @type {Tab} */
-    this.tab = (/** @type {any} */ (undefined));
-
-    this.tabId = 0;
-
     autoBind(this, Directory.prototype, __filename);
 
-    extendObservable(this, {
-      cols: computed(this.getCols),
-      files: computed(this.getFiles),
-      node: observable.ref(undefined),
-      ref: action(this.ref),
-      tab: computed(this.getTab),
-      tabId: computed(this.getTabId),
-    });
+    extendObservable(
+      this,
+      { node: undefined },
+      { node: observable.ref },
+    );
+
+    /** @type {TreeView}} */
+    this.node = (/** @type {any} */ (undefined));
 
     this.unsubscribeUpdate = autorun(this.focusIfActive);
   }
@@ -123,27 +163,6 @@ class Directory extends Component {
 
   componentWillUnmount() {
     this.unsubscribeUpdate();
-  }
-
-  getTabId() {
-    const { getActiveTabId } =
-      /** @type {PanelService} */ (this.props.panelService);
-
-    return getActiveTabId(this.props.panelId);
-  }
-
-  getTab() {
-    const { entities } =
-      /** @type {TabService} */ (this.props.tabService);
-
-    return entities[this.tabId];
-  }
-
-  getFiles() {
-    const { visibleFiles } =
-      /** @type {TabService} */ (this.props.tabService);
-
-    return visibleFiles[this.tabId];
   }
 
   focusIfActive() {
@@ -258,7 +277,7 @@ class Directory extends Component {
 
     const state = {
       cursor: cursor,
-      indices: range(0, this.getFiles().length),
+      indices: range(0, this.files.length),
       limit: ev.limit,
       selected: selected,
       top: ev.top,
@@ -381,35 +400,6 @@ class Directory extends Component {
     return col;
   }
 
-  getCols() {
-    const titles = {
-      ext: "Ext",
-      filename: "Name",
-      mode: "Attr",
-      mtime: "Date",
-      size: "Size",
-    };
-
-    const widths = {
-      ext: 50,
-      mode: 45,
-      mtime: 125,
-      size: 55,
-    };
-
-    return DirectoryCols.map(col => {
-      const title = titles[col.name];
-
-      return this.prefixSort(assign({}, col, {
-        expand: col.name === "filename",
-        min_width: widths[col.name],
-        on_clicked: title ? () => this.handleClicked(col.name) : undefined,
-        on_toggled: col.name === "isSelected" ? this.handleSelected : undefined,
-        title,
-      }));
-    });
-  }
-
   /**
    * @param {TreeView} node
    */
@@ -459,9 +449,15 @@ class Directory extends Component {
   }
 }
 
+decorate(Directory, {
+  // cols: computed, // TODO: What's undefined since MobX 5?
+  files: computed,
+  ref: action,
+});
+
 exports.Directory = Directory;
 
-exports.default = connect([
+exports.default = inject(
   "actionService",
   "cursorService",
   "jobService",
@@ -471,4 +467,4 @@ exports.default = connect([
   "selectService",
   "tabService",
   "windowService",
-])(Directory);
+)(observer(Directory));

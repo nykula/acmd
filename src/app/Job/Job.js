@@ -1,6 +1,6 @@
 const { Button, Box, Label, Orientation, ProgressBar } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const formatSize = require("../Size/formatSize").default;
@@ -71,4 +71,4 @@ class Job extends Component {
 Job.spacing = 10;
 
 exports.Job = Job;
-exports.default = connect(["jobService"])(Job);
+exports.default = inject("jobService")(observer(Job));

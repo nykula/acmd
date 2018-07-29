@@ -15,7 +15,6 @@ const { waterfall } = require("async");
 const noop = require("lodash/noop");
 const { File } = require("../../domain/File/File");
 const { FileHandler } = require("../../domain/File/FileHandler");
-const { Place } = require("../../domain/Place/Place");
 const { autoBind } = require("../Gjs/autoBind");
 const { GioAsync } = require("./GioAsync");
 

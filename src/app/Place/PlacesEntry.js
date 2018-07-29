@@ -1,8 +1,8 @@
 const { DragAction, Gravity } = imports.gi.Gdk;
 const { Box, Button, IconSize, Image, Label, ReliefStyle } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
-const Nullthrows = require("nullthrows").default;
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
+const nullthrows = require("nullthrows").default;
 const { Place } = require("../../domain/Place/Place");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
@@ -35,11 +35,11 @@ class PlacesEntry extends Component {
    * @param {{ action: number, uris: string[] }} ev
    */
   handleDrop(ev) {
-    const { run } = Nullthrows(this.props.jobService);
-    const { refresh } = Nullthrows(this.props.panelService);
+    const { run } = nullthrows(this.props.jobService);
+    const { refresh } = nullthrows(this.props.panelService);
 
     run({
-      destUri: Nullthrows(this.props.place.rootUri),
+      destUri: nullthrows(this.props.place.rootUri),
       type: ev.action === DragAction.MOVE ? "mv" : "cp",
       uris: ev.uris,
     }, refresh);
@@ -49,8 +49,8 @@ class PlacesEntry extends Component {
    * @param {Button} button
    */
   handleMenu(button) {
-    const { menus, select } = Nullthrows(this.props.placeService);
-    const menu = Nullthrows(menus[this.props.panelId]);
+    const { menus, select } = nullthrows(this.props.placeService);
+    const menu = nullthrows(menus[this.props.panelId]);
 
     select(this.props.place);
 
@@ -63,19 +63,19 @@ class PlacesEntry extends Component {
   }
 
   handlePressed() {
-    const { openPlace } = Nullthrows(this.props.panelService);
+    const { openPlace } = nullthrows(this.props.panelService);
     openPlace(this.props.panelId, this.props.place);
   }
 
   isActive() {
-    const { getActivePlace } = Nullthrows(this.props.panelService);
+    const { getActivePlace } = nullthrows(this.props.panelService);
     const place = getActivePlace(this.props.panelId);
 
     return place === this.props.place;
   }
 
   render() {
-    const { shortNames, status } = Nullthrows(this.props.placeService);
+    const { shortNames, status } = nullthrows(this.props.placeService);
     const { icon, iconType, name } = this.props.place;
 
     return h(ToggleButton, {
@@ -99,4 +99,4 @@ class PlacesEntry extends Component {
 }
 
 exports.PlacesEntry = PlacesEntry;
-exports.default = connect(["jobService", "panelService", "placeService"])(PlacesEntry);
+exports.default = inject("jobService", "panelService", "placeService")(observer(PlacesEntry));

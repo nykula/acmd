@@ -1,7 +1,7 @@
 const { Box, Label } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
-const { computed, extendObservable } = require("mobx");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
+const { computed, decorate } = require("mobx");
 const { File } = require("../../domain/File/File");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
@@ -18,25 +18,7 @@ const { TabService } = require("../Tab/TabService");
  * @extends Component<IProps>
  */
 class Stats extends Component {
-  /**
-   * @param {IProps} props
-   */
-  constructor(props) {
-    super(props);
-
-    /**
-     * @type {{ selectedCount: number, selectedSize: number, totalCount: number, totalSize: number }}
-     */
-    this.data = (/** @type {any} */ (undefined));
-
-    autoBind(this, Stats.prototype, __filename);
-
-    extendObservable(this, {
-      data: computed(this.getData),
-    });
-  }
-
-  getData() {
+  get data() {
     const { panelId } = this.props;
 
     const { getActiveTabId } =
@@ -59,6 +41,15 @@ class Stats extends Component {
     };
   }
 
+  /**
+   * @param {IProps} props
+   */
+  constructor(props) {
+    super(props);
+
+    autoBind(this, Stats.prototype, __filename);
+  }
+
   render() {
     const { selectedCount, selectedSize, totalCount, totalSize } = this.data;
 
@@ -73,8 +64,12 @@ class Stats extends Component {
   }
 }
 
+decorate(Stats, {
+  data: computed,
+});
+
 exports.Stats = Stats;
-exports.default = connect(["panelService", "tabService"])(Stats);
+exports.default = inject("panelService", "tabService")(observer(Stats));
 
 exports.TotalSize = TotalSize;
 /**

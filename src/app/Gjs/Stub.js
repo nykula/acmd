@@ -1,4 +1,5 @@
 const { TreeIter } = imports.gi.Gtk;
+const { noop } = require("lodash");
 
 /**
  * @param {any=} node
@@ -10,6 +11,7 @@ function Stub(node) {
     return node;
   }
 
+  /** @type {any[]} */
   this.children = [];
 
   Object.defineProperties(this, {
@@ -22,10 +24,8 @@ function Stub(node) {
   });
 }
 
-/**
- * @type {any[]}
- */
-Stub.prototype.children = [];
+// Work around error TS6133 "declared but its value is never read".
+noop(TreeIter);
 
 /**
  * @type {TreeIter | undefined}

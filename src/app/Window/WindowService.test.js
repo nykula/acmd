@@ -12,7 +12,8 @@ describe("WindowService", () => {
     windowService.Gtk = Gtk;
 
     windowService.issue();
-    expect(Gtk.show_uri.calls[0].arguments[1]).toMatch(/github/);
+    expect(/github/.test(Gtk.show_uri.calls[0].arguments[1]))
+      .toBeTruthy();
   });
 
   it("toggles hidden file visibility", () => {

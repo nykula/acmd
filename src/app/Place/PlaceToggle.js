@@ -1,8 +1,8 @@
-const { DragAction, Gravity } = imports.gi.Gdk;
-const { Box, Button, IconSize, Image, Label, Popover } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
-const Nullthrows = require("nullthrows").default;
+const { Gravity } = imports.gi.Gdk;
+const { Box, Button, IconSize, Image, Label } = imports.gi.Gtk;
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
+const nullthrows = require("nullthrows").default;
 const { Drag } = require("../Drag/Drag");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
@@ -29,8 +29,8 @@ class PlaceToggle extends Component {
   }
 
   show() {
-    const { popovers } = Nullthrows(this.props.placeService);
-    const popover = Nullthrows(popovers[this.props.panelId]);
+    const { popovers } = nullthrows(this.props.placeService);
+    const popover = nullthrows(popovers[this.props.panelId]);
 
     popover.show_all();
   }
@@ -43,7 +43,7 @@ class PlaceToggle extends Component {
       return;
     }
 
-    const { toggles } = Nullthrows(this.props.placeService);
+    const { toggles } = nullthrows(this.props.placeService);
     toggles[this.props.panelId] = button;
 
     button.connect("clicked", this.show);
@@ -51,9 +51,9 @@ class PlaceToggle extends Component {
     new Drag(button).onEnter(this.show);
 
     MouseEvent.connectMenu(button, () => {
-      const { getActivePlace } = Nullthrows(this.props.panelService);
-      const { menus, select } = Nullthrows(this.props.placeService);
-      const menu = Nullthrows(menus[this.props.panelId]);
+      const { getActivePlace } = nullthrows(this.props.panelService);
+      const { menus, select } = nullthrows(this.props.placeService);
+      const menu = nullthrows(menus[this.props.panelId]);
 
       select(getActivePlace(this.props.panelId));
 
@@ -67,8 +67,8 @@ class PlaceToggle extends Component {
   }
 
   render() {
-    const { getActivePlace } = Nullthrows(this.props.panelService);
-    const { shortNames } = Nullthrows(this.props.placeService);
+    const { getActivePlace } = nullthrows(this.props.panelService);
+    const { shortNames } = nullthrows(this.props.placeService);
     const activePlace = getActivePlace(this.props.panelId);
 
     return (
@@ -95,4 +95,4 @@ class PlaceToggle extends Component {
 }
 
 exports.PlaceToggle = PlaceToggle;
-exports.default = connect(["panelService", "placeService"])(PlaceToggle);
+exports.default = inject("panelService", "placeService")(observer(PlaceToggle));

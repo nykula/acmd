@@ -1,7 +1,7 @@
 const { Menu, SeparatorMenuItem } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
+const { Component } = require("inferno");
 const { h } = require("../Gjs/GtkInferno");
-const { connect } = require("inferno-mobx");
+const { inject, observer } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { RefService } = require("../Ref/RefService");
 const { SelectService } = require("../Select/SelectService");
@@ -68,4 +68,4 @@ class CtxMenu extends Component {
 }
 
 exports.CtxMenu = CtxMenu;
-exports.default = connect(["refService", "selectService"])(CtxMenu);
+exports.default = inject("refService", "selectService")(observer(CtxMenu));

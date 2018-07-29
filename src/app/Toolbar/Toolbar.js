@@ -1,6 +1,7 @@
 const { Box, IconSize, Image, ReliefStyle, VSeparator } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
+const nullthrows = require("nullthrows").default;
 const { ActionService } = require("../Action/ActionService");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
@@ -67,7 +68,7 @@ const items = [
 ];
 
 /**
- * @typedef {{ [key: string]: any }} IProps
+ * @typedef IProps
  * @property {ActionService?} [actionService]
  * @property {TabService?} [tabService]
  *
@@ -83,7 +84,8 @@ class Toolbar extends Component {
   }
 
   render() {
-    const { actionService, tabService } = this.props;
+    const actionService = nullthrows(this.props.actionService);
+    const tabService = nullthrows(this.props.tabService);
 
     return (
       h(Box, items.map(item => {
@@ -140,4 +142,4 @@ class Toolbar extends Component {
 }
 
 exports.Toolbar = Toolbar;
-exports.default = connect(["actionService", "tabService"])(Toolbar);
+exports.default = inject("actionService", "tabService")(observer(Toolbar));

@@ -23,7 +23,8 @@ describe("ActionService", () => {
     const { handler } = actionService.get("windowService.exit");
     handler();
 
-    expect(print.calls[0]).toMatch(/windowService.exit/);
+    expect(/windowService.exit/.test(print.calls[0].arguments[0]))
+      .toBeTruthy();
   });
 
   it("gets same action on repeated call", () => {

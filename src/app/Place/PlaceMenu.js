@@ -1,7 +1,7 @@
 const { Menu, MenuItem } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
-const Nullthrows = require("nullthrows").default;
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
+const nullthrows = require("nullthrows").default;
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
@@ -25,8 +25,8 @@ class PlaceMenu extends Component {
   }
 
   isActive() {
-    const { getActivePlace } = Nullthrows(this.props.panelService);
-    const { selected } = Nullthrows(this.props.placeService);
+    const { getActivePlace } = nullthrows(this.props.panelService);
+    const { selected } = nullthrows(this.props.placeService);
 
     const place = getActivePlace(this.props.panelId);
     return place === selected;
@@ -36,7 +36,7 @@ class PlaceMenu extends Component {
    * @param {Menu | null} menu
    */
   ref(menu) {
-    const placeService = Nullthrows(this.props.placeService);
+    const placeService = nullthrows(this.props.placeService);
     placeService.menus[this.props.panelId] = menu;
   }
 
@@ -48,14 +48,14 @@ class PlaceMenu extends Component {
       return;
     }
 
-    const { refresh } = Nullthrows(this.props.panelService);
-    const { mountUuid } = Nullthrows(this.props.placeService);
+    const { refresh } = nullthrows(this.props.panelService);
+    const { mountUuid } = nullthrows(this.props.placeService);
 
     item.connect("activate", () => {
-      const { selected } = Nullthrows(this.props.placeService);
-      const { uuid } = Nullthrows(selected);
+      const { selected } = nullthrows(this.props.placeService);
+      const { uuid } = nullthrows(selected);
 
-      mountUuid(Nullthrows(uuid), refresh);
+      mountUuid(nullthrows(uuid), refresh);
     });
   }
 
@@ -67,12 +67,12 @@ class PlaceMenu extends Component {
       return;
     }
 
-    const { openPlace } = Nullthrows(this.props.panelService);
+    const { openPlace } = nullthrows(this.props.panelService);
 
     item.connect("activate", () => {
-      const { selected } = Nullthrows(this.props.placeService);
+      const { selected } = nullthrows(this.props.placeService);
 
-      openPlace(this.props.panelId, Nullthrows(selected));
+      openPlace(this.props.panelId, nullthrows(selected));
     });
   }
 
@@ -84,19 +84,19 @@ class PlaceMenu extends Component {
       return;
     }
 
-    const { refresh } = Nullthrows(this.props.panelService);
-    const { unmount } = Nullthrows(this.props.placeService);
+    const { refresh } = nullthrows(this.props.panelService);
+    const { unmount } = nullthrows(this.props.placeService);
 
     item.connect("activate", () => {
-      const { selected } = Nullthrows(this.props.placeService);
-      const { rootUri } = Nullthrows(selected);
+      const { selected } = nullthrows(this.props.placeService);
+      const { rootUri } = nullthrows(selected);
 
-      unmount(Nullthrows(rootUri), refresh);
+      unmount(nullthrows(rootUri), refresh);
     });
   }
 
   render() {
-    const { selected } = Nullthrows(this.props.placeService);
+    const { selected } = nullthrows(this.props.placeService);
 
     return (
       h("stub-box", [
@@ -129,4 +129,4 @@ class PlaceMenu extends Component {
 }
 
 exports.PlaceMenu = PlaceMenu;
-exports.default = connect(["panelService", "placeService"])(PlaceMenu);
+exports.default = inject("panelService", "placeService")(observer(PlaceMenu));

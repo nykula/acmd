@@ -1,4 +1,3 @@
-const { FileType } = imports.gi.Gio;
 const expect = require("expect");
 const noop = require("lodash/noop");
 const { GioService } = require("../Gio/GioService");

@@ -1,6 +1,6 @@
 const { Box, HSeparator, Orientation, Popover } = imports.gi.Gtk;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { PanelService } = require("../Panel/PanelService");
@@ -89,4 +89,4 @@ class PlacePopover extends Component {
 }
 
 exports.PlacePopover = PlacePopover;
-exports.default = connect(["panelService", "placeService"])(PlacePopover);
+exports.default = inject("panelService", "placeService")(observer(PlacePopover));

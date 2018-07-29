@@ -1,6 +1,6 @@
 const { Event, Gravity, Rectangle } = imports.gi.Gdk;
-const { action, extendObservable } = require("mobx");
-const Nullthrows = require("nullthrows").default;
+const { action, decorate, observable } = require("mobx");
+const nullthrows = require("nullthrows").default;
 const { FileHandler } = require("../../domain/File/FileHandler");
 const { ClipboardService } = require("../Clipboard/ClipboardService");
 const { CursorService } = require("../Cursor/CursorService");
@@ -38,18 +38,13 @@ class SelectService {
     this.props = props;
 
     autoBind(this, SelectService.prototype, __filename);
-
-    extendObservable(this, {
-      handlers: this.handlers,
-      setHandlers: action(this.setHandlers),
-    });
   }
 
   /**
    * Stores URIs in clipboard, for another app to copy.
    */
   copy() {
-    const { copy } = Nullthrows(this.props.clipboardService);
+    const { copy } = nullthrows(this.props.clipboardService);
 
     copy(this.getUris());
   }
@@ -58,7 +53,7 @@ class SelectService {
    * Stores URIs in clipboard, for another app to move.
    */
   cut() {
-    const { cut } = Nullthrows(this.props.clipboardService);
+    const { cut } = nullthrows(this.props.clipboardService);
 
     cut(this.getUris());
   }
@@ -67,8 +62,8 @@ class SelectService {
    * Deselects all files.
    */
   deselectAll() {
-    const { getActiveTabId } = Nullthrows(this.props.panelService);
-    const { deselectAll } = Nullthrows(this.props.tabService);
+    const { getActiveTabId } = nullthrows(this.props.panelService);
+    const { deselectAll } = nullthrows(this.props.tabService);
 
     deselectAll(getActiveTabId());
   }
@@ -77,9 +72,9 @@ class SelectService {
    * Deselects files, prompting for name pattern.
    */
   deselectGlob() {
-    const { prompt } = Nullthrows(this.props.dialogService);
-    const { getActiveTabId } = Nullthrows(this.props.panelService);
-    const { deselectGlob } = Nullthrows(this.props.tabService);
+    const { prompt } = nullthrows(this.props.dialogService);
+    const { getActiveTabId } = nullthrows(this.props.panelService);
+    const { deselectGlob } = nullthrows(this.props.tabService);
 
     prompt("Pattern:", "", pattern => {
       if (!pattern) {
@@ -97,7 +92,7 @@ class SelectService {
    * Joins URIs in a single string, for display in a dialog.
    */
   formatUris() {
-    const { unescape } = Nullthrows(this.props.uriService);
+    const { unescape } = nullthrows(this.props.uriService);
     const uris = this.getUris().map(unescape);
 
     return uris.length > 1 ? "\n" + uris.join("\n") + "\n" : uris[0] + " ";
@@ -107,8 +102,8 @@ class SelectService {
    * Returns file objects.
    */
   getFiles() {
-    const { getActiveTabId } = Nullthrows(this.props.panelService);
-    const { entities, visibleFiles } = Nullthrows(this.props.tabService);
+    const { getActiveTabId } = nullthrows(this.props.panelService);
+    const { entities, visibleFiles } = nullthrows(this.props.tabService);
 
     const activeTabId = getActiveTabId();
     const { cursor, selected } = entities[activeTabId];
@@ -136,8 +131,8 @@ class SelectService {
    * Deselects selected files, and selects non-selected files.
    */
   invert() {
-    const { getActiveTabId } = Nullthrows(this.props.panelService);
-    const { invert } = Nullthrows(this.props.tabService);
+    const { getActiveTabId } = nullthrows(this.props.panelService);
+    const { invert } = nullthrows(this.props.tabService);
 
     invert(getActiveTabId());
   }
@@ -146,9 +141,9 @@ class SelectService {
    * @param {{ keyEvent?: Event, mouseEvent?: Event, rect?: Rectangle, win?: Window }} props
    */
   menu(props) {
-    const { getHandlers } = Nullthrows(this.props.cursorService);
-    const { alert } = Nullthrows(this.props.dialogService);
-    const { get } = Nullthrows(this.props.refService);
+    const { getHandlers } = nullthrows(this.props.cursorService);
+    const { alert } = nullthrows(this.props.dialogService);
+    const { get } = nullthrows(this.props.refService);
 
     const { keyEvent, mouseEvent, rect, win } = props;
     const uri = this.getUris()[0];
@@ -183,9 +178,9 @@ class SelectService {
    * Removes files, prompting for confirmation.
    */
   rm() {
-    const { confirm } = Nullthrows(this.props.dialogService);
-    const { run } = Nullthrows(this.props.jobService);
-    const { refresh } = Nullthrows(this.props.panelService);
+    const { confirm } = nullthrows(this.props.dialogService);
+    const { run } = nullthrows(this.props.jobService);
+    const { refresh } = nullthrows(this.props.panelService);
 
     const uris = this.getUris();
 
@@ -216,8 +211,8 @@ class SelectService {
    * Selects all files.
    */
   selectAll() {
-    const { getActiveTabId } = Nullthrows(this.props.panelService);
-    const { selectAll } = Nullthrows(this.props.tabService);
+    const { getActiveTabId } = nullthrows(this.props.panelService);
+    const { selectAll } = nullthrows(this.props.tabService);
 
     selectAll(getActiveTabId());
   }
@@ -227,8 +222,8 @@ class SelectService {
    * opposite panel.
    */
   selectDiff() {
-    const { entities } = Nullthrows(this.props.panelService);
-    const { selectDiff } = Nullthrows(this.props.tabService);
+    const { entities } = nullthrows(this.props.panelService);
+    const { selectDiff } = nullthrows(this.props.tabService);
 
     selectDiff(entities[0].activeTabId, entities[1].activeTabId);
   }
@@ -237,9 +232,9 @@ class SelectService {
    * Selects files, prompting for name pattern.
    */
   selectGlob() {
-    const { prompt } = Nullthrows(this.props.dialogService);
-    const { getActiveTabId } = Nullthrows(this.props.panelService);
-    const { selectGlob } = Nullthrows(this.props.tabService);
+    const { prompt } = nullthrows(this.props.dialogService);
+    const { getActiveTabId } = nullthrows(this.props.panelService);
+    const { selectGlob } = nullthrows(this.props.tabService);
 
     prompt("Pattern:", "", pattern => {
       if (pattern) {
@@ -260,5 +255,10 @@ class SelectService {
     this.handlers = handlers;
   }
 }
+
+decorate(SelectService, {
+  handlers: observable,
+  setHandlers: action,
+});
 
 exports.SelectService = SelectService;

@@ -1,7 +1,7 @@
 const expect = require("expect");
 const { toJS } = require("mobx");
 const { RefService } = require("../Ref/RefService");
-const { Class, EmptyArray, NoString } = require("../Test/Test");
+const { Class, EmptyArray } = require("../Test/Test");
 const { PlaceService } = require("./PlaceService");
 
 describe("PlaceService", () => {

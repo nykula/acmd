@@ -1,8 +1,7 @@
 const { Pixbuf }  = imports.gi.GdkPixbuf;
 const { Icon } = imports.gi.Gio;
-const Component = require("inferno-component").default;
-const { connect } = require("inferno-mobx");
-const { File } = require("../../domain/File/File");
+const { Component } = require("inferno");
+const { inject, observer } = require("inferno-mobx");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
 const { ListStore } = require("../List/ListStore");
@@ -58,4 +57,4 @@ const DirectoryCols = [
 
 exports.DirectoryCols = DirectoryCols;
 exports.DirectoryFiles = DirectoryFiles;
-exports.default = connect(["tabService"])(DirectoryFiles);
+exports.default = inject("tabService")(observer(DirectoryFiles));
