@@ -5,19 +5,27 @@ var GitHub;
 var Remarkable;
 
 /** @type {typeof document.createElement} */
-const e = document.createElement.bind(document);
+var e = document.createElement.bind(document);
 
 /**
  * @param {string} baseUrl https://github.com/user/repo
  */
 function App(baseUrl) {
+  /** @type {(selector: string) => HTMLElement} */
+  this.$ = document.querySelector.bind(document);
+
+  /* tslint:disable:no-console */
+  /** @type {typeof console.log} */
+  this.debug = console.log.bind(console);
+  /* tslint:enable:no-console */
+
   this.baseUrl = baseUrl;
 
-  const base = baseUrl.split("/");
-  const user = base[base.length - 2];
-  const repo = base[base.length - 1];
+  var base = baseUrl.split("/");
+  var user = base[base.length - 2];
+  var repo = base[base.length - 1];
 
-  const gh = new GitHub();
+  var gh = new GitHub();
   this.issues = gh.getIssues(user, repo);
   this.repo = gh.getRepo(user, repo);
 }
@@ -28,32 +36,29 @@ function App(baseUrl) {
  * @param {HTMLElement} b
  */
 App.compare = function(a, b) {
-  const aKey = a.getAttribute("data-key") || "";
-  const bKey = b.getAttribute("data-key") || "";
+  var aKey = a.getAttribute("data-key") || "";
+  var bKey = b.getAttribute("data-key") || "";
 
   return new Date(aKey).getTime() - new Date(bKey).getTime();
 };
 
-/** @type {(selector: string) => HTMLElement} */
-App.prototype.$ = document.querySelector.bind(document);
-
-/** @type {typeof console.log} */
-App.prototype.debug = console.log.bind(console);
-
 App.prototype.getScreenshot = function() {
-  this.repo.getReadme(undefined, true)
-    .then((/** @type {any} */ res) => {
-      const matches = /http[^\)]+?\.(jpg|png)/.exec(res.data);
+  var self = this;
+
+  this.repo
+    .getReadme(undefined, true)
+    .then(function(/** @type {any} */ res) {
+      var matches = /http[^\)]+?\.(jpg|png)/.exec(res.data);
 
       if (!matches) {
         return;
       }
 
-      const img = e("img");
+      var img = e("img");
       img.className = "img-fluid";
       img.src = matches[0];
 
-      const section = this.$(".Screen");
+      var section = self.$(".Screen");
       section.appendChild(img);
     })
     .catch(this.debug);
@@ -73,38 +78,41 @@ App.prototype.listPulse = function() {
    */
 
   /** @type {Resource[]} */
-  let resources;
+  var resources;
 
   /** @type {Issue[]} */
-  let issues;
+  var issues;
 
-  this.repo.listCommits()
-    .then((/** @type {any} */ res) => {
+  var self = this;
+
+  this.repo
+    .listCommits()
+    .then(function(/** @type {any} */ res) {
       resources = res.data.slice(0, 15);
-      return this.issues.listIssues({ sort: "updated" });
+      return self.issues.listIssues({ sort: "updated" });
     })
-    .then((/** @type {any} */ res) => {
+    .then(function(/** @type {any} */ res) {
       issues = res.data;
 
-      const section = this.$(".Pulse");
-      const list = e("ul");
+      var section = self.$(".Pulse");
+      var list = e("ul");
       list.className = "list-unstyled";
 
-      for (let i = 0; i < issues.length; i++) {
-        const issue = issues[i];
-        const item = e("li");
+      for (var i = 0; i < issues.length; i++) {
+        var issue = issues[i];
+        var item = e("li");
         item.setAttribute("data-key", issue.updated_at);
 
-        const title = e("p");
-        const link = e("a");
+        var title = e("p");
+        var link = e("a");
         link.href = issue.html_url;
         link.textContent = issue.title;
         title.appendChild(link);
 
-        for (let j = 0; j < issue.labels.length; j++) {
-          const label = issue.labels[j];
+        for (var j = 0; j < issue.labels.length; j++) {
+          var label = issue.labels[j];
 
-          const badge = e("span");
+          var badge = e("span");
           badge.className = "badge badge-secondary";
           badge.textContent = label.name;
 
@@ -116,18 +124,18 @@ App.prototype.listPulse = function() {
         list.appendChild(item);
       }
 
-      for (let i = 0; i < resources.length; i++) {
-        const resource = resources[i];
+      for (i = 0; i < resources.length; i++) {
+        var resource = resources[i];
 
         if (/^v\d+\.\d+\.\d+$/.test(resource.commit.message)) {
           continue;
         }
 
-        const item = e("li");
+        item = e("li");
         item.setAttribute("data-key", resource.commit.committer.date);
 
-        const title = e("p");
-        const link = e("a");
+        title = e("p");
+        link = e("a");
         link.href = resource.html_url;
         link.textContent = resource.commit.message.split("\n")[0];
         title.appendChild(link);
@@ -136,17 +144,18 @@ App.prototype.listPulse = function() {
         list.appendChild(item);
       }
 
-      Array.prototype.slice.call(list.children)
+      Array.prototype.slice
+        .call(list.children)
         .sort(App.compare)
         .reverse()
         .forEach(list.appendChild.bind(list));
 
       section.appendChild(list);
 
-      const action = Action({
+      var action = Action({
         className: "btn-outline-danger",
-        href: this.baseUrl + "/issues",
-        textContent: "Report issue",
+        href: self.baseUrl + "/issues",
+        textContent: "Report issue"
       });
 
       section.appendChild(action);
@@ -163,17 +172,20 @@ App.prototype.listReleases = function() {
    * @property {string} tarball_url
    */
 
-  this.repo.listReleases()
-    .then((/** @type {{ data: Release[] }} */ res) => {
-      const section = this.$(".Releases");
+  var self = this;
+
+  this.repo
+    .listReleases()
+    .then(function(/** @type {{ data: Release[] }} */ res) {
+      var section = self.$(".Releases");
 
       /** @type {string[]} */
-      const minors = [];
+      var minors = [];
 
-      for (let i = 0; i < res.data.length; i++) {
-        const release = res.data[i];
+      for (var i = 0; i < res.data.length; i++) {
+        var release = res.data[i];
 
-        const minor = release.tag_name
+        var minor = release.tag_name
           .split(/[^\d]/)
           .map(Number)
           .slice(1, 3)
@@ -183,36 +195,36 @@ App.prototype.listReleases = function() {
           i &&
           (minors.length > 1 && (i > 3 || minor !== minors[minors.length - 1]))
         ) {
-          const action = Action({
+          var action = Action({
             className: "btn-outline-secondary",
-            href: this.baseUrl + "/releases",
-            textContent: "All releases",
+            href: self.baseUrl + "/releases",
+            textContent: "All releases"
           });
 
           section.appendChild(action);
           break;
         }
 
-        const article = Article({
-          href: this.baseUrl + "/tree/" + release.tag_name,
+        var article = Article({
+          href: self.baseUrl + "/tree/" + release.tag_name,
           strong: release.tag_name,
-          textContent: release.created_at.split("T")[0],
+          textContent: release.created_at.split("T")[0]
         });
 
-        const body = e("blockquote");
+        var body = e("blockquote");
         body.innerHTML = new Remarkable().render(
           release.body.replace(
             /#([0-9]+)/g,
-            "[#$1](" + this.baseUrl + "/issues/$1)",
-          ),
+            "[#$1](" + self.baseUrl + "/issues/$1)"
+          )
         );
         article.appendChild(body);
 
         if (!i) {
-          const action = Action({
+          action = Action({
             className: "btn-outline-primary",
             href: release.tarball_url,
-            textContent: "Download source .tar.gz",
+            textContent: "Download source .tar.gz"
           });
 
           article.appendChild(action);
@@ -242,9 +254,9 @@ App.prototype.render = function(parent) {
  * @param {{ className: string, href: string, textContent: string }} props
  */
 function Action(props) {
-  const action = e("p");
+  var action = e("p");
 
-  const link = e("a");
+  var link = e("a");
   link.className = "btn " + props.className;
   link.href = props.href;
   link.textContent = props.textContent;
@@ -257,18 +269,18 @@ function Action(props) {
  * @param {{ href: string, strong: string, textContent?: string }} props
  */
 function Article(props) {
-  const article = e("article");
+  var article = e("article");
 
-  const title = e("h3");
-  const link = e("a");
+  var title = e("h3");
+  var link = e("a");
   link.href = props.href;
 
-  const strong = e("strong");
+  var strong = e("strong");
   strong.textContent = props.strong;
   link.appendChild(strong);
 
   if (props.textContent) {
-    const text = document.createTextNode(": " + props.textContent);
+    var text = document.createTextNode(": " + props.textContent);
     link.appendChild(text);
   }
 

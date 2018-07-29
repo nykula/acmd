@@ -63,12 +63,18 @@
   <div class="App">
     <style id="Floppy-style">
       .Floppy {
+        -webkit-box-align: center;
+        -ms-flex-align: center;
         align-items: center;
         background-color: #fff;
         border: solid currentColor;
         border-radius: 0.25em 1.25em 0.25em 0.25em;
         border-width: 5.75em 1.25em 0.25em;
+        display: -webkit-inline-box;
+        display: -ms-inline-flexbox;
         display: inline-flex;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
         justify-content: center;
         height: 13.75em;
         position: relative;
@@ -83,12 +89,18 @@
         height: 4.5em;
         left: 2em;
         position: absolute;
+        -webkit-transition: -webkit-transform 0.4s;
+        transition: -webkit-transform 0.4s;
+        -o-transition: transform 0.4s;
         transition: transform 0.4s;
+        transition: transform 0.4s, -webkit-transform 0.4s;
         top: -5.75em;
         width: 7em;
       }
 
       .Floppy:hover:after {
+        -webkit-transform: translateX(-2em);
+        -ms-transform: translateX(-2em);
         transform: translateX(-2em);
       }
     </style>
@@ -102,6 +114,8 @@
 
       @media (min-width: 992px) {
         .Header {
+          display: -webkit-box;
+          display: -ms-flexbox;
           display: flex;
           text-align: left;
         }
@@ -125,7 +139,11 @@
       }
 
       .Header-content {
+        -webkit-box-flex: 1;
+        -ms-flex: 1;
         flex: 1;
+        -webkit-box-ordinal-group: 0;
+        -ms-flex-order: -1;
         order: -1;
       }
 
@@ -175,7 +193,7 @@
       <div class="Header-content">
         <h1 class="mb-4">Orthodox file manager for modern Linux desktop</h1>
 
-        <pre><span class="text-muted"># Ubuntu Desktop 17.10 | <a href="https://github.com/makepost/acme-commander/blob/master/README.md#usage">Something else</a></span>
+        <pre><span class="text-muted"># Ubuntu Desktop 18.04 | <a href="https://github.com/makepost/acme-commander/blob/master/README.md#usage">Something else</a></span>
 sudo apt update &amp;&amp; sudo apt install git npm python-gtk2
 echo prefix=~/.local >> ~/.npmrc
 npm i -g acme-commander
@@ -229,30 +247,54 @@ acme-commander</pre>
       }
 
       .Octo:hover .Octo-arm {
+        -webkit-animation: Octo-wave 560ms ease-in-out;
         animation: Octo-wave 560ms ease-in-out;
+      }
+
+      @-webkit-keyframes Octo-wave {
+        0%,
+        100% {
+          -webkit-transform: rotate(0);
+          transform: rotate(0);
+        }
+        20%,
+        60% {
+          -webkit-transform: rotate(-25deg);
+          transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+          -webkit-transform: rotate(10deg);
+          transform: rotate(10deg);
+        }
       }
 
       @keyframes Octo-wave {
         0%,
         100% {
+          -webkit-transform: rotate(0);
           transform: rotate(0);
         }
         20%,
         60% {
+          -webkit-transform: rotate(-25deg);
           transform: rotate(-25deg);
         }
         40%,
         80% {
+          -webkit-transform: rotate(10deg);
           transform: rotate(10deg);
         }
       }
 
       @media (max-width: 500px) {
         .Octo:hover .Octo-arm {
+          -webkit-animation: none;
           animation: none
         }
 
         .Octo .Octo-arm {
+          -webkit-animation: Octo-wave 560ms ease-in-out;
           animation: Octo-wave 560ms ease-in-out;
         }
       }
@@ -269,6 +311,7 @@ acme-commander</pre>
     </a>
   </div>
 
+  <script src="https://cdn.polyfill.io/v2/polyfill.js?features=default,fetch"></script>
   <script src="https://unpkg.com/github-api/dist/GitHub.bundle.min.js"></script>
   <script src="https://unpkg.com/remarkable@1.7.1/dist/remarkable.min.js"></script>
   <script src="App.js"></script>
