@@ -104,9 +104,12 @@ App.prototype.listPulse = function() {
         item.setAttribute("data-key", issue.updated_at);
 
         var title = e("p");
+        title.appendChild(Time({ iso: issue.updated_at }));
+
         var link = e("a");
         link.href = issue.html_url;
         link.textContent = issue.title;
+        title.appendChild(document.createTextNode(" "));
         title.appendChild(link);
 
         for (var j = 0; j < issue.labels.length; j++) {
@@ -135,12 +138,15 @@ App.prototype.listPulse = function() {
         item.setAttribute("data-key", resource.commit.committer.date);
 
         title = e("p");
+        title.appendChild(Time({ iso: resource.commit.committer.date }));
+
         link = e("a");
         link.href = resource.html_url;
         link.textContent = resource.commit.message.split("\n")[0];
+        title.appendChild(document.createTextNode(" "));
         title.appendChild(link);
-        item.appendChild(title);
 
+        item.appendChild(title);
         list.appendChild(item);
       }
 
@@ -287,4 +293,18 @@ function Article(props) {
   title.appendChild(link);
   article.appendChild(title);
   return article;
+}
+
+/**
+ * @param {{ iso: string }} props
+ */
+function Time(props) {
+  var time = e("code");
+  time.className = "px-0";
+  time.textContent = props.iso
+    .split("T")[0]
+    .split("-")
+    .slice(1)
+    .join("/");
+  return time;
 }
