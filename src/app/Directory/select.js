@@ -1,7 +1,5 @@
 const Gdk = imports.gi.Gdk;
-const assign = require("lodash/assign");
-const range = require("lodash/range");
-const sortedUniq = require("lodash/sortedUniq");
+const { assign, range, sortedUniq } = require("lodash");
 
 /**
  * @param {number[]} xs

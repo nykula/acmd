@@ -1,4 +1,4 @@
-const throttle = require("lodash/throttle");
+const { throttle } = require("lodash");
 const perf = {};
 
 const reportPerf = throttle(function() {

@@ -12,7 +12,7 @@ const {
 const GioFile = Gio.File;
 const { MAXINT32, PRIORITY_DEFAULT } = imports.gi.GLib;
 const { waterfall } = require("async");
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const { File } = require("../../domain/File/File");
 const { FileHandler } = require("../../domain/File/FileHandler");
 const { autoBind } = require("../Gjs/autoBind");

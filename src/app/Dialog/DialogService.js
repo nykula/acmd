@@ -6,7 +6,7 @@ const {
   Window,
   WindowPosition,
 } = imports.gi.Gtk;
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const { autoBind } = require("../Gjs/autoBind");
 
 class DialogService {

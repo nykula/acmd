@@ -1,7 +1,7 @@
 const { DataInputStream, Subprocess, SubprocessFlags } = imports.gi.Gio;
 const { PRIORITY_LOW } = imports.gi.GLib;
 const { Button, Popover } = imports.gi.Gtk;
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const { action, computed, decorate, observable } = require("mobx");
 const { WorkerError } = require("../../domain/Gio/WorkerError");
 const { WorkerProps } = require("../../domain/Gio/WorkerProps");

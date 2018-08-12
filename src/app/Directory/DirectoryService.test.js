@@ -1,5 +1,5 @@
 const expect = require("expect");
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const { GioService } = require("../Gio/GioService");
 const { DirectoryService } = require("./DirectoryService");
 

@@ -1,6 +1,6 @@
 const { ResponseType } = imports.gi.Gtk;
 const expect = require("expect");
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const { DialogService } = require("./DialogService");
 
 describe("DialogService", () => {

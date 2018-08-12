@@ -1,5 +1,5 @@
 const { Button, StateFlags } = imports.gi.Gtk;
-const assign = require("lodash/assign");
+const { assign } = require("lodash");
 const { Component } = require("inferno");
 const { Drag } = require("../Drag/Drag");
 const { autoBind } = require("../Gjs/autoBind");

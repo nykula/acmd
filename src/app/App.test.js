@@ -1,4 +1,4 @@
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const App = require("./App");
 const { Services } = require("./Services");
 

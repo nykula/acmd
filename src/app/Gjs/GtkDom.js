@@ -1,6 +1,6 @@
 const Gtk = imports.gi.Gtk;
 
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const { MenuItemWithSubmenu } = require("../Menu/MenuItemWithSubmenu");
 const { autoBind } = require("./autoBind");
 const { setTimeout } = require("./setTimeout");

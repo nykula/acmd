@@ -1,5 +1,5 @@
 const expect = require("expect");
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const { h } = require("../Gjs/GtkInferno");
 const { shallow } = require("../Test/Test");
 const ToggleButton = require("./ToggleButton").default;

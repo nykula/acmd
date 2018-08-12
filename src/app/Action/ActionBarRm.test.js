@@ -1,5 +1,5 @@
 const expect = require("expect");
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const { ActionBarRm } = require("./ActionBarRm");
 
 describe("ActionBarRm", () => {

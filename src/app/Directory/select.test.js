@@ -3,7 +3,7 @@
 const expect = require("expect");
 /** @type {{ [key: string]: any }} */
 const Gdk = imports.gi.Gdk;
-const range = require("lodash/range");
+const { range } = require("lodash");
 const reducer = require("./select").default;
 
 describe("Directory/select", () => {

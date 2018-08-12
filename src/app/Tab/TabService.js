@@ -1,7 +1,6 @@
 const { FileType } = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const noop = require("lodash/noop");
-const orderBy = require("lodash/orderBy");
+const { noop, orderBy } = require("lodash");
 const {
   action,
   decorate,

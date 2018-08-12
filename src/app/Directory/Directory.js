@@ -3,9 +3,7 @@ const { DragAction } = Gdk;
 const { TreeView } = imports.gi.Gtk;
 const { Component } = require("inferno");
 const { inject, observer } = require("inferno-mobx");
-const assign = require("lodash/assign");
-const isEqual = require("lodash/isEqual");
-const range = require("lodash/range");
+const { assign, isEqual, range } = require("lodash");
 const {
   action,
   autorun,

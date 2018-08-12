@@ -11,7 +11,7 @@ const {
 } = imports.gi.Gtk;
 const { EllipsizeMode } = imports.gi.Pango;
 const { Component } = require("inferno");
-const noop = require("lodash/noop");
+const { noop } = require("lodash");
 const { GioIcon } = require("../Gio/GioIcon");
 const { autoBind } = require("../Gjs/autoBind");
 const { h } = require("../Gjs/GtkInferno");
