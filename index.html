@@ -1,0 +1,129 @@
+<title>Acme Commander</title>
+<style>.load:not(:last-child) { display: none; }
+ul { padding-left: 0; }
+[data-key],
+nav a { display: inline-block; margin-right: 1em; }</style>
+<p>Home page of Acme Commander, an orthodox file manager for modern Linux desktop. Two directory panels, SFTP access, familiar keyboard shortcuts, and more.
+<a href=LICENSE>0BSD public domain</a> equivalent license.
+<h1>Orthodox file manager for modern Linux desktop</h1>
+<pre style=float:right># Ubuntu Desktop 18.04 | <a href=https://github.com/makepost/acme-commander/blob/master/README.md#usage>Something else</a>
+sudo apt update &amp;&amp; sudo apt install git npm python-gtk2
+echo prefix=~/.local >>~/.npmrc
+npm i -g acme-commander
+acme-commander</pre>
+<section id=releases>
+<a class=load href=https://github.com/makepost/acme-commander/releases>All releases</a>
+</section>
+<h2 id=pulse><a href=https://github.com/makepost/acme-commander id=git>View source on GitHub</a></h2>
+<img width=800 height=630 alt="Twin panel file manager Acme Commander screenshot" src=https://user-images.githubusercontent.com/20999066/32144815-0734201e-bcc7-11e7-86c8-a990a9e7ff1e.png />
+<script src=https://cdn.polyfill.io/v2/polyfill.js?features=default,fetch></script>
+<script>var base = git.href.split("/");
+var user = base[base.length - 2];
+var repo = base[base.length - 1];
+repo = "https://api.github.com/repos/" + user + "/" + repo;
+var nav = document.createElement("nav");
+/** @param {string} text @param {string} href */ function Action(text, href) {
+  var link = document.createElement("a");
+  (link.href = href), (link.textContent = text), nav.append(link);
+}
+/** @param {HTMLElement} a @param {HTMLElement} b */ function Compare(a, b) {
+  var aKey = a.getAttribute("data-key") || "";
+  var bKey = b.getAttribute("data-key") || "";
+  return new Date(aKey).getTime() - new Date(bKey).getTime();
+}
+/** @param {string} iso */ function Time(iso) {
+  var time = document.createElement("code");
+  time.textContent = iso
+    .split("T")[0]
+    .split("-")
+    .slice(1)
+    .join("/");
+  return time;
+}
+/** @param {string} input */ function Fetch(input) {
+  var h = { Authorization: localStorage.Authorization };
+  return fetch(repo + input, { headers: h })
+    .then(function(x) {
+      return x.json();
+    })
+    .catch(function(/** @type {any} */ error) {
+      window.alert(error.message);
+    });
+}
+/**
+ * @typedef Resource
+ * @property {{ committer: { date: string }, message: string }} commit
+ * @property {string} html_url
+ *
+ * @typedef Issue
+ * @property {string} html_url
+ * @property {{ name: string }[]} labels
+ * @property {string} title
+ * @property {string} updated_at
+ */
+/** @type {Resource[]} */ var resources = [];
+Fetch("/commits")
+  .then(function(_) {
+    return (resources = _), Fetch("/issues?sort=updated");
+  })
+  .then(function(/** @type {Issue[]} */ issues) {
+    var list = document.createElement("ul");
+    for (var i = 0; i < issues.length; i++) {
+      var item = document.createElement("li");
+      item.setAttribute("data-key", issues[i].updated_at);
+      item.append(Time(issues[i].updated_at));
+      var link = document.createElement("a");
+      link.href = issues[i].html_url;
+      link.textContent = issues[i].title;
+      item.append(document.createTextNode(" "));
+      item.append(link);
+      for (var j = 0; j < issues[i].labels.length; j++)
+        item.append(document.createTextNode(" " + issues[i].labels[j].name));
+      list.append(item);
+    }
+    for (i = 0; i < resources.length; i++) {
+      if (/^v\d+\.\d+\.\d+$/.test(resources[i].commit.message)) continue;
+      item = document.createElement("li");
+      item.setAttribute("data-key", resources[i].commit.committer.date);
+      item.append(Time(resources[i].commit.committer.date));
+      link = document.createElement("a");
+      link.href = resources[i].html_url;
+      link.textContent = resources[i].commit.message.split("\n")[0];
+      item.append(document.createTextNode(" ")), item.append(link);
+      list.append(item);
+    }
+    Array.prototype.slice
+      .call(list.children)
+      .sort(Compare)
+      .reverse()
+      .forEach(list.appendChild.bind(list));
+    pulse.parentNode.insertBefore(list, pulse.nextSibling);
+  });
+/**
+ * @typedef Release
+ * @property {string} body
+ * @property {string} created_at
+ * @property {string} tag_name
+ * @property {string} tarball_url
+ */
+Fetch("/releases").then(function(/** @type {Release[]} */ x) {
+  var release = x[0];
+  var title = document.createElement("h2");
+  var link = document.createElement("a");
+  link.href = git.href + "/tree/" + release.tag_name;
+  link.textContent = release.tag_name;
+  var text = document.createTextNode(": " + release.created_at.split("T")[0]);
+  link.append(text), title.append(link), releases.append(title);
+  var body = release.body
+    .replace(/- ([^\n\r]+)(\r\n|$)/g, "<li>$1</li>")
+    .replace(/(<li[\s\S]+(\/li>))/, "<ul>$1</ul>")
+    .replace(
+      /#([0-9]+)/g,
+      "<a href='" + git.href + "/issues/$1)" + "'>#$1</a>"
+    );
+  releases.insertAdjacentHTML("beforeend", body);
+  Action("Download source .tar.gz", release.tarball_url);
+  Action("Report issue", git.href + "/issues");
+  Action("All releases", git.href + "/releases");
+  releases.append((nav.id = "nav", nav));
+});</script>
