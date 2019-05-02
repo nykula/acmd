@@ -1,0 +1,14 @@
+#!/bin/sh
+t=`mktemp`
+gio list -hlnu "$@" | tee $t
+while test -n "$(head -1 $t)"; do
+	i=0
+	while read x; do
+		i=$((i+1))
+		if test "${x%(directory)}" != "$x"; then
+			gio list -hlnu "${x%%	*}" | tee -a $t
+		fi
+	done <$t 
+	sed -i 1,${i}d $t
+done
+rm $t
