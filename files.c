@@ -14,6 +14,7 @@
 struct TT {
   char done;
   char init;
+  FT_Face sans;
   struct wl_shell *sh;
   struct wl_egl_window *win;
   struct wl_compositor *wl;
@@ -27,23 +28,6 @@ static void init(void *_, struct wl_registry *wl, uint32_t name,
     TT.sh = wl_registry_bind(wl, name, &wl_shell_interface, 1);
 }
 
-static void letter(FT_Bitmap *bmp, int x, int y) {
-  int i, j, p, q;
-  unsigned char buf;
-
-  glEnable(GL_SCISSOR_TEST);
-  for (i = x, p = 0; i < x + bmp->width; i++, p++)
-    for (j = y, q = 0; j < y + bmp->rows; j++, q++)
-      if (!(i < 0 || j < 0 || i >= 640 || j >= 480))
-        if ((buf = bmp->buffer[q * bmp->width + p])) {
-          glScissor(i, 480 - j, 1, 1);
-          glClearColor(0.0 + FG * buf / 255.0, 0.6 + FG * buf / 255.0,
-                       0.8 + FG * buf / 255.0, 1);
-          glClear(GL_COLOR_BUFFER_BIT);
-        }
-  glDisable(GL_SCISSOR_TEST);
-}
-
 static void ping(void *_, struct wl_shell_surface *sh, uint32_t serial) {
   wl_shell_surface_pong(sh, serial);
 }
@@ -53,18 +37,41 @@ static void resize(void *_, struct wl_shell_surface *sh, uint32_t edges,
   wl_egl_window_resize(TT.win, w, h, 0, 0);
 }
 
+static void word(char *txt) {
+  FT_Bitmap bmp;
+  unsigned char buf;
+  FT_GlyphSlot glyph = TT.sans->glyph;
+  int i, j, p, q;
+  FT_Vector pen;
+
+  glEnable(GL_SCISSOR_TEST);
+  pen.x = 300 * PX, pen.y = (480 - 200) * PX;
+  while (*txt) {
+    FT_Set_Transform(TT.sans, 0, &pen);
+    FT_Load_Char(TT.sans, *txt++, FT_LOAD_RENDER);
+    bmp = glyph->bitmap;
+    for (i = glyph->bitmap_left, p = 0; p < bmp.width; i++, p++)
+      for (j = 480 - glyph->bitmap_top, q = 0; q < bmp.rows; j++, q++)
+        if (i >= 0 && j >= 0 && i < 640 && j < 480 &&
+            (buf = bmp.buffer[q * bmp.width + p])) {
+          glScissor(i, 480 - j, 1, 1);
+          glClearColor(0.0 + FG * buf / 255.0, 0.6 + FG * buf / 255.0,
+                       0.8 + FG * buf / 255.0, 1);
+          glClear(GL_COLOR_BUFFER_BIT);
+        }
+    pen.x += glyph->advance.x, pen.y += glyph->advance.y;
+  }
+  glDisable(GL_SCISSOR_TEST);
+}
+
 int main() {
   EGLint cfgc;
   EGLConfig cfgv;
   EGLContext ctx;
   struct wl_display *dpy = wl_display_connect(0);
   EGLDisplay egl;
-  FT_Face face;
   FT_Library ft;
-  FT_Vector pen;
   struct wl_shell_surface *sh;
-  FT_GlyphSlot slot;
-  char *txt;
   EGLSurface win;
   struct wl_surface *wl;
 
@@ -84,9 +91,8 @@ int main() {
                  ctx = eglCreateContext(egl, cfgv, EGL_NO_CONTEXT, 0));
   FT_Init_FreeType(&ft);
   FT_New_Face(ft, "/share/fonts/liberation-fonts/LiberationSans-Regular.ttf", 0,
-              &face);
-  FT_Set_Char_Size(face, 14 * PX, 0, 0, 0);
-  slot = face->glyph;
+              &TT.sans);
+  FT_Set_Char_Size(TT.sans, 14 * PX, 0, 0, 0);
   glEnable(GL_BLEND);
   do
     if (TT.init++ < 2 || !wl_display_dispatch(dpy)) {
@@ -97,18 +103,12 @@ int main() {
       glClearColor(1, 0, 0, 0);
       glClear(GL_COLOR_BUFFER_BIT);
       glDisable(GL_SCISSOR_TEST);
-      pen.x = 0, pen.y = (480 - 200) * PX;
-      for (txt = "FreeType2"; *txt;) {
-        FT_Set_Transform(face, 0, &pen);
-        FT_Load_Char(face, *txt++, FT_LOAD_RENDER);
-        letter(&slot->bitmap, slot->bitmap_left, 480 - slot->bitmap_top);
-        pen.x += slot->advance.x, pen.y += slot->advance.y;
-      }
+      word("FreeType2");
       eglSwapBuffers(egl, win);
       puts("HERE");
     }
   while (!TT.done);
-  FT_Done_Face(face);
+  FT_Done_Face(TT.sans);
   FT_Done_FreeType(ft);
   eglDestroyContext(egl, ctx);
   eglDestroySurface(egl, win);
