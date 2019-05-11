@@ -7,6 +7,6 @@ config:
 	git status -bs
 	git diff | cat
 depend:
-	echo -E -Wall -lEGL -lGLESv2 -lfreetype -I/usr/include/freetype2 -lrt -lwayland-client -lwayland-egl
+	echo -E -Wall -lEGL -lGLESv2 -lfreetype -I/usr/include/freetype2 -lpng -lrt -lwayland-client -lwayland-egl
 format:
 	clang-format -i *.c

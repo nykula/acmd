@@ -1,5 +1,6 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
+#include <png.h>
 #include <stdio.h>
 #include <string.h>
 #include <wayland-client.h>
@@ -93,6 +94,32 @@ int main() {
   FT_New_Face(ft, "/share/fonts/liberation-fonts/LiberationSans-Regular.ttf", 0,
               &TT.sans);
   FT_Set_Char_Size(TT.sans, 14 * PX, 0, 0, 0);
+
+  FILE *fp = fopen("/share/icons/Tango/16x16/places/folder.png", "rb");
+  char header[8];
+  png_infop info_ptr;
+  png_structp png_ptr;
+  png_bytep *row_pointers;
+  int h, w, x, y;
+
+  fread(header, 1, 8, fp);
+  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
+  info_ptr = png_create_info_struct(png_ptr);
+  setjmp(png_jmpbuf(png_ptr));
+  png_init_io(png_ptr, fp);
+  png_set_sig_bytes(png_ptr, 8);
+  png_read_info(png_ptr, info_ptr);
+  h = png_get_image_height(png_ptr, info_ptr);
+  w = png_get_image_width(png_ptr, info_ptr);
+  png_set_interlace_handling(png_ptr);
+  png_read_update_info(png_ptr, info_ptr);
+  setjmp(png_jmpbuf(png_ptr));
+  row_pointers = (png_bytep *)malloc(sizeof(png_bytep) * h);
+  for (y = 0; y < h; y++)
+    row_pointers[y] = (png_byte *)malloc(png_get_rowbytes(png_ptr, info_ptr));
+  png_read_image(png_ptr, row_pointers);
+  fclose(fp);
+
   glEnable(GL_BLEND);
   do
     if (TT.init++ < 2 || !wl_display_dispatch(dpy)) {
@@ -104,10 +131,32 @@ int main() {
       glClear(GL_COLOR_BUFFER_BIT);
       glDisable(GL_SCISSOR_TEST);
       word("FreeType2");
+
+      glEnable(GL_SCISSOR_TEST);
+      for (y = 0; y < h; y++) {
+        png_byte *row = row_pointers[y];
+        for (x = 0; x < w; x++) {
+          png_byte *ptr = &(row[x * 4]);
+          glScissor(50 + x, 50 - y, 1, 1);
+          glClearColor(
+              0.0 * (1 - ptr[3] / 255.0) + *ptr / 255.0 * (ptr[3] / 255.0),
+              0.6 * (1 - ptr[3] / 255.0) + ptr[1] / 255.0 * (ptr[3] / 255.0),
+              0.8 * (1 - ptr[3] / 255.0) + ptr[2] / 255.0 * (ptr[3] / 255.0),
+              1);
+          glClear(GL_COLOR_BUFFER_BIT);
+        }
+      }
+      glDisable(GL_SCISSOR_TEST);
+
       eglSwapBuffers(egl, win);
       puts("HERE");
     }
   while (!TT.done);
+
+  for (y = 0; y < h; y++)
+    free(row_pointers[y]);
+  free(row_pointers);
+
   FT_Done_Face(TT.sans);
   FT_Done_FreeType(ft);
   eglDestroyContext(egl, ctx);
