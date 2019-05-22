@@ -10,11 +10,12 @@
 
 static struct {
   char done;
+  struct wl_keyboard *k;
   struct xkb_state *ks;
-  struct wl_seat *seat;
-  struct wl_shell *sh;
+  struct wl_pointer *p;
+  struct wl_shell_surface *sh;
   struct wl_egl_window *win;
-  struct wl_compositor *wl;
+  struct wl_surface *wl;
 } TT;
 
 static void key(void *data, struct wl_keyboard *kbd, uint32_t serial,
@@ -40,7 +41,7 @@ static void blur(void *data, struct wl_keyboard *kbd, uint32_t serial,
 }
 
 static void enter(void *data, struct wl_pointer *p, uint32_t serial,
-                  struct wl_surface *wl, wl_fixed_t x, wl_fixed_t y) {
+                  struct wl_surface *wl, int32_t x, int32_t y) {
   printf("enter %f %f\n", wl_fixed_to_double(x), wl_fixed_to_double(y));
 }
 
@@ -55,11 +56,14 @@ static void focus(void *data, struct wl_keyboard *kbd, uint32_t serial,
 static void init(void *data, struct wl_registry *wl, uint32_t name,
                  const char *iface, uint32_t ver) {
   if (!strcmp(iface, "wl_compositor"))
-    TT.wl = wl_registry_bind(wl, name, &wl_compositor_interface, 1);
-  else if (!strcmp(iface, "wl_seat"))
-    TT.seat = wl_registry_bind(wl, name, &wl_seat_interface, 1);
-  else if (!strcmp(iface, "wl_shell"))
-    TT.sh = wl_registry_bind(wl, name, &wl_shell_interface, 1);
+    TT.wl = wl_compositor_create_surface(
+        wl_registry_bind(wl, name, &wl_compositor_interface, 1));
+  else if (!strcmp(iface, "wl_seat")) {
+    struct wl_seat *seat = wl_registry_bind(wl, name, &wl_seat_interface, 1);
+    TT.k = wl_seat_get_keyboard(seat), TT.p = wl_seat_get_pointer(seat);
+  } else if (!strcmp(iface, "wl_shell"))
+    TT.sh = wl_shell_get_shell_surface(
+        wl_registry_bind(wl, name, &wl_shell_interface, 1), TT.wl);
 }
 
 static void leave(void *data, struct wl_pointer *p, uint32_t serial,
@@ -85,8 +89,8 @@ static void mod(void *data, struct wl_keyboard *kbd, uint32_t serial,
   printf("mod %d %d %d %d\n", depr, latch, lock, grp);
 }
 
-static void move(void *data, struct wl_pointer *p, uint32_t time, wl_fixed_t x,
-                 wl_fixed_t y) {
+static void move(void *data, struct wl_pointer *p, uint32_t time, int32_t x,
+                 int32_t y) {
   printf("move %f %f\n", wl_fixed_to_double(x), wl_fixed_to_double(y));
 }
 
@@ -107,7 +111,7 @@ static void resize(void *data, struct wl_shell_surface *sh, uint32_t edges,
 }
 
 static void scroll(void *data, struct wl_pointer *p, uint32_t time,
-                   uint32_t axis, wl_fixed_t value) {
+                   uint32_t axis, int32_t value) {
   printf("scroll %s %f\n", axis ? "x" : "y", wl_fixed_to_double(value));
 }
 
@@ -117,11 +121,7 @@ int main() {
   EGLContext ctx;
   struct wl_display *dpy = wl_display_connect(0);
   EGLDisplay egl = eglGetDisplay((EGLNativeDisplayType)dpy);
-  struct wl_keyboard *k;
-  struct wl_shell_surface *sh;
-  struct wl_pointer *p;
   EGLSurface win;
-  struct wl_surface *wl;
 
   eglInitialize(egl, 0, 0);
   eglChooseConfig(egl, (int[]){EGL_ALPHA_SIZE, 1, EGL_NONE}, &cfgv, 1, &cfgc);
@@ -129,17 +129,14 @@ int main() {
                            &(struct wl_registry_listener){&init, 0}, 0);
   wl_display_roundtrip(dpy);
   wl_keyboard_add_listener(
-      k = wl_seat_get_keyboard(TT.seat),
-      &(struct wl_keyboard_listener){&map, &focus, &blur, &key, &mod}, 0);
+      TT.k, &(struct wl_keyboard_listener){&map, &focus, &blur, &key, &mod}, 0);
   wl_pointer_add_listener(
-      p = wl_seat_get_pointer(TT.seat),
+      TT.p,
       &(struct wl_pointer_listener){&enter, &leave, &move, &press, &scroll}, 0);
   wl_shell_surface_add_listener(
-      sh = wl_shell_get_shell_surface(TT.sh,
-                                      wl = wl_compositor_create_surface(TT.wl)),
-      &(struct wl_shell_surface_listener){&ping, &resize, 0}, 0);
-  wl_shell_surface_set_toplevel(sh);
-  TT.win = wl_egl_window_create(wl, 640, 480);
+      TT.sh, &(struct wl_shell_surface_listener){&ping, &resize, 0}, 0);
+  wl_shell_surface_set_toplevel(TT.sh);
+  TT.win = wl_egl_window_create(TT.wl, 640, 480);
   win = eglCreateWindowSurface(egl, cfgv, (EGLNativeWindowType)TT.win, 0);
   eglMakeCurrent(egl, win, win,
                  ctx = eglCreateContext(egl, cfgv, EGL_NO_CONTEXT, 0));
@@ -149,13 +146,10 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
     eglSwapBuffers(egl, win);
   }
-  eglDestroySurface(egl, win);
-  wl_egl_window_destroy(TT.win);
-  wl_shell_surface_destroy(sh);
-  wl_pointer_destroy(p);
-  wl_keyboard_destroy(k);
-  wl_surface_destroy(wl);
   eglDestroyContext(egl, ctx);
-  eglTerminate(egl);
-  wl_display_disconnect(dpy);
+  eglDestroySurface(egl, win), wl_egl_window_destroy(TT.win);
+  wl_shell_surface_destroy(TT.sh);
+  wl_pointer_destroy(TT.p), wl_keyboard_destroy(TT.k);
+  wl_surface_destroy(TT.wl);
+  eglTerminate(egl), wl_display_disconnect(dpy);
 }
