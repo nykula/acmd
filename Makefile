@@ -1,6 +1,6 @@
 %: %.c
 	$(CC) $(CFLAGS) -o $@ $^ `make -s depend` $(LDFLAGS)
-all: config files input thr
+all: config files thr
 config:
 	uname -mrs
 	echo "def Settings(**kwargs): return {'flags': '`make -s depend`'.split(' ')}" >.ycm_extra_conf.py
