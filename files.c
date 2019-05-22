@@ -16,8 +16,8 @@
 #define PX 64
 
 static struct {
-  char done;
-  char init;
+  char done, init;
+  uint8_t f[4];
   struct wl_keyboard *k;
   struct xkb_state *ks;
   struct wl_pointer *p;
@@ -50,6 +50,14 @@ static void init(void *_, struct wl_registry *wl, uint32_t name,
         wl_registry_bind(wl, name, &wl_shell_interface, 1), TT.wl);
 }
 
+static void fill() {
+  glClearColor((0 * (255 - TT.f[3]) + *TT.f * TT.f[3]) / 255 / 255.0,
+               (153 * (255 - TT.f[3]) + TT.f[1] * TT.f[3]) / 255 / 255.0,
+               (204 * (255 - TT.f[3]) + TT.f[2] * TT.f[3]) / 255 / 255.0,
+               1);
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
 static void key(void *_, struct wl_keyboard *kbd, uint32_t serial,
                 uint32_t time, uint32_t key, uint32_t state) {
   char *s = state == WL_KEYBOARD_KEY_STATE_PRESSED ? "press" : "release";
@@ -80,8 +88,7 @@ static void map(void *_, struct wl_keyboard *kbd, uint32_t fmt, int32_t fd,
   munmap(maps, size), close(fd);
   xkb_state_unref(TT.ks), TT.ks = xkb_state_new(map);
   printf("map %s\n", xkb_keymap_layout_get_name(map, 0));
-  xkb_keymap_unref(map);
-  xkb_context_unref(xkb);
+  xkb_keymap_unref(map), xkb_context_unref(xkb);
 }
 
 static void mod(void *_, struct wl_keyboard *kbd, uint32_t serial,
@@ -116,15 +123,15 @@ static void scroll(void *_, struct wl_pointer *p, uint32_t time, uint32_t axis,
   printf("scroll %s %f\n", axis ? "x" : "y", wl_fixed_to_double(value));
 }
 
-static void word(char *txt) {
+static void type(char *txt) {
   FT_Bitmap bmp;
-  unsigned char buf;
   FT_GlyphSlot glyph = TT.sans->glyph;
   int i, j, p, q;
   FT_Vector pen;
 
   glEnable(GL_SCISSOR_TEST);
   pen.x = 300 * PX, pen.y = (480 - 200) * PX;
+  *TT.f = TT.f[1] = TT.f[2] = -1;
   while (*txt) {
     FT_Set_Transform(TT.sans, 0, &pen);
     FT_Load_Char(TT.sans, *txt++, FT_LOAD_RENDER);
@@ -132,11 +139,8 @@ static void word(char *txt) {
     for (i = glyph->bitmap_left, p = 0; p < bmp.width; i++, p++)
       for (j = 480 - glyph->bitmap_top, q = 0; q < bmp.rows; j++, q++)
         if (i >= 0 && j >= 0 && i < 640 && j < 480 &&
-            (buf = bmp.buffer[q * bmp.width + p])) {
-          glScissor(i, 480 - j, 1, 1);
-          glClearColor(0.0 + FG * buf / 255.0, 0.6 + FG * buf / 255.0,
-                       0.8 + FG * buf / 255.0, 1);
-          glClear(GL_COLOR_BUFFER_BIT);
+            (TT.f[3] = bmp.buffer[q * bmp.width + p])) {
+          glScissor(i, 480 - j, 1, 1), fill();
         }
     pen.x += glyph->advance.x, pen.y += glyph->advance.y;
   }
@@ -184,55 +188,38 @@ int main() {
 
   FILE *fp = fopen("/share/icons/Tango/16x16/places/folder.png", "rb");
   char header[8];
-  png_infop info_ptr;
-  png_structp png_ptr;
-  png_bytep *row_pointers;
+  png_info *info;
+  png_struct *png = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
+  uint8_t **rows;
   int h, w, x, y;
 
-  fread(header, 1, 8, fp);
-  png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
-  info_ptr = png_create_info_struct(png_ptr);
-  setjmp(png_jmpbuf(png_ptr));
-  png_init_io(png_ptr, fp);
-  png_set_sig_bytes(png_ptr, 8);
-  png_read_info(png_ptr, info_ptr);
-  h = png_get_image_height(png_ptr, info_ptr);
-  w = png_get_image_width(png_ptr, info_ptr);
-  png_set_interlace_handling(png_ptr);
-  png_read_update_info(png_ptr, info_ptr);
-  setjmp(png_jmpbuf(png_ptr));
-  row_pointers = (png_bytep *)malloc(sizeof(png_bytep) * h);
+  fread(header, 1, 8, fp), png_init_io(png, fp);
+  info = png_create_info_struct(png);
+  png_set_sig_bytes(png, 8), png_read_info(png, info);
+  h = png_get_image_height(png, info), w = png_get_image_width(png, info);
+  rows = malloc(sizeof(uint8_t *) * h);
   for (y = 0; y < h; y++)
-    row_pointers[y] = (png_byte *)malloc(png_get_rowbytes(png_ptr, info_ptr));
-  png_read_image(png_ptr, row_pointers);
-  fclose(fp);
+    rows[y] = malloc(png_get_rowbytes(png, info));
+  png_read_image(png, rows), fclose(fp);
+  png_destroy_read_struct(&png, &info, 0);
 
   glEnable(GL_BLEND);
   do
     if ((TT.init < 2 && TT.init++ < 2) || !wl_display_dispatch(dpy)) {
-      glClearColor(0.0, 0.6, 0.8, 1);
-      glClear(GL_COLOR_BUFFER_BIT);
+      TT.f[3] = 0, fill();
       glEnable(GL_SCISSOR_TEST);
       glScissor(5, 480 - 5 - 10, 10, 10);
       glClearColor(1, 0, 0, 0);
       glClear(GL_COLOR_BUFFER_BIT);
       glDisable(GL_SCISSOR_TEST);
-      word("FreeType2");
+      type("FreeType2");
 
       glEnable(GL_SCISSOR_TEST);
-      for (y = 0; y < h; y++) {
-        png_byte *row = row_pointers[y];
+      for (y = 0; y < h; y++)
         for (x = 0; x < w; x++) {
-          png_byte *ptr = &(row[x * 4]);
-          glScissor(50 + x, 50 - y, 1, 1);
-          glClearColor(
-              0.0 * (1 - ptr[3] / 255.0) + *ptr / 255.0 * (ptr[3] / 255.0),
-              0.6 * (1 - ptr[3] / 255.0) + ptr[1] / 255.0 * (ptr[3] / 255.0),
-              0.8 * (1 - ptr[3] / 255.0) + ptr[2] / 255.0 * (ptr[3] / 255.0),
-              1);
-          glClear(GL_COLOR_BUFFER_BIT);
+          memcpy(TT.f, &rows[y][x * 4], sizeof(uint8_t) * 4);
+          glScissor(50 + x, 50 - y, 1, 1), fill();
         }
-      }
       glDisable(GL_SCISSOR_TEST);
 
       eglSwapBuffers(egl, win);
@@ -241,8 +228,8 @@ int main() {
   while (!TT.done);
 
   for (y = 0; y < h; y++)
-    free(row_pointers[y]);
-  free(row_pointers);
+    free(rows[y]);
+  free(rows);
 
   FT_Done_Face(TT.sans);
   FT_Done_FreeType(ft);
