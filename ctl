@@ -10,7 +10,7 @@ elif test "$1" = wl; then ctl btoff; mkdir /run/dbus
   dbus-daemon --system &rfkill unblock all; wpa_cli scan; echo -n ...; sleep 4
   /usr/libexec/*/bluetoothd -n &wpa_cli status; echo -n ...; sleep 4
   wpa_cli scan_results; bluetoothctl
-elif test "$1" = recon; then pkill -HUP wpa_supplicant
+elif test "$1" = recon; then ifconfig enp3s0 down; pkill -HUP wpa_supplicant
   busybox udhcpc -fnqiwlp2s0 &&exit
   ifconfig enp3s0 up; busybox udhcpc -fnqienp3s0
 elif test "$1" = airpl; then
