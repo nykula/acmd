@@ -29,4 +29,6 @@ pcm.!default { type plug slave { pcm "bluealsa" } }
 ctl.!default { type bluealsa }
 EOF
   bluetoothctl; ctl btoff
+elif test "$1" = vol; then amixer sget Master |
+  awk '/Limits/{printf$5"*0."}/([0-9]+%)/{gsub(/[[\]%]/,"");print$4}' |bc
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
