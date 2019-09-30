@@ -17,9 +17,9 @@ elif test "$1" = airpl; then
   ctl btoff; ifconfig enp3s0 down; rfkill block all; kill `pgrep dhcp`
   watch wpa_cli status
 elif test "$1" = cool; then cd /sys/*/cpu/devices
-  for i in *; do cat $i/*/c*min* >$i/*/s*max*; done; watch cat */*/s*cur*
+  for i in *; do cat $i/*/c*min* >`ls $i/*/s*max*`; done; watch cat */*/s*cur*
 elif test "$1" = turbo; then cd /sys/*/cpu/devices
-  for i in *; do cat $i/*/c*max* >$i/*/s*max*; done; watch cat */*/s*cur*
+  for i in *; do cat $i/*/c*max* >`ls $i/*/s*max*`; done; watch cat */*/s*cur*
 elif test "$1" = pair; then echo paired-devices |bluetoothctl |
   awk '/^Device/{print$2}'
 elif test "$1" = ear; then bluealsa &sleep 4
