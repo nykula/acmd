@@ -36,4 +36,6 @@ elif test "$1" = turbo; then cd /sys/*/cpu/devices
   for i in *; do cat $i/*/c*max* >`ls $i/*/s*max*`; done; watch cat */*/s*cur*
 elif test "$1" = vol; then amixer sget Master |
   awk '/Limits/{printf$5"*0."}/([0-9]+%)/{gsub(/[[\]%]/,"");print$4}' |bc
+elif test "$1" = dentry; then
+  printf '[Desktop Entry]\nExec=%s\nName=%s\nType=Application\nVersion=1.0\n' "$2" "$3"
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
