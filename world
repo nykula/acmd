@@ -1,0 +1,66 @@
+#!/bin/sh
+# Build coding desktop in airlock from another Linux.
+# 0BSD 2019 Denys Nykula <nykula@ukr.net>
+# emerge -1u os-headers; eval "export `emerge --info 2>&1 |grep GS=`"
+# wget http://musl.cc/armv7l-linux-musleabihf-native.tgz
+# git clone https://github.com/nykula/acmd; acmd/world
+w='wp*t d*ear tmux git ii mutt isync ffplay4 *e-dl al*ls gzip mksh npm'
+w="$w xinit rxvt tang* xf*{op,xer,yd,ngs}"
+for i in NetBSD/pkgsrc michaelforney/samurai landley/toybox
+do(cd `basename $i`&&git pull)||git clone --depth=1 https://github.com/$i; done
+cd toybox; umount root/*/*/{dev/pts,dev,proc,sys}; rm -r *x-*
+tar xf ../*-native.tgz ||exit; cc=`realpath */bin`/`basename */*x-*`-
+(cd */bin; ln -s *-cc cc); make CROSS_COMPILE=$cc HOSTCC="${cc}cc -static" \
+  PATH="`dirname $cc`:$PATH" defconfig
+for i in BC DIFF EXPR GROUPADD GZIP ROUTE SH TR USERADD VI WGET
+do sed -i s/.*_$i[=\ ].*/CONFIG_$i=y/ .config; done
+mv root/*/*/usr/src/distfiles/* ../pkgsrc/distfiles
+make CROSS_COMPILE=$cc PATH="`dirname $cc`:$PATH" root \
+  CFLAGS="$CFLAGS -static" HOSTCC="${cc}cc -static"; cd root/*/*-fs/usr
+(cd ../../../../*x-*; tar c *) |tar x; (cd *x-*; tar c lib) |tar x; rm -r *x-*
+ln -s ../bin/cpp lib/cpp; cd ..; mv root var; mv mnt $_/run
+cd usr/bin; ln -s ../lib/ld-* ldd; ln -fs sh bash; cd ../..; mv init sbin
+mkdir usr/pkg; mv etc usr/pkg; ln -s usr/pkg/etc etc
+cp -rv ../../../../pkgsrc usr/src |awk 'NR%100==1{printf"."}'
+path="/bin:/sbin:/usr/pkg/bin:/usr/pkg/sbin:/`dirname $(find * -name cc1)`"
+root() { env -i CFLAGS="$CFLAGS" PATH="$path" WORLD="$w" chroot . /bin/"$@"; }
+root env |sed '/HOME/d;s/.*/export "&"/' >etc/profile
+root sh -c "`grep mount.-t sbin/init`; exit"; cp -r ../../../../samurai usr/src
+mv home var/guest; sed -i s/home/var/ etc/p*d; echo root:::::::: >etc/shadow
+root sh -c 'groupadd -g12 mail; exit'; root install -dg12 var/mail
+(cd usr/include; ls *.h sys/*.h |tr [:lower:] [:upper:] |
+sed "s/[^A-Z]/_/g;s/.*/#define HAVE_& 1/"
+for i in {BRACE_EXPAND,HAVE_{MEMSET,PROTOTYPES,STRCASECMP},JOBS,KSH}\ 1 \
+  RETSIG{TYPE\ void,VAL} SIZEOF_{INT\ 4,LONG\ 8}; do echo \#define $i; done
+cat ../../usr/src/*/pdksh/*/conf-end.h) >`ls -d usr/src/*/pdksh/files`/config.h
+root kill -l |xargs echo |>`ls -d usr/src/*/pdksh/files`/siglist.out sed -E \
+  's/([0-9]+)..(SIG(\S+))/{.signal=\1,.name="\3",.mess="\2"},\n/g'
+root cc -o /bin/sh `find usr/src/*/pdksh/files/*.c -not -name "*-*"`
+root su -c 'cc -o /bin/awk `find /usr/src/*/nawk/files/*.c -not -name *etab.c`
+for i in MAKE_JOBS=`nproc` "PKG_DEFAULT_OPTIONS=-* alsa openssl x11 wayland" \
+  PKG_OPTIONS.mutt=mutt-smtp; do echo $i; done >/mk
+cd /usr/src/*strap; ./b* --cwrappers=no --make-jobs=`nproc` --mk-fragment=/mk
+cd /usr/src/*/bsdtar; bmake install clean clean-depends
+ln -fs `which bsdtar` /bin/tar; cd /usr/src/samurai; bmake; cp samu /bin/ninja
+sed -i "/GIT\|SUB\|CONF\|INST\|bin\|shar\|py/d" /usr/src/*/ninja-*/{M,P}*
+cd /usr/src/*/curl; bmake fetch-list |sh; bmake install clean clean-depends
+sed -i "s/^.endif/FETCH_USING=curl\n&/" /etc/mk.conf; rm /mk
+for i in $WORLD; do cd /usr/src/*/$i/; pwd; bmake fetch-list |sh; done
+cd /usr/src/*/gzip; bmake install; rm /bin/zcat; ln -s `which zcat` /bin/zcat
+cd /usr/src/*/mksh; bmake install; ln -fs `which mksh` /bin/sh
+sed -i -e "s/\\(groupadd.*\\)-r/\\1-S/i" -e "s/-r -c/-S -c/" \
+  -e "s/-c.*-d\(.*-s\)/-h\1/" -e "s/-g\( .group\)/-G\1/" \
+  /usr/src/mk/*/usergroup*Linux; sed -i "/stscr\|webp/d" /usr/src/*/I*ck/{M,b}*
+for i in MesaLib flex ge*ls gst* gtk3 *pg-er* l*xif l*dn xk*g
+do sed -Ei "/\.mo$|glibc|au_r[^3]|upower/d" /usr/src/*/$i/{M,P}*; done
+sed -Ei "/glibc|upower/d" /usr/src/*/xf*ngs/{M,P}*
+cd /usr/src/*/xinit; bmake install
+sed -i s/.*inter.*trip.*/true/ /usr/src/*/python*/*/*/configure
+cd /usr/src/*/wp*t; bmake install
+sed -i "1s;^;#include <limits.h>\n;" /usr/src/*/libpcap/*/*/*-usb-linux.c
+for i in $WORLD; do cd /usr/src/*/$i/; bmake install clean clean-depends; done
+wpa_cli -h |awk /h:/{print\"ctrl_interface=DIR=\"\$3} >/etc/wpa_supplicant.conf
+for i in "\"%\" split-window -h" "\"\\\"\" split-window -v" "c new-window"
+do echo bind $i -c \"#{pane_current_path}\"; done >/etc/tmux.conf' -
+git clone ../../../../toybox usr/src/toybox; cp ../../../../toybox/.config $_
+root sh -c 'cd /usr/src/t*x; sed -i "s/<(.*)/:/" s*/*; gmake; cp -f t*x /bin/'
