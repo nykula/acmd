@@ -45,4 +45,5 @@ elif test "$1" = png; then x=`mktemp`; cat >$x; convert -size 640x400 \
   xc:white -font /usr/share/fonts/liberation/LiberationSerif-Regular.ttf \
   -pointsize 14 -annotate +8+18 \
   @$x png:- |mpv -loop -pause -; rm $x
+elif test "$1" = eml; then perl -pe 'use MIME::QuotedPrint;$_=decode_qp($_)'
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
