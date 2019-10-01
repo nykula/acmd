@@ -1,7 +1,7 @@
 #!/bin/sh
 # Control battery, network and CPU frequency.
 # 0BSD 2019 Denys Nykula <nykula@ukr.net>
-# ctl bat|wl|recon|ear|airpl|cool|turbo
+# ctl bat|wl|recon|ear|airpl|turbo
 if test "$1" = bat; then watch cat /sys/class/power_supply/*/charge_now
 elif test "$1" = wait; then for i in {1..4}; do echo -n .; sleep 1; done
 elif test "$1" = wl; then rfkill unblock all; wpa_cli scan; ctl wait
@@ -30,10 +30,9 @@ EOF
   echo === `basename $0`: ^D to off; bluetoothctl; ctl btoff
 elif test "$1" = airpl; then ctl btoff; rfkill block all
   ifconfig enp3s0 down; kill `pgrep dhcp`; ctl wait
-elif test "$1" = cool; then cd /sys/*/cpu/devices
-  for i in *; do cat $i/*/c*min* >`ls $i/*/s*max*`; done; watch cat */*/s*cur*
-elif test "$1" = turbo; then cd /sys/*/cpu/devices
-  for i in *; do cat $i/*/c*max* >`ls $i/*/s*max*`; done; watch cat */*/s*cur*
+elif test "$1" = turbo; then cd /sys/*/cpu/devices; for i in *; do
+  if test `cat $i/*/c*max*` = `cat $i/*/s*max*`; then cat $i/*/c*min*
+  else cat $i/*/c*max*; fi >`ls $i/*/s*max*`; done; watch cat */*/s*cur*
 elif test "$1" = vol; then amixer sget Master |
   awk '/Limits/{printf$5"*0."}/([0-9]+%)/{gsub(/[[\]%]/,"");print$4}' |bc
 elif test "$1" = dentry; then
