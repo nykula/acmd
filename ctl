@@ -1,17 +1,16 @@
 #!/bin/sh
 # Control battery, network and CPU frequency.
 # 0BSD 2019 Denys Nykula <nykula@ukr.net>
-# ctl bat|wl|recon|ear|airpl|turbo
+# ctl bat|net|ear|airpl|turbo
 if test "$1" = bat; then watch cat /sys/class/power_supply/*/charge_now
 elif test "$1" = wait; then for i in {1..4}; do echo -n .; sleep 1; done
-elif test "$1" = wl; then rfkill unblock all; wpa_cli scan; ctl wait
-  wpa_cli status; ctl wait; wpa_cli scan_results; wpa_cli status
-  echo === `basename $0`: connect, ^D; wpa_cli; ctl recon
-elif test "$1" = recon; then ifconfig enp3s0 down; pkill -HUP wpa_supplicant
-  if busybox udhcpc -fnqiwlp2s0
-  then echo === `basename $0`: ^D to off; wpa_cli; ctl airpl; exit; fi
-  ifconfig enp3s0 up; if busybox udhcpc -fnqienp3s0
-  then echo === `basename $0`: ^D to off; cat; ctl airpl; fi
+elif test "$1" = net; then ctl airpl; ifconfig enp3s0 up
+  if busybox udhcpc -fnqienp3s0; then
+  echo === `basename $0`: ^D to off; cat; ctl airpl; exit; fi
+  rfkill unblock all; wpa_supplicant -B -iwlp2s0 -c/etc/wpa_supplicant.conf
+  ifconfig enp3s0 down; ctl wait; wpa_cli scan_results; wpa_cli status
+  echo === `basename $0`: connect, ^D; wpa_cli; busybox udhcpc -fnqiwlp2s0
+  echo === `basename $0`: ^D to off; wpa_cli; ctl airpl
 elif test "$1" = pair; then echo paired-devices |bluetoothctl |
   awk '/^Device/{print$2}'
 elif test "$1" = btoff; then pgrep bluetoothd &&echo power off |bluetoothctl
@@ -29,7 +28,7 @@ ctl.!default { type bluealsa }
 EOF
   echo === `basename $0`: ^D to off; bluetoothctl; ctl btoff
 elif test "$1" = airpl; then ctl btoff; rfkill block all
-  ifconfig enp3s0 down; kill `pgrep dhcp`; ctl wait
+  ifconfig enp3s0 down; kill `pgrep dhcp` `pgrep wpa_supplicant`; ctl wait
 elif test "$1" = turbo; then cd /sys/*/cpu/devices; for i in *; do
   if test `cat $i/*/c*max*` = `cat $i/*/s*max*`; then cat $i/*/c*min*
   else cat $i/*/c*max*; fi >`ls $i/*/s*max*`; done; watch cat */*/s*cur*
