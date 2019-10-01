@@ -8,7 +8,7 @@ if test "$1" = bat; then cd /sys/*/cpu/devices; for i in *; do
   watch cat */*/s*cur* /proc/loadavg /sys/class/power_supply/*/charge_now
 elif test "$1" = wait; then for i in {1..4}; do echo -n .; sleep 1; done
 elif test "$1" = disco; then rfkill block all
-  ifconfig enp3s0 down; kill `pgrep dhcp` `pgrep wpa_supplicant`; ctl wait
+  ifconfig enp3s0 down; kill `pgrep dhcp` `pgrep wpa_supplicant`
 elif test "$1" = net; then ctl disco; ifconfig enp3s0 up
   if busybox udhcpc -fnqienp3s0; then
   echo === `basename $0`: ^D to off; cat; ctl disco; exit; fi
