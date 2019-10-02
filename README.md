@@ -60,4 +60,4 @@ yarn coverage && xdg-open coverage/index.html
 
 ## License
 
-MIT
+[0BSD](LICENSE) public domain equivalent.

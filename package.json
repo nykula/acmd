@@ -4,8 +4,8 @@
   "description": "Twin-panel file manager",
   "bin": "bin/acme-commander.sh",
   "repository": "https://github.com/makepost/acme-commander",
-  "author": "makepost <makepost@firemail.cc>",
-  "license": "MIT",
+  "author": "Denys Nykula <nykula@ukr.net>",
+  "license": "0BSD",
   "devDependencies": {
     "expect": "^24.9.0",
     "typescript": "^3.6.3"
