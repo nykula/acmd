@@ -7,43 +7,35 @@
   "author": "makepost <makepost@firemail.cc>",
   "license": "MIT",
   "devDependencies": {
-    "expect": "^1.20.2",
-    "pre-commit": "^1.2.2",
-    "tslint": "^5.11.0",
-    "typescript": "^2.9.2"
+    "expect": "^24.9.0",
+    "typescript": "^3.6.3"
   },
   "dependencies": {
-    "@types/async": "^2.0.45",
-    "@types/expect": "^1.20.2",
-    "@types/lodash": "^4.14.87",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "^10.5.4",
-    "@types/url-parse": "^1.1.0",
-    "@types/webpack-env": "^1.13.2",
-    "async": "^2.6.0",
-    "inferno": "^5.3.0",
-    "inferno-hyperscript": "^5.3.0",
-    "inferno-mobx": "^5.3.0",
-    "lodash": "^4.17.4",
-    "mobx": "^5.0.3",
-    "nextstep-plist": "^0.3.0",
-    "nullthrows": "^1.0.2",
-    "ts-for-gjs": "https://github.com/makepost/ts-for-gjs",
-    "url-parse": "^1.2.0",
-    "util": "^0.11.0"
+    "@types/async": "^3.0.2",
+    "@types/expect": "^1.20.4",
+    "@types/lodash": "^4.14.141",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "^12.7.9",
+    "@types/url-parse": "^1.4.3",
+    "@types/webpack-env": "^1.14.0",
+    "async": "^3.1.0",
+    "inferno": "^7.3.1",
+    "inferno-hyperscript": "^7.3.1",
+    "inferno-mobx": "^7.3.1",
+    "lodash": "^4.17.15",
+    "mobx": "^5.14.0",
+    "nextstep-plist": "^0.4.1",
+    "nullthrows": "^1.1.1",
+    "ts-for-gjs": "https://github.com/sammydre/ts-for-gjs",
+    "url-parse": "^1.4.7",
+    "util": "^0.12.1"
   },
   "scripts": {
     "start": "NODE_ENV=development gjs bin/start.js",
     "test": "NODE_ENV=production gjs bin/test.js",
     "coverage": "bash bin/coverage.sh",
-    "lint": "tslint 'bin/**/*.js' 'src/**/*.js' && tsc",
-    "format": "tslint --fix 'bin/**/*.js' 'src/**/*.js' && tsc",
     "repl": "gjs bin/repl.js",
     "postinstall": "mkdir -p \"$npm_config_prefix\"/share/applications/ && cp bin/acme-commander.desktop \"$npm_config_prefix\"/share/applications/",
     "preuninstall": "rm -f \"$npm_config_prefix/share/applications/acme-commander.desktop\""
-  },
-  "pre-commit": [
-    "lint",
-    "test"
-  ]
+  }
 }
