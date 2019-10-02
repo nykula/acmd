@@ -19,7 +19,7 @@ elif test "$1" = net; then ctl disco; ifconfig enp3s0 up
   tip Here then: reconfigure Enter Ctrl+D; wpa_cli; busybox udhcpc -fnqiwlp2s0
   tip Ctrl+D to off; wpa_cli; ctl disco
 elif test "$1" = pair; then echo paired-devices |bluetoothctl |
-  awk '/Ctrl+Device/{print$2}'
+  awk '/^Device/{print$2}'
 elif test "$1" = btoff; then pgrep bluetoothd &&echo power off |bluetoothctl
   rfkill block bluetooth; killall bluetoothd bluealsa{,-aplay} dbus-daemon
   rm -r /etc/asound.conf /run/dbus*
