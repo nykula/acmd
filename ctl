@@ -15,8 +15,9 @@ elif test "$1" = net; then ctl disco; ifconfig enp3s0 up
   (sleep 8; wpa_cli scan)&
   if busybox udhcpc -fnqienp3s0; then rfkill block wlan; pkill wpa_supplicant
   tip Ctrl+D to off; cat; ctl disco; exit; fi; ifconfig enp3s0 down
-  wpa_cli scan_results; tip New terminal: ctl wpa YOUR_NET [or] ctl ess NO_PASS
-  tip Here then: reconfigure Enter Ctrl+D; wpa_cli; busybox udhcpc -fnqiwlp2s0
+  wpa_cli scan_results; if ! wpa_cli status |grep -q wpa_state=COMPLETED; then
+    tip ctl wpa YOUR_NET [or] ctl ess NO_PASS [then] Ctrl+D; sh; fi
+  pkill -HUP wpa_supplicant; busybox udhcpc -fnqiwlp2s0; echo `wpa_cli status`
   tip Ctrl+D to off; wpa_cli; ctl disco
 elif test "$1" = pair; then echo paired-devices |bluetoothctl |
   awk '/^Device/{print$2}'
