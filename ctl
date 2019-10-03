@@ -1,5 +1,5 @@
 #!/bin/sh
-# Control battery usage, Ethernet and WiFi, BT earphones and backlight.
+# Control battery usage, Ethernet and WiFi, BT earphones, and backlight.
 # 0BSD 2019 Denys Nykula <nykula@ukr.net>
 # ctl bat|net|ear|led
 tip() { echo "===> [Tip] $@"; }
@@ -51,12 +51,11 @@ elif test "$1" = hjk; then while read -sn1 x; do case $x in
   h|j|k|l)echo $x;; q|`echo -e '\04'`)exit;;
   `echo -e '\e'`)read -n1 y; if test $y = [; then read -n1 z; case $z in
     D)echo h;; B)echo j;; A)echo k;; C)echo l;;
-    5|6)read -sn1 a; case $z$a in 5~)echo PgUp;; 6~)echo PgDn;;
-    esac;; esac; fi;; esac; done
+    5|6)read -sn1 a; case $z$a in 5~)echo Up;; 6~)echo Dn
+    esac; esac; fi; esac; done
 elif test "$1" = led; then f=`ls /sys/class/backlight/*/brightness`
-  fm=`dirname $f`/max_brightness;ctl hjk |while read x;do b=`cat $f`;case $x in
-  h)>$f expr $b - 1;; j)>$f expr $b - 100;;
-  k)>$f expr $b + 100;; l)>$f expr $b + 1;;
-  PgDn)>$f expr $b - 500;; PgUp)>$f expr $b + 500;;
-  esac 2>/dev/null; echo `cat $f`/`cat $fm`; done
+  fm=`dirname $f`/max_brightness;ctl hjk |while read x;do b=`cat $f`
+  >$f 2>/dev/null expr $b + `case $x in
+  h)echo -1;; j)echo -100;; k)echo 100;; l)echo 1;; Dn)echo -500;; Up)echo 500
+  esac`; echo `cat $f`/`cat $fm`; done
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
