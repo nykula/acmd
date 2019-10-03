@@ -58,7 +58,7 @@ Promise.all($s).then(function(/** @type {any[]} */ res) {
       .split(/[^\w.]/)
       .filter(Boolean)
       .slice(0, 3)
-      .join("_");
+      .join("");
     document.body.appendChild(hr);
     title = document.createElement("p");
     var link = Link(resource.commit.committer.date.split("T")[0], "#" + hr.id);
