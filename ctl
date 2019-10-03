@@ -1,7 +1,7 @@
 #!/bin/sh
-# Control battery usage, wired and wireless network and Bluetooth earphones.
+# Control battery usage, Ethernet and WiFi, BT earphones and backlight.
 # 0BSD 2019 Denys Nykula <nykula@ukr.net>
-# ctl bat|net|ear
+# ctl bat|net|ear|led
 tip() { echo "===> [Tip] $@"; }
 wait() { for i in {1..4}; do echo -n .; sleep 1; done; }
 if test "$1" = bat; then cd /sys/*/cpu/devices; for i in *; do
@@ -48,9 +48,15 @@ elif test "$1" = png; then x=`mktemp`; cat >$x; convert -size 640x400 \
   @$x png:- |mpv -loop -pause -; rm $x
 elif test "$1" = eml; then perl -pe 'use MIME::QuotedPrint;$_=decode_qp($_)'
 elif test "$1" = hjk; then while read -sn1 x; do case $x in
-  h|j|k|l|q)echo $x;; `echo -e '\04'`)echo q;;
+  h|j|k|l)echo $x;; q|`echo -e '\04'`)exit;;
   `echo -e '\e'`)read -n1 y; if test $y = [; then read -n1 z; case $z in
     D)echo h;; B)echo j;; A)echo k;; C)echo l;;
     5|6)read -sn1 a; case $z$a in 5~)echo PgUp;; 6~)echo PgDn;;
     esac;; esac; fi;; esac; done
+elif test "$1" = led; then f=`ls /sys/class/backlight/*/brightness`
+  fm=`dirname $f`/max_brightness;ctl hjk |while read x;do b=`cat $f`;case $x in
+  h)>$f expr $b - 1;; j)>$f expr $b - 100;;
+  k)>$f expr $b + 100;; l)>$f expr $b + 1;;
+  PgDn)>$f expr $b - 500;; PgUp)>$f expr $b + 500;;
+  esac 2>/dev/null; echo `cat $f`/`cat $fm`; done
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
