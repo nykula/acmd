@@ -47,4 +47,10 @@ elif test "$1" = png; then x=`mktemp`; cat >$x; convert -size 640x400 \
   -pointsize 14 -annotate +8+18 \
   @$x png:- |mpv -loop -pause -; rm $x
 elif test "$1" = eml; then perl -pe 'use MIME::QuotedPrint;$_=decode_qp($_)'
+elif test "$1" = hjk; then while read -sn1 x; do case $x in
+  h|j|k|l|q)echo $x;; `echo -e '\04'`)echo q;;
+  `echo -e '\e'`)read -n1 y; if test $y = [; then read -n1 z; case $z in
+    D)echo h;; B)echo j;; A)echo k;; C)echo l;;
+    5|6)read -sn1 a; case $z$a in 5~)echo PgUp;; 6~)echo PgDn;;
+    esac;; esac; fi;; esac; done
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
