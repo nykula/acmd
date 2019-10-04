@@ -54,8 +54,8 @@ elif test "$1" = hjk; then while read -sn1 x; do case $x in
     5|6)read -sn1 a; case $z$a in 5~)echo Up;; 6~)echo Dn
     esac; esac; fi; esac; done
 elif test "$1" = led; then f=`ls /sys/class/backlight/*/brightness`
-  fm=`dirname $f`/max_brightness;ctl hjk |while read x;do b=`cat $f`
-  >$f 2>/dev/null expr $b + `case $x in
+  fm=`dirname $f`/max_brightness; echo `cat $f`/`cat $fm`; ctl hjk |
+  while read x;do b=`cat $f`; >$f 2>/dev/null expr $b + `case $x in
   h)echo -1;; j)echo -100;; k)echo 100;; l)echo 1;; Dn)echo -500;; Up)echo 500
   esac`; echo `cat $f`/`cat $fm`; done
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
