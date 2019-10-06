@@ -8,16 +8,17 @@ if test "$1" = bat; then cd /sys/*/cpu/devices; for i in *; do
   if test `cat $i/*/c*max*` = `cat $i/*/s*max*`; then cat $i/*/c*min*
   else cat $i/*/c*max*; fi >`ls $i/*/s*max*`; done
   watch cat */*/s*cur* /proc/loadavg /sys/class/power_supply/*/charge_now
-elif test "$1" = disco; then rfkill block wlan
-  ifconfig enp3s0 down; kill `pgrep dhcp` `pgrep wpa_supplicant`
-elif test "$1" = net; then ctl disco; ifconfig enp3s0 up
-  rfkill unblock wlan; wpa_supplicant -B -iwlp2s0 -c/etc/wpa_supplicant.conf
-  (sleep 8; wpa_cli scan)&
-  if busybox udhcpc -fnqienp3s0; then rfkill block wlan; pkill wpa_supplicant
-  tip Ctrl+D to off; cat; ctl disco; exit; fi; ifconfig enp3s0 down
+elif test "$1" = lp; then ifconfig -a |grep -o ^$2'[a-z0-9]*'
+elif test "$1" = disco; then rfkill block wlan; for i in e w
+  do ifconfig `ctl lp $i` down; done; kill `pgrep dhcp` `pgrep wpa_supplicant`
+elif test "$1" = net; then ctl disco; rfkill unblock wlan; wait; for i in e w
+  do ifconfig `ctl lp $i` up; done
+  (wpa_supplicant -i`ctl lp w` -c /etc/wpa*.conf; sleep 8; wpa_cli scan)&
+  if busybox udhcpc -fnqi`ctl lp e`;then rfkill block wlan; pkill wpa_supplicant
+  tip Ctrl+D to off; cat; ctl disco; exit; fi; ifconfig `ctl lp e` down
   wpa_cli scan_results; if ! wpa_cli status |grep -q wpa_state=COMPLETED; then
     tip ctl wpa YOUR_NET [or] ctl ess NO_PASS [then] Ctrl+D; sh; fi
-  pkill -HUP wpa_supplicant; busybox udhcpc -fnqiwlp2s0; echo `wpa_cli status`
+  pkill -HUP wpa_supplicant;busybox udhcpc -fnqi`ctl lp w`;echo `wpa_cli status`
   tip Ctrl+D to off; wpa_cli; ctl disco
 elif test "$1" = pair; then echo paired-devices |bluetoothctl |
   awk '/^Device/{print$2}'
@@ -58,4 +59,7 @@ elif test "$1" = led; then f=`ls /sys/class/backlight/*/brightness`
   while read x;do b=`cat $f`; >$f 2>/dev/null expr $b + `case $x in
   h)echo -1;; j)echo -100;; k)echo 100;; l)echo 1;; Dn)echo -500;; Up)echo 500
   esac`; echo `cat $f`/`cat $fm`; done
+elif test "$1" = dev; then cd /$2
+  for i in 'devtmpfs - dev' 'proc - proc' 'sysfs - sys';do mount -t$i;done
+  mkdir dev/pts;for i in 'devpts - dev/pts';do mount -t$i;done
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
