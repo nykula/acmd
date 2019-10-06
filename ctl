@@ -62,4 +62,6 @@ elif test "$1" = led; then f=`ls /sys/class/backlight/*/brightness`
 elif test "$1" = dev; then cd /$2
   for i in 'devtmpfs - dev' 'proc - proc' 'sysfs - sys';do mount -t$i;done
   mkdir dev/pts;for i in 'devpts - dev/pts';do mount -t$i;done
+elif test "$1" = inv; then for i in 0ffffff 7000000 bffaa00 f333333
+  do echo -en "\e]P$i"; done
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
