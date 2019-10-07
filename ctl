@@ -45,10 +45,10 @@ elif test "$1" = del; then
 elif test "$1" = ess; then >>/etc/wpa_supplicant.conf printf \
   'network={\nssid="%s"\nkey_mgmt=NONE\n}\n' "$2"
 elif test "$1" = wpa; then >>/etc/wpa_supplicant.conf wpa_passphrase "$2"
-elif test "$1" = png; then x=`mktemp`; cat >$x; convert -size 640x400 \
+elif test "$1" = res; then dmesg |grep -Eo '[0-9]{3,}x[0-9]{3,}'
+elif test "$1" = png; then x=`mktemp`; convert -size `ctl res` \
   xc:white -font /usr/share/fonts/liberation/LiberationSerif-Regular.ttf \
-  -pointsize 14 -annotate +8+18 \
-  @$x png:- |mpv -loop -pause -; rm $x
+  -pointsize 14 -annotate +8+18 "`cat`" png:- |mpv -vo=drm -pause -loop -
 elif test "$1" = eml; then perl -pe 'use MIME::QuotedPrint;$_=decode_qp($_)'
 elif test "$1" = hjk; then while read -sn1 x; do case $x in
   h|j|k|l)echo $x;; q|`echo -e '\04'`)echo q; exit;;
