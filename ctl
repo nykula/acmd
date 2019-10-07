@@ -24,8 +24,8 @@ elif test "$1" = pair; then echo paired-devices |bluetoothctl |
   awk '/^Device/{print$2}'
 elif test "$1" = btoff; then pgrep bluetoothd &&echo power off |bluetoothctl
   rfkill block bluetooth; killall bluetoothd bluealsa{,-aplay} dbus-daemon
-  rm -r /etc/asound.conf /run/dbus*
-elif test "$1" = ear; then ctl btoff; mkdir /run/dbus
+  rm -r /etc/asound.conf /var/run/{blue*,dbus*}
+elif test "$1" = ear; then ctl btoff; mkdir /var/run/dbus
   dbus-daemon --system; rfkill unblock bluetooth; wait
   /usr/libexec/*/bluetoothd -n &wait
   echo -e 'power on\nscan on' |bluetoothctl; bluealsa &wait
