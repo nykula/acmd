@@ -2,6 +2,7 @@
 # Control battery usage, Ethernet and WiFi, BT earphones, and backlight.
 # 0BSD 2019 Denys Nykula <nykula@ukr.net>
 # ctl bat|net|ear|led
+eat() { while read x; do ${ECHO:-printf '%s\n'} "$x"; done; }
 tip() { echo "===> [Tip] $@"; }
 wait() { for i in {1..4}; do echo -n .; sleep 1; done; }
 if test "$1" = bat; then cd /sys/*/cpu/devices; for i in *; do
@@ -68,7 +69,7 @@ elif test "$1" = inv; then for i in 0ffffff 7000000 bffaa00 f333333
   do echo -en "\e]P$i"; done
 elif test "$1" = caps; then setkeycodes 3a 29
 elif test "$1" = ren; then xs=`mktemp`; ys=`mktemp`; zs=`mktemp`; shift
-  ls -1d -- "$@" |>$ys tee $xs; vi $ys; i=0; while read y; do((i++))
+  ls -1d -- "$@" |tee $xs |>$ys ${CAT:-eat};vi $ys; i=0;while read y;do((i++))
   alias y="$y" x="`sed $i\!d $xs`"; x="`alias x |sed 's/^.*\?=//'`"
   y="`alias y |sed 's/^.*\?=//'`"; test "$x" != "$y" &&>>$zs echo -E \
   mv -v "$x" "$y"; done <$ys; vi $zs &&eval "`cat $zs`"; rm $xs $ys $zs
