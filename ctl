@@ -76,4 +76,10 @@ elif test "$1" = ren; then xs=`mktemp`; ys=`mktemp`; zs=`mktemp`; shift
 elif test "$1" = mpv; then shift; for i in "$@"; do ffmpeg4 -re -i "$i" \
   -pix_fmt bgra -s `ctl res` -f fbdev '' -v 0 -f wav - |aplay - 2>/dev/null ||
   ffmpeg4 -re -i "$i" -f wav - |aplay -; done
+elif test "$1" = cp; then R=`mktemp`; u=`mktemp`
+  pkg_info -R \* |perl -0pe 's/(^|\n)I.*:\n*(R.*:(\n.+)+|\*.*\n\*.*)\n//g' |
+  sed -E '/\d:$/!d;s/.* |-\d.*\d:$//g' |sort >$R
+  pkg_info -u |sed -E 's/-\d.*\d .*//' |sort -u >$u; comm -23 $R $u; rm $R $u
+elif test "$1" = c; then while test -n "`ctl cp`"
+  do pkg_delete -v `ctl cp`; done
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
