@@ -76,6 +76,7 @@ elif test "$1" = ren; then xs=`mktemp`; ys=`mktemp`; zs=`mktemp`; shift
 elif test "$1" = mpv; then shift; for i in "$@"; do ffmpeg4 -re -i "$i" \
   -pix_fmt bgra -s `ctl res` -f fbdev '' -v 0 -f wav - |aplay - 2>/dev/null ||
   ffmpeg4 -re -i "$i" -f wav - |aplay -; done
+elif test "$1" = say; then shift; espeak -w/proc/self/fd/1 "$@" |aplay -
 elif test "$1" = cp; then R=`mktemp`; u=`mktemp`
   pkg_info -R \* |perl -0pe 's/(^|\n)I.*:\n*(R.*:(\n.+)+|\*.*\n\*.*)\n//g' |
   sed -E '/\d:$/!d;s/.* |-\d.*\d:$//g' |sort >$R
