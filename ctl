@@ -84,4 +84,8 @@ elif test "$1" = cp; then R=`mktemp`; u=`mktemp`
   pkg_info -u |sed -E 's/-\d.*\d .*//' |sort -u >$u; comm -23 $R $u; rm $R $u
 elif test "$1" = c; then while test -n "`ctl cp`"
   do pkg_delete -v `ctl cp`; done
+elif test "$1" = u; then for i in /usr/*src{,/*/.git/..};do cd $i;git pull;done
+  for i in /usr/*src/dist*/*; do tar tf $i >/dev/null ||rm -r $i; done
+  pkg_info -u |sed 's/-\d.*//' |while read i; do cd /usr/*src/*/$i; pwd
+  bmake fetch-list |sh; done
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
