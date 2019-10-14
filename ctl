@@ -88,4 +88,15 @@ elif test "$1" = u; then for i in /usr/*src{,/*/.git/..};do cd $i;git pull;done
   for i in /usr/*src/dist*/*; do tar tf $i >/dev/null ||rm -r $i; done
   pkg_info -u |sed 's/-\d.*//' |while read i; do cd /usr/*src/*/$i; pwd
   bmake fetch-list |sh; done
+elif test "$1" = epub; then d=`mktemp -d`; test -n "$d" ||exit; (cd $d
+  unzip "$2"; find * -type f -exec mv "{}" . \;
+  for j in {,x}html; do for i in *.$j; do cat "$i" |while read x
+  do printf '%s ' "$x"; done >`basename "$i" .$j`.htm; done; done
+  perl -0pe 's,(xt>)\s+(</nav.*)\s+(<c),\1\2\3,g' *.ncx |>toc.htm sed -E \
+  's,^.+?>([^<]+)<.*?"([^"]+)\.x?html".*$,<a href="\2.htm">\2.htm \1</a><p>,'
+  sed -i '/htm">/!d' toc.htm; find * -not -name '*.htm' -delete
+  for i in 's/style="[^"]+"//g' "s/style='[^']+'//g" 's/class="[^"]+"//g' \
+  "s/class='[^']+'//g" 's/<link[^>]+>//g' 's/<div/<p/g;s,/div>,/p>,g' \
+  's,OEBPS/,,g' 's,<([^/apt]|/[^apt])[^>]*>,,g' 's,href="[^"/]*/,href=",g'
+  do sed -Ei "$i" *; done; rm \*.{,x}htm{,l}); mv $d/* .; rm -r $d
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
