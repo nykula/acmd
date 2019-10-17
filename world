@@ -53,10 +53,11 @@ sed -i -e "s/\\(groupadd.*\\)-r/\\1-S/i" -e "s/-r -c/-S -c/" \
   /usr/src/mk/*/usergroup*Linux; sed -i "/stscr\|webp/d" /usr/src/*/I*ck/{M,b}*
 for i in MesaLib flex ge*ls gst* gtk3 *pg-er* l*xif l*dn xk*g
 do sed -Ei "/\.mo$|glibc|au_r[^3]|upower/d" /usr/src/*/$i/{M,P}*; done
+sed -i "s,cpp$,&;sed -i /USE_TLS/d \${WRKSRC}/*build," /usr/src/*/Mesa*b/M*
 sed -Ei "/glibc|upower/d" /usr/src/*/xf*ngs/{M,P}*
 cd /usr/src/*/xinit; bmake install
 sed -i s/.*inter.*trip.*/true/ /usr/src/*/python*/*/*/configure
-cd /usr/src/*/wp*t; bmake install
+cd /usr/src/*/wp*t; echo CONFIG_DRIVER_WEXT=y >>*/defconfig; bmake install
 sed -i "1s;^;#include <limits.h>\n;" /usr/src/*/libpcap/*/*/*-usb-linux.c
 for i in $WORLD; do cd /usr/src/*/$i/; bmake install clean clean-depends; done
 pkg_admin unset automatic lynx mandoc
