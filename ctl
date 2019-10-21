@@ -42,7 +42,7 @@ elif test "$1" = vol; then amixer sget Master |
 elif test "$1" = dentry; then
   printf '[Desktop Entry]\nExec=%s\nName=%s\nType=Application\nVersion=1.0\n' "$2" "$3"
 elif test "$1" = del; then
-  perl -i -0pe "s/\nnetwork=\{[\s\S]*?\"$2\"[\s\S]*?\}//" /etc/wpa*.conf 
+  perl -i -0pe "s/\nnetwork=\{\s*?ssid=\"$2\"[\s\S]*?\}//" /etc/wpa*.conf 
 elif test "$1" = ess; then >>/etc/wpa_supplicant.conf printf \
   'network={\nssid="%s"\nkey_mgmt=NONE\n}\n' "$2"
 elif test "$1" = wpa; then >>/etc/wpa_supplicant.conf wpa_passphrase "$2"
