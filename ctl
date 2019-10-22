@@ -9,6 +9,9 @@ if test "$1" = bat; then cd /sys/*/cpu/devices; for i in *; do
   if test `cat $i/*/c*max*` = `cat $i/*/s*max*`; then cat $i/*/c*min*
   else cat $i/*/c*max*; fi >`ls $i/*/s*max*`; done
   watch cat */*/s*cur* /proc/loadavg /sys/class/power_supply/*/charge_now
+elif test "$1" = hdd; then for i in /sys/block/*/device/power; do f=$i/*_ms
+  if test `cat $f` = -1; then echo 10000; else echo -1; fi >`ls $f`
+  echo auto >$i/control; done
 elif test "$1" = lp; then ifconfig -a |grep -o ^$2'[a-z0-9]*'
 elif test "$1" = disco; then rfkill block wlan; for i in e w
   do ifconfig `ctl lp $i` down; done; kill `pgrep dhcp` `pgrep wpa_supplicant`
