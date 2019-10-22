@@ -23,15 +23,20 @@ elif test "$1" = net; then ctl disco; rfkill unblock wlan; wait; for i in e w
   tip Ctrl+D to off; wpa_cli; ctl disco
 elif test "$1" = pair; then echo paired-devices |bluetoothctl |
   awk '/^Device/{print$2}'
+elif test "$1" = bt; then echo info `ctl pair` |bluetoothctl |
+  grep -q '^\s*Connected: yes'
 elif test "$1" = btoff; then pgrep bluetoothd &&echo power off |bluetoothctl
   rfkill block bluetooth; killall bluetoothd bluealsa{,-aplay} dbus-daemon
   rm -r /etc/asound.conf /var/run/{blue*,dbus*}
 elif test "$1" = ear; then ctl btoff; mkdir /var/run/dbus
   dbus-daemon --system; rfkill unblock bluetooth; wait
   /usr/libexec/*/bluetoothd -n &wait
-  echo -e 'power on\nscan on' |bluetoothctl; bluealsa &wait
-  tip pair, connect, Ctrl+D; bluetoothctl
-  bluealsa-aplay `ctl pair` &tee /etc/asound.conf <<EOF
+  echo -e 'power on\nscan on' |bluetoothctl; bluealsa &wait; a=0
+  while test -n "`ctl pair`" &&echo connect `ctl pair` |bluetoothctl &&
+  wait &&! ctl bt; do wait;ctl bt&&break; echo power off |bluetoothctl;wait
+  echo power on |bluetoothctl; wait; ((a++)); test $a = 3 &&break; done
+  if ! ctl bt; then tip pair 12:34 [Tab Enter] connect 12:34 [Tab Enter ^D]
+  bluetoothctl; fi; bluealsa-aplay `ctl pair` &tee /etc/asound.conf <<EOF
 defaults.bluealsa { device "`ctl pair`" }
 pcm.!default { type plug slave { pcm "bluealsa" } }
 ctl.!default { type bluealsa }
