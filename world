@@ -53,7 +53,7 @@ sed -i -e "s/\\(groupadd.*\\)-r/\\1-S/i" -e "s/-r -c/-S -c/" \
   /usr/src/mk/*/usergroup*Linux; sed -i "/stscr\|webp/d" /usr/src/*/I*ck/{M,b}*
 for i in MesaLib flex ge*ls gst* gtk3 *pg-er* l*xif l*dn xk*g
 do sed -Ei "/\.mo$|glibc|au_r[^3]|upower/d" /usr/src/*/$i/{M,P}*; done
-sed -i "s,cpp$,&;sed -i /USE_TLS/d \${WRKSRC}/*build," /usr/src/*/Mesa*b/M*
+sed -i "s,cpp$,&;sed -i /_TLS/d \${WRKSRC}/*build," /usr/src/*/Mesa*b/M*
 sed -Ei "/glibc|upower/d" /usr/src/*/xf*ngs/{M,P}*
 cd /usr/src/*/xinit; bmake install
 sed -i s/.*inter.*trip.*/true/ /usr/src/*/python*/*/*/configure
