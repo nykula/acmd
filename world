@@ -10,15 +10,15 @@ for i in NetBSD/pkgsrc michaelforney/samurai landley/toybox
 do(cd `basename $i`&&git pull)||git clone --depth=1 https://github.com/$i; done
 cd toybox; umount root/*/*/{dev/pts,dev,proc,sys}; rm -r *x-*
 tar xf ../*-native.tgz ||exit; cc=`realpath */bin`/`basename */*x-*`-
-(cd */bin; ln -s *-cc cc); make CROSS_COMPILE=$cc HOSTCC="${cc}cc -static" \
-  PATH="`dirname $cc`:$PATH" defconfig
+(cd */bin; ln -s *-cc cc); gmake CROSS_COMPILE=$cc HOSTCC="${cc}cc -static" \
+  PATH="`dirname $cc`:$PATH" defconfig ||exit; sed -i "s/<(.*)/:/" s*/*
 for i in BC DIFF EXPR GROUPADD GZIP ROUTE SH TR USERADD VI WGET
 do sed -i s/.*_$i[=\ ].*/CONFIG_$i=y/ .config; done
 mv root/*/*/usr/src/distfiles/* ../pkgsrc/distfiles
-make CROSS_COMPILE=$cc PATH="`dirname $cc`:$PATH" root \
+gmake CROSS_COMPILE=$cc PATH="`dirname $cc`:$PATH" root \
   CFLAGS="$CFLAGS -static" HOSTCC="${cc}cc -static"; cd root/*/*-fs/usr
-(cd ../../../../*x-*; tar c *) |tar x; (cd *x-*; tar c lib) |tar x; rm -r *x-*
-ln -s ../bin/cpp lib/cpp; cd ..; mv root var; mv mnt $_/run
+(cd ../../../../*x-*; tar -cf- *) |tar -xf-; (cd *x-*; tar -cf- lib) |tar -xf-
+rm -r *x-*; ln -s ../bin/cpp lib/cpp; cd ..; mv mnt var/run; mv root var
 cd usr/bin; ln -s ../lib/ld-* ldd; ln -fs sh bash; cd ../..; mv init sbin
 mkdir usr/pkg; mv etc usr/share/man usr/pkg; ln -s usr/pkg/etc etc
 cp -rv ../../../../pkgsrc usr/src |awk 'NR%100==1{printf"."}'
@@ -67,5 +67,5 @@ x=\`mktemp\`;>\$x cat \"\$@\";lynx \$x" >more; chmod +x more; ln more less)
 git config --system color.ui false
 for i in "\"%\" split-window -h" "\"\\\"\" split-window -v" "c new-window"
 do echo bind $i -c \"#{pane_current_path}\"; done >/etc/tmux.conf' -
-git clone ../../../../toybox usr/src/toybox; cp ../../../../toybox/.config $_
+git clone ../../../../t*x usr/src/toybox; cp ../../../../t*x/.c*g usr/src/t*x
 root sh -c 'cd /usr/src/t*x; sed -i "s/<(.*)/:/" s*/*; gmake; cp -f t*x /bin/'
