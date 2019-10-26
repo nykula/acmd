@@ -33,7 +33,7 @@ elif test "$1" = btoff; then pgrep bluetoothd &&echo power off |bluetoothctl
   rm -r /etc/asound.conf /var/run/{blue*,dbus*}
 elif test "$1" = ear; then ctl btoff; mkdir /var/run/dbus
   dbus-daemon --system; rfkill unblock bluetooth; wait
-  /usr/libexec/*/bluetoothd -n &wait
+  /usr/libexec/*/bluetoothd -n &/usr/pkg/libexec/*/bluetoothd -n &wait
   echo -e 'power on\nscan on' |bluetoothctl; bluealsa &wait; a=0
   while test -n "`ctl pair`" &&echo connect `ctl pair` |bluetoothctl &&
   wait &&! ctl bt; do wait;ctl bt&&break; echo power off |bluetoothctl;wait

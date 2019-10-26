@@ -4,9 +4,9 @@
 # emerge -1u os-headers; eval "export `emerge --info 2>&1 |grep GS=`"
 # wget http://musl.cc/armv7l-linux-musleabihf-native.tgz
 # git clone https://github.com/nykula/acmd; acmd/world
-w='wp*t d*ear tmux git ii mutt isync ffplay4 *e-dl al*ls gzip mksh npm'
-w="$w xinit rxvt tang* xf*{op,xer,yd,ngs}"
-for i in NetBSD/pkgsrc michaelforney/samurai landley/toybox
+w='wpa*t *bear tmux git ii mutt isync ffm*4 *e-dl gzip mksh'
+w="$w npm al*ls bl*sa udev way*s weston *erati* tang*"
+for i in NetBSD/pkgsrc{,-wip} michaelforney/samurai landley/toybox
 do(cd `basename $i`&&git pull)||git clone --depth=1 https://github.com/$i; done
 cd toybox; umount root/*/*/{dev/pts,dev,proc,sys}; rm -r *x-*
 tar xf ../*-native.tgz ||exit; cc=`realpath */bin`/`basename */*x-*`-
@@ -21,7 +21,7 @@ gmake CROSS_COMPILE=$cc PATH="`dirname $cc`:$PATH" root \
 rm -r *x-*; ln -s ../bin/cpp lib/cpp; cd ..; mv mnt var/run; mv root var
 cd usr/bin; ln -s ../lib/ld-* ldd; ln -fs sh bash; cd ../..; mv init sbin
 mkdir usr/pkg; mv etc usr/share/man usr/pkg; ln -s usr/pkg/etc etc
-cp -rv ../../../../pkgsrc usr/src |awk 'NR%100==1{printf"."}'
+cp -r ../../../../pkgsrc usr/src; cp -r ../../../../pkgsrc-wip usr/src/wip
 path="/bin:/sbin:/usr/pkg/bin:/usr/pkg/sbin:/`dirname $(find * -name cc1)`"
 root() { env -i CFLAGS="$CFLAGS" PATH="$path" WORLD="$w" chroot . /bin/"$@"; }
 root env |sed 's,HOME.*,MANPATH=/usr/pkg/man,;s/.*/export "&"/' >etc/profile
@@ -37,7 +37,7 @@ root kill -l |xargs echo |>`ls -d usr/src/*/pdksh/files`/siglist.out sed -E \
   's/([0-9]+)..(SIG(\S+))/{.signal=\1,.name="\3",.mess="\2"},\n/g'
 root cc -o /bin/sh `find usr/src/*/pdksh/files/*.c -not -name "*-*"`
 root su -c 'cc -o /bin/awk `find /usr/src/*/nawk/files/*.c -not -name *etab.c`
-for i in MAKE_JOBS=`nproc` "PKG_DEFAULT_OPTIONS=-* alsa openssl x11 wayland" \
+for i in MAKE_JOBS=`nproc` "PKG_DEFAULT_OPTIONS=-* openssl wayland" \
   PKG_OPTIONS.mutt=mutt-smtp; do echo $i; done >/mk
 cd /usr/src/*strap; ./b* --cwrappers=no --make-jobs=`nproc` --mk-fragment=/mk
 cd /usr/src/*/bsdtar; bmake install clean clean-depends
@@ -45,7 +45,8 @@ ln -fs `which bsdtar` /bin/tar; cd /usr/src/samurai; bmake; cp samu /bin/ninja
 sed -i "/GIT\|SUB\|CONF\|INST\|bin\|shar\|py/d" /usr/src/*/ninja-*/{M,P}*
 cd /usr/src/*/curl; bmake fetch-list |sh; bmake install clean clean-depends
 sed -i "s/^.endif/FETCH_USING=curl\n&/" /etc/mk.conf; rm /mk
-for i in $WORLD; do cd /usr/src/*/$i/; pwd; bmake fetch-list |sh; done
+for i in $WORLD; do for j in /usr/src/*/$i/; do cd $j; done; pwd
+bmake fetch-list |sh; done
 cd /usr/src/*/gzip; bmake install; rm /bin/zcat; ln -s `which zcat` /bin/zcat
 cd /usr/src/*/mksh; bmake install; ln -fs `which mksh` /bin/sh
 sed -i -e "s/\\(groupadd.*\\)-r/\\1-S/i" -e "s/-r -c/-S -c/" \
@@ -54,13 +55,12 @@ sed -i -e "s/\\(groupadd.*\\)-r/\\1-S/i" -e "s/-r -c/-S -c/" \
 for i in MesaLib flex ge*ls gst* gtk3 *pg-er* l*xif l*dn xk*g
 do sed -Ei "/\.mo$|glibc|au_r[^3]|upower/d" /usr/src/*/$i/{M,P}*; done
 sed -i "s,cpp$,&;sed -i /_TLS/d \${WRKSRC}/*build," /usr/src/*/Mesa*b/M*
-sed -Ei "/glibc|upower/d" /usr/src/*/xf*ngs/{M,P}*
 cd /usr/src/*/xinit; bmake install
 sed -i s/.*inter.*trip.*/true/ /usr/src/*/python*/*/*/configure
-cd /usr/src/*/wp*t; echo CONFIG_DRIVER_WEXT=y >>*/defconfig; bmake install
+cd /usr/src/*/wpa*t; echo CONFIG_DRIVER_WEXT=y >>*/defconfig; bmake install
 sed -i "1s;^;#include <limits.h>\n;" /usr/src/*/libpcap/*/*/*-usb-linux.c
-for i in $WORLD; do cd /usr/src/*/$i/; bmake install clean clean-depends; done
-pkg_admin unset automatic lynx mandoc
+for i in $WORLD; do for j in /usr/src/*/$i/; do cd $j; done
+bmake install clean clean-depends; done; pkg_admin unset automatic lynx mandoc
 wpa_cli -h |awk /h:/{print\"ctrl_interface=DIR=\"\$3} >/etc/wpa_supplicant.conf
 (cd /bin; echo -e "#!/bin/sh\nwhile case \$1 in -*)shift;;*)break;esac;do done
 x=\`mktemp\`;>\$x cat \"\$@\";lynx \$x" >more; chmod +x more; ln more less)
