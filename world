@@ -63,8 +63,9 @@ for i in $WORLD; do for j in /usr/src/*/$i/; do cd $j; done
 bmake install clean clean-depends; done; pkg_admin unset automatic lynx mandoc
 wpa_cli -h |awk /h:/{print\"ctrl_interface=DIR=\"\$3} >/etc/wpa_supplicant.conf
 (cd /bin; echo -e "#!/bin/sh\nwhile case \$1 in -*)shift;;*)break;esac;do done
-x=\`mktemp\`;>\$x cat \"\$@\";lynx \$x" >more; chmod +x more; ln more less)
-git config --system color.ui false
+x=\`mktemp\`;>\$x cat \"\$@\";lynx \$x;rm \$x">more;chmod +x more;ln more less)
+git config --system color.ui false; echo "text/html; cat %s |lynx -stdin
+text/plain; iconv -tascii %s |fmt |more" >/etc/mailcap
 for i in "\"%\" split-window -h" "\"\\\"\" split-window -v" "c new-window"
 do echo bind $i -c \"#{pane_current_path}\"; done >/etc/tmux.conf' -
 git clone ../../../../t*x usr/src/toybox; cp ../../../../t*x/.c*g usr/src/t*x
