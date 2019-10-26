@@ -4,7 +4,7 @@
 # emerge -1u os-headers; eval "export `emerge --info 2>&1 |grep GS=`"
 # wget http://musl.cc/armv7l-linux-musleabihf-native.tgz
 # git clone https://github.com/nykula/acmd; acmd/world
-w='wpa*t *bear tmux git ii mutt isync cy*{g,a}in ffm*4 *e-dl gzip mksh'
+w='wpa*t *bear tmux git ii mutt isync cy*{g,a}in ffm*4 *e-dl m*ssl gzip mksh'
 w="$w npm al*ls bl*sa udev way*s weston *erati* tang*"
 for i in NetBSD/pkgsrc{,-wip} michaelforney/samurai landley/toybox
 do(cd `basename $i`&&git pull)||git clone --depth=1 https://github.com/$i; done
