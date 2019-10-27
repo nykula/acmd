@@ -57,7 +57,7 @@ do sed -Ei "/\.mo$|glibc|au_r[^3]|upower/d" /usr/src/*/$i/{M,P}*; done
 sed -i "s,cpp$,&;sed -i /_TLS/d \${WRKSRC}/*build," /usr/src/*/Mesa*b/M*
 cd /usr/src/*/xinit; bmake install
 sed -i s/.*inter.*trip.*/true/ /usr/src/*/python*/*/*/configure
-cd /usr/src/*/wpa*t; echo CONFIG_DRIVER_WEXT=y >>*/defconfig; bmake install
+cd /usr/src/*/wpa*t; echo CONFIG_DRIVER_WEXT=y >>files/defconfig; bmake install
 sed -i "1s;^;#include <limits.h>\n;" /usr/src/*/libpcap/*/*/*-usb-linux.c
 for i in $WORLD; do for j in /usr/src/*/$i/; do cd $j; done
 bmake install clean clean-depends; done; pkg_admin unset automatic lynx mandoc
