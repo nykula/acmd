@@ -81,9 +81,10 @@ elif test "$1" = ren; then xs=`mktemp`; ys=`mktemp`; zs=`mktemp`; shift
   alias y="$y" x="`sed $i\!d $xs`"; x="`alias x |sed 's/^.*\?=//'`"
   y="`alias y |sed 's/^.*\?=//'`"; test "$x" != "$y" &&>>$zs echo -E \
   mv -v "$x" "$y"; done <$ys; vi $zs &&eval "`cat $zs`"; rm $xs $ys $zs
-elif test "$1" = mpv; then shift; for i in "$@"; do ffmpeg4 -re -i "$i" \
+elif test "$1" = mpv; then shift; for i in "$@"; do
+  test "$VO" != null &&(ffmpeg4 -re -i "$i" \
   -pix_fmt bgra -s `ctl res` -f fbdev '' -v 0 -f wav - |aplay - 2>/dev/null ||
-  ffmpeg4 -re -i "$i" -pix_fmt bgra -s `ctl res` -f fbdev '' -v 0 ||
+  ffmpeg4 -re -i "$i" -pix_fmt bgra -s `ctl res` -f fbdev '' -v 0) ||
   ffmpeg4 -re -i "$i" -f wav - |aplay -; done
 elif test "$1" = say; then shift; espeak -w/proc/self/fd/1 "$@" |aplay -
 elif test "$1" = cp; then R=`mktemp`; u=`mktemp`
