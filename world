@@ -40,8 +40,7 @@ root su -c 'cc -o /bin/awk `find /usr/src/*/nawk/files/*.c -not -name *etab.c`
 for i in MAKE_JOBS=`nproc` "PKG_DEFAULT_OPTIONS=-* openssl wayland" \
   PKG_OPTIONS.mutt=mutt-smtp\ sasl KRB5_DEFAULT=mit-krb5; do echo $i; done >/mk
 cd /usr/src/*strap; ./b* --cwrappers=no --make-jobs=`nproc` --mk-fragment=/mk
-cd /usr/src/*/bsdtar; bmake install clean clean-depends
-ln -fs `which bsdtar` /bin/tar; cd /usr/src/samurai; bmake; cp samu /bin/ninja
+cd /usr/src/samurai; bmake; cp samu /bin/ninja
 sed -i "/GIT\|SUB\|CONF\|INST\|bin\|shar\|py/d" /usr/src/*/ninja-*/{M,P}*
 cd /usr/src/*/curl; bmake fetch-list |sh; bmake install clean clean-depends
 sed -i "s/^.endif/FETCH_USING=curl\n&/" /etc/mk.conf; rm /mk
