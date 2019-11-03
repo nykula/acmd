@@ -59,12 +59,13 @@ elif test "$1" = png; then x=`mktemp`; convert -size `ctl res` \
   xc:white -font /usr/share/fonts/liberation/LiberationSerif-Regular.ttf \
   -pointsize 14 -annotate +8+18 "`cat`" png:- |mpv -vo=drm -pause -loop -
 elif test "$1" = eml; then perl -pe 'use MIME::QuotedPrint;$_=decode_qp($_)'
-elif test "$1" = hjk; then while read -sn1 x; do case $x in
-  h|j|k|l)echo $x;; q|`echo -e '\04'`)echo q; exit;;
+elif test "$1" = hjk; then while read -sn1 x; do case $x in '')echo l;;
+  e|h|j|k|l|r|s|z)echo $x;; q|`echo -e '\04'`)echo q; exit;;
   `echo -e '\e'`)read -n1 y; if test $y = [; then read -n1 z; case $z in
     D)echo h;; B)echo j;; A)echo k;; C)echo l;;
     5|6)read -sn1 a; case $z$a in 5~)echo Up;; 6~)echo Dn
-    esac; esac; fi;; *) echo; esac; done
+    esac; esac; fi; if test $y = O; then read -n1 z; case $z in
+    S)echo e; esac; fi;; *) echo; esac; done
 elif test "$1" = led; then f=`ls /sys/class/backlight/*/brightness`
   fm=`dirname $f`/max_brightness; echo `cat $f`/`cat $fm`; ctl hjk |
   while read x;do b=`cat $f`; >$f 2>/dev/null expr $b + `case $x in
@@ -108,4 +109,28 @@ elif test "$1" = epub; then d=`mktemp -d`; test -n "$d" ||exit; (cd $d
   "s/class='[^']+'//g" 's/<link[^>]+>//g' 's/<div/<p/g;s,/div>,/p>,g' \
   's,OEBPS/,,g' 's,<([^/apt]|/[^apt])[^>]*>,,g' 's,href="[^"/]*/,href=",g'
   do sed -Ei "$i" *; done; rm \*.{,x}htm{,l}); mv $d/* .; rm -r $d
+elif test "$1" = dir; then t=`mktemp -d`; echo >$t/buf
+  echo ls -l >$t/ls; `<$t/ls` >$t/fs; head -1 $t/fs >$t/cur
+  (echo;ctl hjk)|while read k; do clear; case $k in
+  e)f="`<$t/cur`"; tmux splitw -hc "$PWD" vi "${f#* ??:?? }";;
+  z)if test "`<$t/ls`" = "`echo ls -al`"; then echo ls -l >$t/ls
+    else echo ls -al >$t/ls; fi; `<$t/ls` >$t/fs;;
+  h)cd ..; `<$t/ls` >$t/fs;;
+  l)f="`<$t/cur`"
+    if test "${f#d}" != "$f"; then cd "${f#* ??:?? }"; `<$t/ls` >$t/fs
+    else tmux splitw -hc "$PWD" lynx "${f#* ??:?? }"; fi;;
+  j)echo >$t/buf; cat $t/fs |while read f; do
+    if test "`<$t/buf`" = y; then echo "$f" >$t/cur; break; fi
+    if test "`<$t/cur`" = "$f"; then echo y >$t/buf; fi; done;;
+  k)echo >$t/buf; cat $t/fs |while read f; do
+    if test "`<$t/cur`" = "$f"; then echo "`<$t/buf`" >$t/cur; break; fi
+    echo "$f" >$t/buf; done;;
+  r)f="`<$t/cur`"; tmux splitw -hc "$PWD" ctl ren "${f#* ??:?? }";;
+  s)tmux splitw -hc "$PWD" env t=$t sh -l;;
+  esac; echo >$t/buf; cat $t/fs |while read f; do
+    if test "`<$t/cur`" = "$f"; then echo y >$t/buf; break; fi; done
+  if test "`<$t/buf`" != y; then head -1 $t/fs >$t/cur; fi
+  cat $t/fs |while read f; do
+    test "`<$t/cur`" = "$f" &&echo "> $f" ||echo "  $f"; done
+  echo -n "ehjklqrsz> $k"; done; rm -r $t; echo
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
