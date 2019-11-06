@@ -6,9 +6,9 @@
 # git clone https://github.com/nykula/acmd; acmd/world
 w='wpa*t *bear tmux git ii mutt isync cy*{g,a}in ffm*4 *e-dl m*ssl gzip mksh'
 w="$w yarn al*ls bl*sa udev way*s weston *erati* tang*"
-for i in NetBSD/pkgsrc{,-wip} michaelforney/samurai landley/toybox
+for i in NetBSD/pkgsrc NetBSD/pkgsrc-wip michaelforney/samurai landley/toybox
 do(cd `basename $i`&&git pull)||git clone --depth=1 https://github.com/$i; done
-cd toybox; umount root/*/*/{dev/pts,dev,proc,sys}; rm -r *x-*
+cd toybox; for i in dev/pts dev proc sys;do umount root/*/*/$i;done; rm -r *x-*
 tar xf ../*-native.tgz ||exit; cc=`realpath */bin`/`basename */*x-*`-
 (cd */bin; ln -s *-cc cc); gmake CROSS_COMPILE=$cc HOSTCC="${cc}cc -static" \
   PATH="`dirname $cc`:$PATH" defconfig ||exit; sed -i "s/<(.*)/:/" s*/*
@@ -16,22 +16,23 @@ for i in BC DIFF EXPR GROUPADD GZIP ROUTE SH TR USERADD VI WGET
 do sed -i s/.*_$i[=\ ].*/CONFIG_$i=y/ .config; done
 mv root/*/*/usr/src/distfiles/* ../pkgsrc/distfiles
 gmake CROSS_COMPILE=$cc PATH="`dirname $cc`:$PATH" root \
-  CFLAGS="$CFLAGS -static" HOSTCC="${cc}cc -static"; cd root/*/*-fs/usr
+  CFLAGS="$CFLAGS -static" HOSTCC="${cc}cc -static"; cd root/*/*-fs/usr ||exit
 (cd ../../../../*x-*; tar -cf- *) |tar -xf-; (cd *x-*; tar -cf- lib) |tar -xf-
 rm -r *x-*; ln -s ../bin/cpp lib/cpp; cd ..; mv mnt var/run; mv root var
 cd usr/bin; ln -s ../lib/ld-* ldd; ln -fs sh bash; cd ../..; mv init sbin
 mkdir usr/pkg; mv etc usr/share/man usr/pkg; ln -s usr/pkg/etc etc
 cp -r ../../../../pkgsrc usr/src; cp -r ../../../../pkgsrc-wip usr/src/wip
 path="/bin:/sbin:/usr/pkg/bin:/usr/pkg/sbin:/`dirname $(find * -name cc1)`"
-root() { env -i CFLAGS="$CFLAGS" PATH="$path" WORLD="$w" chroot . /bin/"$@"; }
-root env |sed 's,HOME.*,MANPATH=/usr/pkg/man,;s/.*/export "&"/' >etc/profile
+root() { env -i CFLAGS="$CFLAGS" PATH="$path" WORLD="$w" \
+  `which chroot` . /bin/"$@"; }
+(root env;echo MANPATH=/usr/pkg/man)|sed '/HOME/d;s/.*/export "&"/'>etc/profile
 root sh -c "`grep mount.-t sbin/init`; exit"; cp -r ../../../../samurai usr/src
 mv home var/guest; sed -i s/home/var/ etc/p*d; echo root:::::::: >etc/shadow
 root sh -c 'groupadd -g12 mail; exit'; root install -dg12 var/mail
-(cd usr/include; ls *.h sys/*.h |tr [:lower:] [:upper:] |
-sed "s/[^A-Z]/_/g;s/.*/#define HAVE_& 1/"
-for i in {BRACE_EXPAND,HAVE_{MEMSET,PROTOTYPES,STRCASECMP},JOBS,KSH}\ 1 \
-  RETSIG{TYPE\ void,VAL} SIZEOF_{INT\ 4,LONG\ 8}; do echo \#define $i; done
+(cd usr/include; ls *.h sys/*.h |tr [:lower:] [:upper:] |sed \
+"s/[^A-Z]/_/g;s/.*/#define HAVE_& 1/";for i in BRACE_EXPAND\ 1 HAVE_MEMSET\ 1 \
+HAVE_PROTOTYPES\ 1 HAVE_STRCASECMP\ 1 JOBS\ 1 KSH\ 1 RETSIGTYPE\ void \
+RETSIGVAL SIZEOF_INT\ 4 SIZEOF_LONG\ 8; do echo \#define $i; done
 cat ../../usr/src/*/pdksh/*/conf-end.h) >`ls -d usr/src/*/pdksh/files`/config.h
 root kill -l |xargs echo |>`ls -d usr/src/*/pdksh/files`/siglist.out sed -E \
   's/([0-9]+)..(SIG(\S+))/{.signal=\1,.name="\3",.mess="\2"},\n/g'
@@ -39,8 +40,8 @@ root cc -o /bin/sh `find usr/src/*/pdksh/files/*.c -not -name "*-*"`
 root su -c 'cc -o /bin/awk `find /usr/src/*/nawk/files/*.c -not -name *etab.c`
 for i in MAKE_JOBS=`nproc` "PKG_DEFAULT_OPTIONS=-* openssl wayland" \
   PKG_OPTIONS.mutt=mutt-smtp\ sasl KRB5_DEFAULT=mit-krb5; do echo $i; done >/mk
-cd /usr/src/*strap; ./b* --cwrappers=no --make-jobs=`nproc` --mk-fragment=/mk
-cd /usr/src/samurai; bmake; cp samu /bin/ninja
+cd /usr/src/*strap; ./b* --cwrappers=no --make-jobs=`nproc` \
+  --mk-fragment=/mk ||exit; cd /usr/src/samurai; bmake; cp samu /bin/ninja
 sed -i "/GIT\|SUB\|CONF\|INST\|bin\|shar\|py/d" /usr/src/*/ninja-*/{M,P}*
 cd /usr/src/*/curl; bmake fetch-list |sh; bmake install clean clean-depends
 sed -i "s/^.endif/FETCH_USING=curl\n&/" /etc/mk.conf; rm /mk
