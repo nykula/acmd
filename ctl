@@ -109,28 +109,54 @@ elif test "$1" = epub; then d=`mktemp -d`; test -n "$d" ||exit; (cd $d
   "s/class='[^']+'//g" 's/<link[^>]+>//g' 's/<div/<p/g;s,/div>,/p>,g' \
   's,OEBPS/,,g' 's,<([^/apt]|/[^apt])[^>]*>,,g' 's,href="[^"/]*/,href=",g'
   do sed -Ei "$i" *; done; rm \*.{,x}htm{,l}); mv $d/* .; rm -r $d
-elif test "$1" = dir; then t=`mktemp -d`; echo >$t/buf
-  echo ls -l >$t/ls; `<$t/ls` >$t/fs; head -1 $t/fs >$t/cur
+elif test "$1" = dirr; then t=`mktemp -d`; echo >$t/buf
+  echo ls -1p >$t/ls; `<$t/ls` >$t/fs; head -1 $t/fs >$t/cur
   (echo;ctl hjk)|while read k; do clear; case $k in
-  e)f="`<$t/cur`"; tmux splitw -hc "$PWD" vi "${f#* ??:?? }";;
-  z)if test "`<$t/ls`" = "`echo ls -al`"; then echo ls -l >$t/ls
-    else echo ls -al >$t/ls; fi; `<$t/ls` >$t/fs;;
+  e)f="`<$t/cur`"; tmux splitw -hc "$PWD" vi "$f";;
+  z)if test "`<$t/ls`" = "`echo ls -1ap`"; then echo ls -1p >$t/ls
+    else echo ls -1ap >$t/ls; fi; `<$t/ls` >$t/fs;;
   h)cd ..; `<$t/ls` >$t/fs;;
   l)f="`<$t/cur`"
-    if test "${f#d}" != "$f"; then cd "${f#* ??:?? }"; `<$t/ls` >$t/fs
-    else tmux splitw -hc "$PWD" lynx "${f#* ??:?? }"; fi;;
+    if test "${f%/}" != "$f"; then cd "$f"; `<$t/ls` >$t/fs
+    else tmux splitw -hc "$PWD" lynx "$f"; fi;;
   j)echo >$t/buf; cat $t/fs |while read f; do
     if test "`<$t/buf`" = y; then echo "$f" >$t/cur; break; fi
     if test "`<$t/cur`" = "$f"; then echo y >$t/buf; fi; done;;
   k)echo >$t/buf; cat $t/fs |while read f; do
     if test "`<$t/cur`" = "$f"; then echo "`<$t/buf`" >$t/cur; break; fi
     echo "$f" >$t/buf; done;;
-  r)f="`<$t/cur`"; tmux splitw -hc "$PWD" ctl ren "${f#* ??:?? }";;
+  r)f="`<$t/cur`"; tmux splitw -hc "$PWD" ctl ren "$f";;
   s)tmux splitw -hc "$PWD" env t=$t sh -l;;
   esac; echo >$t/buf; cat $t/fs |while read f; do
     if test "`<$t/cur`" = "$f"; then echo y >$t/buf; break; fi; done
   if test "`<$t/buf`" != y; then head -1 $t/fs >$t/cur; fi
-  cat $t/fs |while read f; do
-    test "`<$t/cur`" = "$f" &&echo "> $f" ||echo "  $f"; done
-  echo -n "ehjklqrsz> $k"; done; rm -r $t; echo
+  pwd; cat $t/fs |while read f; do
+    test "`<$t/cur`" = "$f" &&echo "> $f" ||echo "- $f"; done
+  echo "ehjklqrsz> $k"; done; rm -r $t; echo
+elif test "$1" = dir; then ctl dirr |(
+  eq=; h=$((LINES-1)); old=; pad=1; top=0; xs=; w=$((COLUMNS/2-1))
+  skip() { [ $eq -gt 0 ] &&printf "\033[${eq}B"; eq=0; }
+  clear; clr="`printf '\033[2J\033[H'`"; while read x; do
+  col=; while [ ${#x} -ge $w -a ${#col} -lt $w ]; do col=$col?; done
+  if [ -n "$col" ]; then xs="`printf '%s\n%s' "$xs" "${x%${x#$col}}"`"
+  else xs="`printf '%s\n%s' "$xs" "$x"`"; fi
+  case $x in ehjk*);; *)continue; esac
+  cur=0; xs="${xs#?$clr}"; wcl=0; while read x; do
+    case $x in '> '*)cur=$wcl; esac
+    ((wcl++)) done <<<$xs
+  while [ $top -gt $cur -o $top -gt $((wcl-h)) ]; do ((top--)) done
+  while [ $top -lt $((cur+1-h+pad)) -o $top -lt 0 ]; do ((top++)) done
+  new="`i=0; while read x; do
+    [ $i -ge $((top+pad)) -a $i -lt $((top+h-pad)) -o \
+      $i -lt $pad -o $i -ge $((wcl-pad)) ] &&printf '%s\n' "$x"
+    ((i++)) done <<<$xs`"
+  eq=0; k=0; printf '\033[H'; while read y; do
+    j=0; while read x; do
+      [ $j = $k ] &&
+        if [ "$x" = "$y" ]; then ((eq++))
+        else skip; printf '\033[K%s\r' "$y"; ((eq++)) fi
+      ((j++)) done <<<$old
+    if [ $j -le $k ]; then skip; printf '\033[K%s\r' "$y"; ((eq++)) fi
+    ((k++)) done <<<$new
+  skip; printf '\033[J'; old="$new"; xs=; done)
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
