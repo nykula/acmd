@@ -133,30 +133,30 @@ elif test "$1" = dirr; then t=`mktemp -d`; echo >$t/buf
   pwd; cat $t/fs |while read f; do
     test "`<$t/cur`" = "$f" &&echo "> $f" ||echo "- $f"; done
   echo "ehjklqrsz> $k"; done; rm -r $t; echo
-elif test "$1" = dir; then ctl dirr |(
+elif test "$1" = dir; then ctl dirr |(shopt -s checkwinsize; env true
   eq=; h=$((LINES-1)); old=; pad=1; top=0; xs=; w=$((COLUMNS/2-1))
   skip() { [ $eq -gt 0 ] &&printf "\033[${eq}B"; eq=0; }
-  clear; clr="`printf '\033[2J\033[H'`"; while read x; do
+  clear; clr="`clear`"; while read x; do
   col=; while [ ${#x} -ge $w -a ${#col} -lt $w ]; do col=$col?; done
   if [ -n "$col" ]; then xs="`printf '%s\n%s' "$xs" "${x%${x#$col}}"`"
   else xs="`printf '%s\n%s' "$xs" "$x"`"; fi
   case $x in ehjk*);; *)continue; esac
   cur=0; xs="${xs#?$clr}"; wcl=0; while read x; do
     case $x in '> '*)cur=$wcl; esac
-    ((wcl++)) done <<<$xs
-  while [ $top -gt $cur -o $top -gt $((wcl-h)) ]; do ((top--)) done
-  while [ $top -lt $((cur+1-h+pad)) -o $top -lt 0 ]; do ((top++)) done
+    ((wcl++)); done <<<"$xs"
+  while [ $top -gt $cur -o $top -gt $((wcl-h)) ]; do ((top--)); done
+  while [ $top -lt $((cur+1-h+pad)) -o $top -lt 0 ]; do ((top++)); done
   new="`i=0; while read x; do
     [ $i -ge $((top+pad)) -a $i -lt $((top+h-pad)) -o \
       $i -lt $pad -o $i -ge $((wcl-pad)) ] &&printf '%s\n' "$x"
-    ((i++)) done <<<$xs`"
+    ((i++)); done <<<"$xs"`"
   eq=0; k=0; printf '\033[H'; while read y; do
     j=0; while read x; do
       [ $j = $k ] &&
         if [ "$x" = "$y" ]; then ((eq++))
-        else skip; printf '\033[K%s\r' "$y"; ((eq++)) fi
-      ((j++)) done <<<$old
-    if [ $j -le $k ]; then skip; printf '\033[K%s\r' "$y"; ((eq++)) fi
-    ((k++)) done <<<$new
+        else skip; printf '\033[K%s\r' "$y"; ((eq++)); fi
+      ((j++)); done <<<"$old"
+    if [ $j -le $k ]; then skip; printf '\033[K%s\r' "$y"; ((eq++)); fi
+    ((k++)); done <<<"$new"
   skip; printf '\033[J'; old="$new"; xs=; done)
 else sed '/^# ctl/!d;s/# /usage: /' $0; sed '2!d;s/# /\n/' $0; fi
