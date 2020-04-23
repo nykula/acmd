@@ -1,72 +1,81 @@
 #!/bin/sh
 # Build coding desktop in airlock from another Linux.
 # 0BSD 2019 Denys Nykula <nykula@ukr.net>
-# emerge -1u os-headers; eval "export `emerge --info 2>&1 |grep GS=`"
-# wget http://musl.cc/armv7l-linux-musleabihf-native.tgz
+# export CFLAGS='-march=armv7-a -mfloat-abi=soft'
+# curl musl.cc/arm-linux-musleabi-native.tgz >x-.tgz
 # git clone https://github.com/nykula/acmd; acmd/world
 w='wpa*t *bear tmux git ii mutt isync cy*{g,a}in ffm*4 *e-dl m*ssl gzip mksh'
 w="$w yarn al*ls bl*sa udev way*s weston *erati* tang*"
-for i in NetBSD/pkgsrc NetBSD/pkgsrc-wip michaelforney/samurai landley/toybox
+for i in oasislinux/pkgsrc NetBSD/pkgsrc-wip landley/toybox
 do(cd `basename $i`&&git pull)||git clone --depth=1 https://github.com/$i; done
-cd toybox; for i in dev/pts dev proc sys;do umount root/*/*/$i;done; rm -r *x-*
-tar xf ../*-native.tgz ||exit; cc=`realpath */bin`/`basename */*x-*`-
-(cd */bin; ln -s *-cc cc); gmake CROSS_COMPILE=$cc HOSTCC="${cc}cc -static" \
-  PATH="`dirname $cc`:$PATH" defconfig ||exit; sed -i "s/<(.*)/:/" s*/*
-for i in BC DIFF EXPR GROUPADD GZIP ROUTE SH TR USERADD VI WGET
-do sed -i s/.*_$i[=\ ].*/CONFIG_$i=y/ .config; done
-mv root/*/*/usr/src/distfiles/* ../pkgsrc/distfiles
-gmake CROSS_COMPILE=$cc PATH="`dirname $cc`:$PATH" root \
-  CFLAGS="$CFLAGS -static" HOSTCC="${cc}cc -static"; cd root/*/*-fs/usr ||exit
-(cd ../../../../*x-*; tar -cf- *) |tar -xf-; (cd *x-*; tar -cf- lib) |tar -xf-
-rm -r *x-*; ln -s ../bin/cpp lib/cpp; cd ..; mv mnt var/run; mv root var
-cd usr/bin; ln -s ../lib/ld-* ldd; ln -fs sh bash; cd ../..; mv init sbin
-mkdir usr/pkg; mv etc usr/share/man usr/pkg; ln -s usr/pkg/etc etc
-cp -r ../../../../pkgsrc usr/src; cp -r ../../../../pkgsrc-wip usr/src/wip
-path="/bin:/sbin:/usr/pkg/bin:/usr/pkg/sbin:/`dirname $(find * -name cc1)`"
+cd toybox; for i in dev/pts dev proc sys; do umount *x-*/$i; done
+mv *x-*/usr/src/distfiles/* ../pkgsrc/distfiles
+rm -r *x-*; tar xzf ../*x-*.tgz ||exit; cc=`ls $PWD/*x-*/bin/*-cc`
+bash scripts/genconfig.sh; (cd kconfig
+  for i in zconf.tab.c lex.zconf.c zconf.hash.c; do ln -s ${i}_shipped $i; done
+  $cc $CFLAGS -static -o conf conf.c zconf.tab.c \
+    -DKBUILD_NO_NLS=1 -DPROJECT_NAME='"ToyBox"')
+kconfig/conf -D /dev/null Config.in >/dev/null
+sed -Ei 's/.*_(BC|DIFF|EXPR|ROUTE|TCPSVD|TR|VI|WGET)[= ].*/CONFIG_\1=y/' .conf*
+sed -i 's/<(.*)/:/' scripts/make.sh; CC=$cc CFLAGS="$CFLAGS -static" \
+  HOSTCC="$cc $CFLAGS -static" bash scripts/make.sh
+cd *x-*/bin/.. ||exit; ln -s ../bin/cpp lib/cpp
+cp ../.config conf; cp ../toybox bin; ln -s bin sbin
+for i in `bin/toybox --long`; do bin/toybox ln -fr bin/toybox $i; done
+(cd usr/bin; ln -s sh bash; ln -s *-cc cc; ln -s ../lib/ld-* ldd)
+mkdir -p dev/pts proc sys tmp; echo "#!/bin/sh
+for i in 'devtmpfs - /dev' 'proc - /proc' 'sysfs - /sys'; do mount -t\$i; done
+mount -tdevpts - /dev/pts
+exec /sbin/oneit -c /dev/ttyS0 /bin/su -" >sbin/init; chmod +x sbin/init
+
+mkdir -p usr/pkg/etc var/run; mv usr/share/man usr/pkg; ln -s usr/pkg/etc
+path="/bin:/usr/pkg/bin:/usr/pkg/sbin:/`dirname $(find * -name cc1)`"
 root() { env -i CFLAGS="$CFLAGS" PATH="$path" WORLD="$w" \
   `which chroot` . /bin/"$@"; }
 (root env;echo MANPATH=/usr/pkg/man)|sed '/HOME/d;s/.*/export "&"/'>etc/profile
-root sh -c "`grep mount.-t sbin/init`; exit"; cp -r ../../../../samurai usr/src
-mv home var/guest; sed -i s/home/var/ etc/p*d; echo root:::::::: >etc/shadow
-root sh -c 'groupadd -g12 mail; exit'; root install -dg12 var/mail
-(cd usr/include; ls *.h sys/*.h |tr [:lower:] [:upper:] |sed \
+echo nameserver 9.9.9.9 >etc/resolv.conf
+printf 'root:x:0:root\nmail:x:12:\n' >etc/group
+echo root:x:0:0:root:/var/root:/bin/sh >etc/passwd
+echo root:::::::: >etc/shadow
+root install -dg12 var/mail; root install -dg0 -m0700 var/root
+
+cp -r ../../pkgsrc usr/src; cp -r ../../pkgsrc-wip usr/src/wip
+( (cd usr/include; ls *.h sys/*.h |tr [:lower:] [:upper:] |sed \
 "s/[^A-Z]/_/g;s/.*/#define HAVE_& 1/";for i in BRACE_EXPAND\ 1 HAVE_MEMSET\ 1 \
 HAVE_PROTOTYPES\ 1 HAVE_STRCASECMP\ 1 JOBS\ 1 KSH\ 1 RETSIGTYPE\ void \
-RETSIGVAL SIZEOF_INT\ 4 SIZEOF_LONG\ 8; do echo \#define $i; done
-cat ../../usr/src/*/pdksh/*/conf-end.h) >`ls -d usr/src/*/pdksh/files`/config.h
+RETSIGVAL SIZEOF_INT\ 4 SIZEOF_LONG\ 8; do echo \#define $i; done)
+cat usr/src/*/pdksh/*/conf-end.h) >`ls -d usr/src/*/pdksh/files`/config.h
 root kill -l |xargs echo |>`ls -d usr/src/*/pdksh/files`/siglist.out sed -E \
   's/([0-9]+)..(SIG(\S+))/{.signal=\1,.name="\3",.mess="\2"},\n/g'
-root cc -o /bin/sh `find usr/src/*/pdksh/files/*.c -not -name "*-*"`
-root su -c 'cc -o /bin/awk `find /usr/src/*/nawk/files/*.c -not -name *etab.c`
+bin/cc $CFLAGS -static -obin/sh `find usr/src/*/pdksh/f*/*.c -not -name '*-*'`
+
+root su -c 'eval "`grep mount.-t /sbin/init`"
+cc -o /bin/awk `find /usr/src/*/nawk/files/*.c -not -name *etab.c`
 for i in MAKE_JOBS=`nproc` "PKG_DEFAULT_OPTIONS=-* openssl wayland" \
   PKG_OPTIONS.mutt=mutt-smtp\ sasl KRB5_DEFAULT=mit-krb5; do echo $i; done >/mk
 cd /usr/src/*strap; ./b* --cwrappers=no --make-jobs=`nproc` \
-  --mk-fragment=/mk ||exit; cd /usr/src/samurai; bmake; cp samu /bin/ninja
-sed -i "/GIT\|SUB\|CONF\|INST\|bin\|shar\|py/d" /usr/src/*/ninja-*/{M,P}*
+  --mk-fragment=/mk --prefix=/usr/pkg --unprivileged ||exit; rm /mk
 cd /usr/src/*/curl; bmake fetch-list |sh; bmake install clean clean-depends
-sed -i "s/^.endif/FETCH_USING=curl\n&/" /etc/mk.conf; rm /mk
+which curl &&sed -i "s/^.endif/FETCH_USING=curl\n&/" /etc/mk.conf
 for i in $WORLD; do for j in /usr/src/*/$i/; do cd $j; done; pwd
 bmake fetch-list |sh; done
 cd /usr/src/*/gzip; bmake install; rm /bin/zcat; ln -s `which zcat` /bin/zcat
 cd /usr/src/*/mksh; bmake install; ln -fs `which mksh` /bin/sh
-sed -i -e "s/\\(groupadd.*\\)-r/\\1-S/i" -e "s/-r -c/-S -c/" \
-  -e "s/-c.*-d\(.*-s\)/-h\1/" -e "s/-g\( .group\)/-G\1/" \
-  /usr/src/mk/*/usergroup*Linux; sed -i "/stscr\|webp/d" /usr/src/*/I*ck/{M,b}*
-for i in MesaLib flex ge*ls gst* gtk3 *pg-er* l*xif l*dn xk*g
-do sed -Ei "/\.mo$|glibc|au_r[^3]|upower/d" /usr/src/*/$i/{M,P}*; done
-sed -i "s,cpp$,&;sed -i /_TLS/d \${WRKSRC}/*build," /usr/src/*/Mesa*b/M*
-cd /usr/src/*/xinit; bmake install
+sed -i "/stscr\|webp/d" /usr/src/*/I*ck/{M,b}*
+cd /usr/src/*/*e-dl; bmake install
 sed -i s/.*inter.*trip.*/true/ /usr/src/*/python*/*/*/configure
 cd /usr/src/*/wpa*t; echo CONFIG_DRIVER_WEXT=y >>files/defconfig; bmake install
-sed -i "1s;^;#include <limits.h>\n;" /usr/src/*/libpcap/*/*/*-usb-linux.c
 for i in $WORLD; do for j in /usr/src/*/$i/; do cd $j; done
-bmake install clean clean-depends; done; pkg_admin unset automatic lynx mandoc
+bmake install clean clean-depends; done
+pkg_admin unset automatic gmake lynx mandoc; ln -s `which gmake` /bin/make
 wpa_cli -h |awk /h:/{print\"ctrl_interface=DIR=\"\$3} >/etc/wpa_supplicant.conf
 (cd /bin; echo -e "#!/bin/sh\nwhile case \$1 in -*)shift;;*)break;esac;do done
 x=\`mktemp\`;>\$x cat \"\$@\";lynx \$x;rm \$x">more;chmod +x more;ln more less)
 git config --system color.ui false; echo "text/html; cat %s |lynx -stdin
 text/plain; iconv -tascii %s |fmt |more" >/etc/mailcap
 for i in "\"%\" split-window -h" "\"\\\"\" split-window -v" "c new-window"
-do echo bind $i -c \"#{pane_current_path}\"; done >/etc/tmux.conf' -
-git clone ../../../../t*x usr/src/toybox; cp ../../../../t*x/.c*g usr/src/t*x
-root sh -c 'cd /usr/src/t*x; sed -i "s/<(.*)/:/" s*/*; gmake; cp -f t*x /bin/'
+do echo bind $i -c \"#{pane_current_path}\"; done >/etc/tmux.conf
+
+cd /usr/src; git clone https://github.com/landley/toybox ||exit; cd toybox
+mv /conf .config; sed -i "s/<(.*)/:/" scripts/make.sh; make
+cp /bin/toybox /bin/.toybox; cp -f toybox /bin/' -
